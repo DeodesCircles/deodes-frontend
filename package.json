@@ -6,7 +6,7 @@
     "dev": "next dev -H 0.0.0.0 -p 1110",
     "build": "next build",
     "analyze": "node -e \"process.env.ANALYZE='true'; require('child_process').execSync('next build', {stdio: 'inherit'})\"",
-    "start": "next start -H 127.0.0.1 -p 1110",
+    "start": "next start -H 0.0.0.0 -p 1110",
     "lint": "next lint",
     "audit:seo": "node scripts/audit-seo-routes.mjs",
     "test": "vitest run",
