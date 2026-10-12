@@ -14,6 +14,8 @@ const types = [
     name: "Public circles",
     desc: "Open to anyone meeting the minimum DeoScore. New rounds start regularly — join from the app.",
     meta: "Permissionless",
+    how: "Create your passkey wallet, pick an open round, lock your first USDC contribution.",
+    rounds: "Daily, weekly or monthly — organizers set the cadence.",
   },
   {
     id: "private",
@@ -21,6 +23,8 @@ const types = [
     name: "Private circles",
     desc: "Invite-only via link or code. Ask your organizer for an invite, then redeem it in the app.",
     meta: "Invite-only",
+    how: "Get a link or code, redeem it after signing in, contribute on schedule.",
+    rounds: "Follows the organizer's round calendar.",
   },
   {
     id: "community",
@@ -28,6 +32,8 @@ const types = [
     name: "Community circles",
     desc: "Token-gated circles for DAOs and holder communities, guarded by multi-sig.",
     meta: "Token-gated",
+    how: "Hold the community token, verify once, save with your people.",
+    rounds: "Set by the community charter.",
   },
   {
     id: "premium",
@@ -35,6 +41,8 @@ const types = [
     name: "Premium circles",
     desc: "Higher limits, priority support and collateral. A strong DeoScore gets you in.",
     meta: "Collateralized",
+    how: "Build score in public circles, post collateral, unlock bigger pools.",
+    rounds: "Larger pools, same round discipline.",
   },
 ]
 
@@ -79,6 +87,8 @@ export default function ExplorePage() {
                   </div>
                   <h2 className="font-heading text-xl font-semibold mb-2">{c.name}</h2>
                   <p className="text-muted-foreground text-sm leading-relaxed">{c.desc}</p>
+                  <p className="mt-2 text-[13px] leading-relaxed text-foreground/80">{c.how}</p>
+                  <p className="mt-1 font-mono text-[11px] uppercase tracking-wider text-muted-foreground/70">{c.rounds}</p>
                   <span className="mt-4 inline-block rounded-full px-3 py-1 text-xs font-mono border border-white/10 text-muted-foreground">
                     {c.meta}
                   </span>

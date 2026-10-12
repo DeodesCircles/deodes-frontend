@@ -4,14 +4,20 @@ import type { NetworkConfig } from "@/lib/network/config";
 
 const configs: Record<"testnet" | "mainnet", NetworkConfig> = {
   testnet: {
+    chain: "arc",
     network: "testnet",
+    chainId: 5042002,
     rpcUrl: "https://testnet.example",
+    explorerUrl: "https://explorer.example",
     networkPassphrase: "Test SDF Network ; September 2015",
     contractIds: { primary: "TESTNET_CONTRACT" },
   },
   mainnet: {
+    chain: "arc",
     network: "mainnet",
+    chainId: 5042,
     rpcUrl: "https://mainnet.example",
+    explorerUrl: "https://explorer.example",
     networkPassphrase: "Public Global Stellar Network ; September 2015",
     contractIds: { primary: "MAINNET_CONTRACT" },
   },

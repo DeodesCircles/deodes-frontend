@@ -49,6 +49,7 @@ const circleTypes = [
     name: "Public circles",
     desc: "Anyone meeting the minimum DeoScore can join. Permissionless.",
     meta: "Permissionless",
+    join: "Join from the app — pick an open round and lock your first contribution.",
     colSpan: "lg:col-span-2",
     featured: true,
   },
@@ -57,6 +58,7 @@ const circleTypes = [
     name: "Private circles",
     desc: "Invite-only via link or code. Save with people you trust.",
     meta: "Invite-only",
+    join: "Ask your organizer for a link, redeem it, contribute on schedule.",
     colSpan: "lg:col-span-1",
   },
   {
@@ -64,6 +66,7 @@ const circleTypes = [
     name: "Community circles",
     desc: "Token-gated for DAOs and holder communities. Multi-sig guarded.",
     meta: "Token-gated",
+    join: "Hold the community token, verify once, save with your people.",
     colSpan: "lg:col-span-1",
   },
   {
@@ -71,6 +74,7 @@ const circleTypes = [
     name: "Premium circles",
     desc: "Higher limits, priority support, collateralized. Permissioned.",
     meta: "Collateralized",
+    join: "Bring a strong DeoScore and collateral for bigger pools.",
     colSpan: "lg:col-span-2",
     featured: true,
   },
@@ -283,7 +287,7 @@ function RoundStrip() {
 
 export function LandingContent() {
   const { t } = useTranslate()
-  const railRef = useAutoDrift<HTMLDivElement>(28)
+  const railRef = useAutoDrift<HTMLDivElement>(56)
 
   return (
     <>
@@ -416,6 +420,7 @@ export function LandingContent() {
                   </div>
                   <h3 className="font-heading text-lg md:text-xl font-semibold mb-2">{c.name}</h3>
                   <p className="text-muted-foreground text-sm leading-relaxed">{c.desc}</p>
+                  <p className="mt-2 text-[13px] leading-relaxed text-foreground/80">{c.join}</p>
                   <span className="mt-4 inline-block rounded-full px-3 py-1 text-xs font-mono border border-white/10 text-muted-foreground">
                     {c.meta}
                   </span>
@@ -447,6 +452,7 @@ export function LandingContent() {
                     </div>
                     <h3 className="font-heading text-lg md:text-xl font-semibold mb-2">{c.name}</h3>
                     <p className="text-muted-foreground text-sm leading-relaxed">{c.desc}</p>
+                  <p className="mt-2 text-[13px] leading-relaxed text-foreground/80">{c.join}</p>
                     <span className="mt-4 inline-block rounded-full px-3 py-1 text-xs font-mono border border-white/10 text-muted-foreground">
                       {c.meta}
                     </span>
