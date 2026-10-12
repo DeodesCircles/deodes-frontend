@@ -113,6 +113,9 @@ do_setup() {
       fi
       unset answer
     fi
+    if [ "$changed" = "1" ]; then
+      echo "[$var] using generated value (type a replacement or Enter to keep it)."
+    fi
     # Ask every time: Enter keeps the existing value, typing replaces it.
     if is_secret "$var"; then
       printf '%s: ' "$var"
@@ -125,9 +128,8 @@ do_setup() {
     if [ -n "${input:-}" ]; then
       val="$input"
       changed=1
-    else
-      changed=0
     fi
+    # Empty input keeps whatever is already there (existing or generated).
     unset input
     if [ -z "$val" ]; then
       if is_required "$var"; then
