@@ -166,6 +166,7 @@ export function middleware(request: NextRequest) {
     const isApexHost = host === "deodes.com" || host === "www.deodes.com"
     if (isAppHost || isApexHost) {
       const go = (target: URL): NextResponse => {
+        target.port = ""
         const redirect = NextResponse.redirect(target)
         redirect.headers.set(cspHeaderName, csp)
         if (shouldSetCsrfCookie) attachCsrfCookie(redirect, csrfToken)
