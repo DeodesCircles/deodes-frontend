@@ -8,17 +8,34 @@ import { DashboardSkeleton } from "@/components/skeletons"
 
 const LandingContent = dynamic(
   () => import("@/components/landing/landing-content").then((m) => m.LandingContent),
-  { ssr: true }
+  {
+    ssr: true,
+    // Without this, the resolved-auth tree renders an empty shell while the
+    // landing chunk downloads — the footer jumps to the top on slow networks.
+    loading: () => (
+      <PublicLayout>
+        <LandingHeroSkeleton />
+      </PublicLayout>
+    ),
+  }
 )
 
 const DashboardLayout = dynamic(
   () => import("@/components/layout/dashboard-layout").then((m) => m.DashboardLayout),
-  { ssr: false }
+  {
+    ssr: false,
+    loading: () => (
+      <div className="min-h-screen" aria-busy="true" aria-label="Loading" />
+    ),
+  }
 )
 
 const DashboardContent = dynamic(
   () => import("@/components/dashboard/dashboard-content").then((m) => m.DashboardContent),
-  { ssr: false }
+  {
+    ssr: false,
+    loading: () => <DashboardSkeleton />,
+  }
 )
 
 export function HomeContent() {
