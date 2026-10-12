@@ -17,6 +17,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
 import type { Notification } from "@/types";
+import { useAuthStore } from "@/stores/auth-store";
 
 // ── WebSocket context ────────────────────────────────────────────────────────
 
@@ -47,7 +48,28 @@ interface WsProviderProps {
   children: ReactNode;
 }
 
+/**
+ * Live event stream. The socket opens only for authenticated visitors:
+ * anonymous traffic (marketing pages, fresh browsers) must never burn
+ * connections — or log spam — retrying an endpoint that 401s by design.
+ */
 export function WsProvider({ children }: WsProviderProps) {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const isLoading = useAuthStore((s) => s.isLoading);
+
+  // Auth still resolving: hold the disconnected default, open nothing.
+  if (isLoading || !isAuthenticated) {
+    return (
+      <WsContext.Provider value={{ isConnected: false, connectionState: "disconnected", lastMessage: null }}>
+        {children}
+      </WsContext.Provider>
+    );
+  }
+
+  return <ConnectedWsProvider>{children}</ConnectedWsProvider>;
+}
+
+function ConnectedWsProvider({ children }: WsProviderProps) {
   const queryClient = useQueryClient();
   const mountedRef = useRef(true);
 
