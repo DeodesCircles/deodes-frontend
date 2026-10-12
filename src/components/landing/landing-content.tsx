@@ -295,7 +295,7 @@ const TYPE_ANCHORS: Record<string, string> = {
 
 function CircleTypeList() {
   return (
-    <div className="mt-10 overflow-hidden rounded-3xl border border-white/[0.08]">
+    <div className="mt-10 overflow-hidden rounded-3xl border border-black/[0.08] dark:border-white/[0.08]">
       {circleTypes.map((c, i) => {
         const Icon = c.icon
         const anchor = TYPE_ANCHORS[c.name] ?? ""
@@ -304,7 +304,7 @@ function CircleTypeList() {
             key={c.name}
             href={`/explore#${anchor}`}
             scroll={false}
-            className="group flex flex-col sm:flex-row sm:items-center gap-5 p-6 md:p-8 border-b border-white/[0.06] last:border-0 hover:bg-white/[0.03] transition-colors"
+            className="group flex flex-col sm:flex-row sm:items-center gap-5 p-6 md:p-8 border-b border-black/[0.06] dark:border-white/[0.06] last:border-0 hover:bg-black/[0.02] dark:hover:bg-white/[0.03] transition-colors"
           >
             <span className="font-mono text-sm text-muted-foreground w-10 shrink-0">
               0{i + 1}
