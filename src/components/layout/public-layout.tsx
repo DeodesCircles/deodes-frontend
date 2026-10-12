@@ -731,10 +731,6 @@ export function PublicLayout({ children }: PublicLayoutProps) {
         </div>
         <div className="container-premium mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-white/[0.06] py-5 text-xs text-muted-foreground">
           <span>&copy; {new Date().getFullYear()} Deodes. All rights reserved.</span>
-          <span className="flex flex-wrap items-center gap-x-4 gap-y-2">
-            <a href="https://cyprianz.com" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">cyprianz.com</a>
-            <a href="https://nekwasar.com" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">nekwasar.com</a>
-          </span>
           <span className="flex items-center gap-2">
             <img src="/arc-logo-white.svg" alt="Arc" className="hidden h-4 w-4 dark:block" />
             <img src="/arc-logo.svg" alt="Arc" className="h-4 w-4 dark:hidden" />

@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 import type { ReactNode } from "react"
+import { GoogleBootstrap } from "@/components/auth/google-bootstrap"
 
 interface FooterLink {
   label: string
@@ -25,6 +26,7 @@ export function AuthLayout({
 }: AuthLayoutProps) {
   return (
     <div className="flex min-h-screen w-full items-center justify-center p-4">
+      <GoogleBootstrap />
       <div
         className={`w-full max-w-md rounded-2xl glass border border-white/10 p-8 shadow-2xl backdrop-blur-xl ${className ?? ""}`}
       >

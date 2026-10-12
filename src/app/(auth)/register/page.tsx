@@ -6,6 +6,7 @@ import Link from "next/link"
 import { useForm } from "react-hook-form"
 import { registerSchema, zodResolver, type RegisterInput } from "@/lib/validation"
 import { AuthLayout } from "@/components/auth/auth-layout"
+import { GoogleButton } from "@/components/auth/google-button"
 import { PasswordStrengthMeter } from "@/components/auth/password-strength-meter"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -95,6 +96,7 @@ export default function RegisterPage() {
           </Button>
         </form>
 
+        <GoogleButton mode="signup" />
 
         <p className="text-center text-sm text-muted-foreground">
           Already have an account?{" "}

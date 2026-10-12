@@ -11,6 +11,7 @@ import { post } from "@/lib/api-client"
 import type { User } from "@/types"
 import dynamic from "next/dynamic"
 import { AuthLayout } from "@/components/auth/auth-layout"
+import { GoogleButton } from "@/components/auth/google-button"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
@@ -84,6 +85,8 @@ export default function LoginPage() {
             Sign In with Email
           </Button>
         </form>
+
+        <GoogleButton mode="signin" />
 
         <div className="relative flex py-2 items-center">
           <div className="flex-grow border-t border-white/10" />
