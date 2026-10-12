@@ -114,25 +114,6 @@
   --depth-shadow-hover: 0 2px 4px rgba(0,0,0,0.25), 0 8px 24px rgba(0,0,0,0.2), 0 16px 56px rgba(0,0,0,0.4);
 }
 
-/* ── Marquee ticker: single transform loop over a doubled list ── */
-.marquee-track {
-  animation: marquee-slide 36s linear infinite;
-  will-change: transform;
-}
-
-.marquee-track:hover {
-  animation-play-state: paused;
-}
-
-@keyframes marquee-slide {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
-}
-
 /* ── Hero rotating word: compositor-only (transform + opacity). ──
    Zero layout, zero paint — safe on low-end devices. The key remounts the
    span every 2.6s so the entry animation replays per word. */
@@ -154,9 +135,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .marquee-track {
-    animation: none;
-  }
   .grow-word {
     animation: none;
   }

@@ -28,7 +28,6 @@ import {
 import { Routes } from "@/lib/constants"
 import { useTranslate } from "@/lib/locale/context"
 import { MemberDot } from "@/components/payouts/round-simulator"
-import { Marquee } from "@/components/landing/marquee"
 import { useAutoDrift } from "@/hooks/use-auto-drift"
 
 // ── DEODES landing: dense marketplace-style page ─────────────────────────────
@@ -359,8 +358,6 @@ export function LandingContent() {
           </div>
         </section>
 
-        <Marquee />
-
         {/* ═══ TRUST STRIP (agentsdb stat-band pattern) ═══ */}
         <section className="relative z-10 border-y border-white/[0.06]">
           <div className="container-premium grid grid-cols-2 gap-6 py-12 text-center sm:grid-cols-4">
@@ -375,52 +372,7 @@ export function LandingContent() {
           </div>
         </section>
 
-        {/* ═══ VOICES — illustrative saver stories (labeled as such) ═══ */}
-        <section className="relative z-10 py-24 md:py-32">
-          <div className="container-premium">
-            <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">Why they stay</p>
-            <h2 className="mt-2 font-heading text-4xl md:text-5xl gradient-text-extended max-w-3xl">
-              Savings discipline, in their words.
-            </h2>
-            <div className="mt-12 grid gap-4 md:grid-cols-3">
-              {[
-                {
-                  quote: "My esusu group moved on-chain and nobody chases contributions anymore. The contract does the chasing.",
-                  who: "Market trader · Lagos",
-                  role: "Saver, private circle",
-                },
-                {
-                  quote: "I run three circles from my phone. Invites, late fees, payouts — I just watch the rounds close.",
-                  who: "Cooperative organizer · Accra",
-                  role: "Organizer, 42 members",
-                },
-                {
-                  quote: "Our DAO treasury finally has a savings rhythm. Votes decide payouts; the ledger proves everything.",
-                  who: "DAO steward · Nairobi",
-                  role: "Community circle",
-                },
-              ].map((v) => (
-                <figure key={v.who} className="flex flex-col rounded-2xl border border-white/[0.08] bg-card p-6 md:p-8">
-                  <span className="font-display text-5xl leading-none gradient-text" aria-hidden="true">
-                    &ldquo;
-                  </span>
-                  <blockquote className="mt-2 flex-1 text-[15px] leading-relaxed">
-                    {v.quote}
-                  </blockquote>
-                  <figcaption className="mt-6">
-                    <p className="text-sm font-heading font-semibold">{v.who}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{v.role}</p>
-                  </figcaption>
-                </figure>
-              ))}
-            </div>
-            <p className="mt-6 text-xs text-muted-foreground/70">
-              Illustrative stories based on common savings-circle experiences.
-            </p>
-          </div>
-        </section>
-
-        {/* ═══ CIRCLE TYPES — edge-to-edge snap rail (no grid) ═══ */}
+        {/* ═══ CIRCLE TYPES — auto-drift rail (no grid) ═══ */}
         <section className="relative z-10 py-24 md:py-32 overflow-hidden">
           <div className="container-premium">
             <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">Find your circle</p>
@@ -436,13 +388,13 @@ export function LandingContent() {
               </Link>
             </div>
           </div>
-          <div ref={railRef} className="mt-10 flex gap-4 overflow-x-auto snap-x snap-mandatory px-4 md:px-8 pb-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div ref={railRef} className="mt-10 flex gap-4 overflow-x-auto px-4 md:px-8 pb-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {circleTypes.map((c) => {
               const Icon = c.icon
               return (
                 <div
                   key={c.name}
-                  className={`snap-start shrink-0 w-[300px] md:w-[340px] glass-premium rounded-2xl p-6 md:p-8 ${c.featured ? "holo-border" : ""}`}
+                  className={`shrink-0 w-[300px] md:w-[340px] glass-premium rounded-2xl p-6 md:p-8 ${c.featured ? "holo-border" : ""}`}
                 >
                   <div className="w-12 h-12 rounded-2xl gradient-bg-extended flex items-center justify-center text-white mb-5">
                     <Icon className="h-5 w-5" />
@@ -457,7 +409,7 @@ export function LandingContent() {
             })}
             <Link
               href={Routes.REGISTER}
-              className="snap-start shrink-0 w-[300px] md:w-[340px] rounded-2xl p-6 md:p-8 gradient-bg-premium text-white flex flex-col justify-center gap-3"
+              className="shrink-0 w-[300px] md:w-[340px] rounded-2xl p-6 md:p-8 gradient-bg-premium text-white flex flex-col justify-center gap-3"
             >
               <CirclePlus className="h-8 w-8" />
               <span className="font-heading text-xl font-semibold">Start your own</span>
@@ -473,7 +425,7 @@ export function LandingContent() {
                 return (
                   <div
                     key={`dup-${c.name}`}
-                    className={`snap-start shrink-0 w-[300px] md:w-[340px] glass-premium rounded-2xl p-6 md:p-8 ${c.featured ? "holo-border" : ""}`}
+                    className={`shrink-0 w-[300px] md:w-[340px] glass-premium rounded-2xl p-6 md:p-8 ${c.featured ? "holo-border" : ""}`}
                   >
                     <div className="w-12 h-12 rounded-2xl gradient-bg-extended flex items-center justify-center text-white mb-5">
                       <Icon className="h-5 w-5" />
@@ -486,7 +438,7 @@ export function LandingContent() {
                   </div>
                 )
               })}
-              <div className="snap-start shrink-0 w-[300px] md:w-[340px] rounded-2xl p-6 md:p-8 gradient-bg-premium text-white flex flex-col justify-center gap-3">
+              <div className="shrink-0 w-[300px] md:w-[340px] rounded-2xl p-6 md:p-8 gradient-bg-premium text-white flex flex-col justify-center gap-3">
                 <CirclePlus className="h-8 w-8" />
                 <span className="font-heading text-xl font-semibold">Start your own</span>
                 <span className="text-sm text-white/80">Daily, weekly or monthly rounds.</span>
