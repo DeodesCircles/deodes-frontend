@@ -110,7 +110,7 @@ const EARN_MENU: NavMenu = {
 const PLAIN_LINKS: Array<{ labelKey: string; fallback: string; href: string }> = [
   { labelKey: "nav.howItWorks", fallback: "How it works", href: "/how-it-works" },
   { labelKey: "nav.docs", fallback: "Docs", href: "/docs" },
-  { label: "nav.support", fallback: "Support", href: "/support" },
+  { labelKey: "nav.support", fallback: "Support", href: "/support" },
 ];
 
 const SOCIALS = [
