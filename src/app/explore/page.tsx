@@ -9,24 +9,28 @@ export const metadata: Metadata = buildRouteMetadata("/explore")
 
 const types = [
   {
+    id: "public",
     icon: Globe,
     name: "Public circles",
     desc: "Open to anyone meeting the minimum DeoScore. New rounds start regularly — join from the app.",
     meta: "Permissionless",
   },
   {
+    id: "private",
     icon: Lock,
     name: "Private circles",
     desc: "Invite-only via link or code. Ask your organizer for an invite, then redeem it in the app.",
     meta: "Invite-only",
   },
   {
+    id: "community",
     icon: Users,
     name: "Community circles",
     desc: "Token-gated circles for DAOs and holder communities, guarded by multi-sig.",
     meta: "Token-gated",
   },
   {
+    id: "premium",
     icon: Crown,
     name: "Premium circles",
     desc: "Higher limits, priority support and collateral. A strong DeoScore gets you in.",
@@ -69,7 +73,7 @@ export default function ExplorePage() {
             {types.map((c) => {
               const Icon = c.icon
               return (
-                <div key={c.name} className="glass-premium rounded-2xl p-6 md:p-8 tilt-hover">
+                <div key={c.name} id={c.id} className="glass-premium rounded-2xl p-6 md:p-8 tilt-hover scroll-mt-24">
                   <div className="w-12 h-12 rounded-2xl gradient-bg-extended flex items-center justify-center text-white mb-5">
                     <Icon className="h-5 w-5" />
                   </div>

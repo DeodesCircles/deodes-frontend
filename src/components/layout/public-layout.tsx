@@ -11,6 +11,7 @@ import {
   BookOpen,
   CircleQuestionMark,
   Globe,
+  Users,
   Compass,
   CirclePlus,
   Dices,
@@ -24,6 +25,7 @@ import {
   ScrollText,
   Activity,
   LifeBuoy,
+  Sparkles,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { ScrollToTop } from "@/components/shared/scroll-to-top";
@@ -78,10 +80,10 @@ const PLATFORM_MENU: NavMenu = {
           href: "/explore#types",
           icon: <Globe className={iconCls} />,
           children: [
-            { title: "Public circles", description: "Open to all qualifying savers.", href: "/explore#types" },
-            { title: "Private circles", description: "Invite-only via link or code.", href: "/explore#types" },
-            { title: "Community circles", description: "Token-gated for DAOs and holders.", href: "/explore#types" },
-            { title: "Premium circles", description: "Higher limits, collateralized.", href: "/explore#types" },
+            { title: "Public circles", description: "Open to all qualifying savers.", href: "/explore#public" },
+            { title: "Private circles", description: "Invite-only via link or code.", href: "/explore#private" },
+            { title: "Community circles", description: "Token-gated for DAOs and holders.", href: "/explore#community" },
+            { title: "Premium circles", description: "Higher limits, collateralized.", href: "/explore#premium" },
           ],
         },
         { title: "Start a circle", description: "Spin up daily, weekly or monthly rounds.", href: "/register", icon: <CirclePlus className={iconCls} /> },
@@ -137,6 +139,28 @@ const RES_MENU: NavMenu = {
         { title: "Contact", description: "Reach the team.", href: "/contact", icon: <Mail className={iconCls} /> },
         { title: "Terms", description: "The fine print.", href: "/terms", icon: <Scale className={iconCls} /> },
         { title: "Privacy", description: "How data is handled.", href: "/privacy", icon: <Lock className={iconCls} /> },
+      ],
+    },
+  ],
+};
+
+const COMMUNITY_MENU: NavMenu = {
+  label: "Community",
+  groups: [
+    {
+      heading: "Participate",
+      items: [
+        { title: "Governance", description: "Vote on circles and disputes.", href: "/deoscore#governance", icon: <Landmark className={iconCls} /> },
+        { title: "Communities", description: "Save with your DAO or holder group.", href: "/explore#community", icon: <Users className={iconCls} /> },
+        { title: "Become a contributor", description: "Build Deodes with us.", href: "/become-a-contributor", icon: <Sparkles className={iconCls} /> },
+      ],
+    },
+    {
+      heading: "Connect",
+      items: [
+        { title: "Contact", description: "Reach the team.", href: "/contact", icon: <Mail className={iconCls} /> },
+        { title: "X — cyprianzube", description: "Launch news and updates.", href: "https://x.com/cyprianzube", icon: <XIcon className={iconCls} /> },
+        { title: "X — nekwasar", description: "Builder updates.", href: "https://x.com/nekwasar", icon: <XIcon className={iconCls} /> },
       ],
     },
   ],
@@ -215,6 +239,7 @@ function MegaDropdown({
                               href={item.href}
                               scroll={false}
                               onClick={onClose}
+                              {...(item.href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                               className="flex items-start gap-3 rounded-xl px-3 py-2.5 hover:glass-whisper transition-all duration-200"
                             >
                               <span className="mt-0.5 shrink-0 text-muted-foreground">{item.icon}</span>
@@ -241,6 +266,7 @@ function MegaDropdown({
                                       href={child.href}
                                       scroll={false}
                                       onClick={onClose}
+                                      {...(child.href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                                       className="block rounded-xl px-3 py-2 hover:glass-whisper transition-all duration-200"
                                     >
                                       <span className="block text-sm font-medium text-foreground">{child.title}</span>
@@ -257,6 +283,7 @@ function MegaDropdown({
                             href={item.href}
                             scroll={false}
                             onClick={onClose}
+                            {...(item.href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                             className="flex items-start gap-3 rounded-xl px-3 py-2.5 hover:glass-whisper transition-all duration-200"
                           >
                             <span className="mt-0.5 shrink-0 text-muted-foreground">{item.icon}</span>
@@ -326,7 +353,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
     return v === key ? fallback : v;
   };
 
-  const allMenus: NavMenu[] = [PLATFORM_MENU, RES_MENU];
+  const allMenus: NavMenu[] = [PLATFORM_MENU, COMMUNITY_MENU, RES_MENU];
 
   return (
     <div className="min-h-screen bg-[rgb(var(--background))]">
@@ -512,6 +539,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
                                       href={item.href}
                                       scroll={false}
                                       onClick={closeMenu}
+                                      {...(item.href.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                                       className="block px-1 py-1.5 text-sm text-muted-foreground hover:text-foreground"
                                     >
                                       {item.title}
@@ -590,7 +618,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
 
       {/* ════════════════ FAT FOOTER — solid light, readable in both themes ════════════════ */}
       <footer className="mt-20 border-t border-black/10 dark:border-white/[0.06] bg-[#f7f7fa] dark:bg-black/[0.4]">
-        <div className="container-premium grid gap-10 py-16 md:grid-cols-[1.3fr_repeat(3,1fr)] lg:grid-cols-[1.3fr_repeat(6,1fr)]">
+        <div className="container-premium grid gap-10 py-16 md:grid-cols-[1.3fr_repeat(3,1fr)] lg:grid-cols-[1.3fr_repeat(7,1fr)]">
           <div>
             <p className="gradient-text-extended font-heading font-bold text-xl">Deodes</p>
             <p className="mt-3 max-w-xs text-sm text-muted-foreground leading-relaxed">
@@ -647,6 +675,14 @@ export function PublicLayout({ children }: PublicLayoutProps) {
               <Link href="/about" className="hover:text-foreground text-muted-foreground transition-colors">{tr("nav.about", "About")}</Link>
               <Link href="/contact" className="hover:text-foreground text-muted-foreground transition-colors">Contact</Link>
               <Link href="/become-a-contributor" className="hover:text-foreground text-muted-foreground transition-colors">{tr("common.create", "Contribute")}</Link>
+            </div>
+          </div>
+          <div>
+            <p className="mb-3 text-xs font-heading tracking-[0.25em] uppercase text-muted-foreground/60">Community</p>
+            <div className="flex flex-col space-y-2.5 text-sm font-medium">
+              <Link href="/deoscore#governance" scroll={false} className="hover:text-foreground text-muted-foreground transition-colors">Governance</Link>
+              <Link href="/explore#community" scroll={false} className="hover:text-foreground text-muted-foreground transition-colors">Communities</Link>
+              <Link href="https://x.com/cyprianzube" target="_blank" rel="noopener noreferrer" className="hover:text-foreground text-muted-foreground transition-colors">X — Updates</Link>
             </div>
           </div>
           <div>
