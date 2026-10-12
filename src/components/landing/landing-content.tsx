@@ -27,6 +27,7 @@ import {
 } from "lucide-react"
 import { Routes } from "@/lib/constants"
 import { useTranslate } from "@/lib/locale/context"
+import { MemberDot } from "@/components/payouts/round-simulator"
 
 // ── DEODES landing: dense marketplace-style page ─────────────────────────────
 // Structure references: sckoll.com (two-sided paths, search, stats strip,
@@ -71,33 +72,6 @@ const circleTypes = [
     meta: "Collateralized",
     colSpan: "lg:col-span-2",
     featured: true,
-  },
-]
-
-const payoutModes = [
-  {
-    icon: Dices,
-    name: "Random",
-    desc: "Provably-fair VRF draw picks the recipient each round.",
-    price: "Fair",
-  },
-  {
-    icon: ListOrdered,
-    name: "Fixed order",
-    desc: "Pre-defined sequential distribution. No surprises.",
-    price: "Ordered",
-  },
-  {
-    icon: Gavel,
-    name: "Auction",
-    desc: "Chit-fund bidding: members bid a discount, winner takes the pool.",
-    price: "Market",
-  },
-  {
-    icon: Vote,
-    name: "Vote-based",
-    desc: "The community votes the recipient every round.",
-    price: "Social",
   },
 ]
 
@@ -218,8 +192,108 @@ const AUDIENCES = [
   },
 ] as const
 
-function AudienceTabs() {
-  const [active, setActive] = useState<(typeof AUDIENCES)[number]["id"]>("savers")
+// ── Round-ledger motif ───────────────────────────────────────────────────────
+// The page's signature device: member dots marching across rounds. Thin
+// divider variant between sections; full interactive strip in the payout band.
+// Static markup + instant state only — zero animation cost.
+const LEDGER_MEMBERS = ["Ada", "Bola", "Chidi", "Dara", "Emeka", "Funke"] as const
+
+function LedgerDivider({ caption }: { caption: string }) {
+  return (
+    <div className="relative z-10 py-10" aria-hidden="true">
+      <div className="container-premium flex items-center gap-4">
+        <span className="h-px flex-1 bg-white/[0.08]" />
+        <span className="flex items-center gap-1.5">
+          {LEDGER_MEMBERS.slice(0, 5).map((m, i) => (
+            <span key={m} className="flex items-center gap-1.5">
+              <span
+                className={
+                  i === 2
+                    ? "flex h-2.5 w-2.5 rounded-full gradient-bg-extended"
+                    : "flex h-2 w-2 rounded-full bg-white/15"
+                }
+              />
+              {i < 4 && <span className="h-px w-4 bg-white/15" />}
+            </span>
+          ))}
+        </span>
+        <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground/70">
+          {caption}
+        </span>
+        <span className="h-px flex-1 bg-white/[0.08]" />
+      </div>
+    </div>
+  )
+}
+
+const STRIP_MODES = [
+  { id: "random", icon: Dices, name: "Random", order: [2, 5, 0, 3], note: "VRF draw" },
+  { id: "fixed", icon: ListOrdered, name: "Fixed", order: [0, 1, 2, 3], note: "Locked seats" },
+  { id: "auction", icon: Gavel, name: "Auction", order: [4, 1, 3, 0], note: "Top discount" },
+  { id: "vote", icon: Vote, name: "Vote", order: [5, 2, 4, 1], note: "Majority" },
+] as const
+
+function RoundStrip() {
+  const [modeId, setModeId] = useState<(typeof STRIP_MODES)[number]["id"]>("random")
+  const mode = STRIP_MODES.find((m) => m.id === modeId) ?? STRIP_MODES[0]
+
+  return (
+    <div>
+      <div className="flex flex-wrap gap-2" role="tablist" aria-label="Preview a payout mode">
+        {STRIP_MODES.map((m) => {
+          const Icon = m.icon
+          return (
+            <button
+              key={m.id}
+              type="button"
+              role="tab"
+              aria-selected={modeId === m.id}
+              onClick={() => setModeId(m.id)}
+              className={
+                modeId === m.id
+                  ? "flex items-center gap-2 rounded-full px-5 py-2 text-sm font-heading font-semibold text-white gradient-bg-extended"
+                  : "flex items-center gap-2 rounded-full px-5 py-2 text-sm font-heading font-medium text-muted-foreground glass-whisper hover:text-foreground transition-colors"
+              }
+            >
+              <Icon className="h-4 w-4" />
+              {m.name}
+            </button>
+          )
+        })}
+      </div>
+      <div key={mode.id} className="mt-8 rounded-2xl border border-white/[0.08] bg-card p-6 md:p-8">
+        <div className="space-y-3">
+          {[0, 1, 2, 3].map((ri) => (
+            <div key={ri} className="flex items-center gap-3">
+              <span className="w-10 shrink-0 font-mono text-xs text-muted-foreground">R{ri + 1}</span>
+              <div className="flex flex-1 items-center gap-1.5 overflow-x-auto">
+                {LEDGER_MEMBERS.map((m, mi) => (
+                  <MemberDot key={m} name={m} paid={mi === mode.order[ri]} isNext={false} />
+                ))}
+              </div>
+              <span className="hidden sm:block w-28 shrink-0 text-right font-mono text-[11px] text-muted-foreground">
+                {mode.note}
+              </span>
+            </div>
+          ))}
+        </div>
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
+          <p className="text-sm text-muted-foreground">
+            Same six savers, different rule. Full round-by-round simulation:
+          </p>
+          <Link
+            href="/payout-modes"
+            className="inline-flex items-center gap-2 text-sm font-heading font-semibold hover:opacity-80 transition-all"
+          >
+            Open the simulator <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function AudienceTabs() {  const [active, setActive] = useState<(typeof AUDIENCES)[number]["id"]>("savers")
   const current = AUDIENCES.find((a) => a.id === active) ?? AUDIENCES[0]
 
   return (
@@ -388,7 +462,7 @@ export function LandingContent() {
         {/* ═══ AUDIENCES (arc.io use-case tabs pattern) ═══ */}
         <section className="relative z-10 py-24 md:py-32">
           <div className="container-premium">
-            <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">Ref. 01 — Who it serves</p>
+            <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">Who it serves</p>
             <h2 className="mt-2 font-heading text-4xl md:text-5xl gradient-text-extended">
               Built for savers, organizers, communities.
             </h2>
@@ -398,93 +472,76 @@ export function LandingContent() {
           </div>
         </section>
 
-        {/* ═══ CIRCLE TYPES (sckoll category-grid analog) ═══ */}
-        <section className="relative z-10 py-24 md:py-32">
+        {/* ═══ CIRCLE TYPES — edge-to-edge snap rail (no grid) ═══ */}
+        <section className="relative z-10 py-24 md:py-32 overflow-hidden">
           <div className="container-premium">
-            <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">Ref. 02 — Find your circle</p>
-            <h2 className="mt-2 font-heading text-4xl md:text-5xl gradient-text-extended">
-              Every kind of saver has a circle here.
-            </h2>
-            <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-              {circleTypes.map((c) => {
-                const Icon = c.icon
-                return (
-                  <div
-                    key={c.name}
-                    className={`glass-premium rounded-2xl p-6 md:p-8 tilt-hover ${c.colSpan} ${c.featured ? "holo-border" : ""}`}
-                  >
-                    <div className="w-12 h-12 rounded-2xl gradient-bg-extended flex items-center justify-center text-white mb-5">
-                      <Icon className="h-5 w-5" />
-                    </div>
-                    <h3 className="font-heading text-lg md:text-xl font-semibold mb-2">{c.name}</h3>
-                    <p className="text-muted-foreground text-sm leading-relaxed">{c.desc}</p>
-                    <span className="mt-4 inline-block rounded-full px-3 py-1 text-xs font-mono border border-white/10 text-muted-foreground">
-                      {c.meta}
-                    </span>
-                  </div>
-                )
-              })}
-            </div>
-            <div className="mt-8 flex flex-wrap gap-4">
+            <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">Find your circle</p>
+            <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
+              <h2 className="font-heading text-4xl md:text-5xl gradient-text-extended max-w-xl">
+                Every kind of saver has a circle here.
+              </h2>
               <Link
                 href="/explore"
                 className="inline-flex items-center gap-2 text-sm font-heading font-semibold hover:opacity-80 transition-all"
               >
                 Browse all circles <ArrowRight className="h-4 w-4" />
               </Link>
-              <Link
-                href={Routes.REGISTER}
-                className="inline-flex items-center gap-2 text-sm font-heading font-semibold text-muted-foreground hover:text-foreground transition-all"
-              >
-                <CirclePlus className="h-4 w-4" /> Start your own
-              </Link>
+            </div>
+          </div>
+          <div className="mt-10 flex gap-4 overflow-x-auto snap-x snap-mandatory px-4 md:px-8 pb-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {circleTypes.map((c) => {
+              const Icon = c.icon
+              return (
+                <div
+                  key={c.name}
+                  className={`snap-start shrink-0 w-[300px] md:w-[340px] glass-premium rounded-2xl p-6 md:p-8 ${c.featured ? "holo-border" : ""}`}
+                >
+                  <div className="w-12 h-12 rounded-2xl gradient-bg-extended flex items-center justify-center text-white mb-5">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="font-heading text-lg md:text-xl font-semibold mb-2">{c.name}</h3>
+                  <p className="text-muted-foreground text-sm leading-relaxed">{c.desc}</p>
+                  <span className="mt-4 inline-block rounded-full px-3 py-1 text-xs font-mono border border-white/10 text-muted-foreground">
+                    {c.meta}
+                  </span>
+                </div>
+              )
+            })}
+            <Link
+              href={Routes.REGISTER}
+              className="snap-start shrink-0 w-[300px] md:w-[340px] rounded-2xl p-6 md:p-8 gradient-bg-premium text-white flex flex-col justify-center gap-3"
+            >
+              <CirclePlus className="h-8 w-8" />
+              <span className="font-heading text-xl font-semibold">Start your own</span>
+              <span className="text-sm text-white/80">Daily, weekly or monthly rounds.</span>
+              <span className="inline-flex items-center gap-2 text-sm font-heading font-semibold">
+                Create a circle <ArrowRight className="h-4 w-4" />
+              </span>
+            </Link>
+          </div>
+        </section>
+
+        <LedgerDivider caption="Round ledger — R1 → R5" />
+
+        {/* ═══ PAYOUT — interactive round strip (no cards) ═══ */}
+        <section className="relative z-10 border-t border-white/[0.06]">
+          <div className="container-premium py-16 md:py-24">
+            <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">Payout modes</p>
+            <h2 className="mt-2 font-heading text-3xl md:text-4xl font-semibold tracking-tight max-w-2xl">
+              Four rules. One ledger. Pick a mode, watch the rounds.
+            </h2>
+            <div className="mt-8">
+              <RoundStrip />
             </div>
           </div>
         </section>
 
-        {/* ═══ PAYOUT MODES (agentsdb top-cards band analog) ═══ */}
-        <section className="relative z-10 border-t border-white/[0.06]">
-          <div className="container-premium py-16 md:py-24">
-            <div className="flex flex-wrap items-end justify-between gap-4">
-              <div>
-                <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">Ref. 03 — Payout modes</p>
-                <h2 className="mt-2 font-heading text-3xl md:text-4xl font-semibold tracking-tight">
-                  Four ways the pool finds you.
-                </h2>
-              </div>
-              <Link
-                href="/how-it-works"
-                className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm glass-strong hover:bg-white/[0.06] transition-all"
-              >
-                How payouts work
-              </Link>
-            </div>
-            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {payoutModes.map((m) => {
-                const Icon = m.icon
-                return (
-                  <div key={m.name} className="rounded-2xl border border-white/[0.08] bg-card p-5 tilt-hover">
-                    <div className="flex items-start justify-between gap-3">
-                      <span className="w-10 h-10 rounded-xl gradient-bg-extended flex items-center justify-center text-white">
-                        <Icon className="h-4 w-4" />
-                      </span>
-                      <span className="whitespace-nowrap rounded-full bg-accent px-2 py-1 text-xs font-medium text-accent-foreground">
-                        {m.price}
-                      </span>
-                    </div>
-                    <h3 className="mt-4 font-heading font-semibold">{m.name}</h3>
-                    <p className="mt-2 text-sm text-muted-foreground">{m.desc}</p>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        </section>
+        <LedgerDivider caption="Round ledger — enforced on-chain" />
 
         {/* ═══ HOW IT WORKS — numbered flow (sckoll 01–05 pattern) ═══ */}
         <section className="relative z-10 py-24 md:py-32 border-t border-white/[0.06]">
           <div className="container-premium">
-            <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">Ref. 04 — How DEODES works</p>
+            <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">How DEODES works</p>
             <h2 className="mt-2 font-heading text-4xl md:text-5xl gradient-text-extended max-w-3xl">
               From passkey to payout in five moves.
             </h2>
@@ -504,7 +561,7 @@ export function LandingContent() {
         <section className="relative z-10 py-24 md:py-32 border-t border-white/[0.06]">
           <div className="container-premium grid gap-12 lg:grid-cols-2 lg:items-center">
             <div>
-              <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">Ref. 05 — DeoScore reputation</p>
+              <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">DeoScore reputation</p>
               <h2 className="mt-2 font-heading text-4xl md:text-5xl font-black tracking-tight">
                 <span className="gradient-text">Good saving follows you.</span>
               </h2>
@@ -538,26 +595,31 @@ export function LandingContent() {
           </div>
         </section>
 
-        {/* ═══ TRUST LAYER (sckoll trust pattern) ═══ */}
+        {/* ═══ TRUST — alternating Z rows (no cards) ═══ */}
         <section className="relative z-10 py-24 border-t border-white/[0.06]">
           <div className="container-premium">
             <p className="text-center font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
-              Ref. 06 — The trust layer
+              The trust layer
             </p>
             <h2 className="mt-2 text-center font-heading text-3xl md:text-4xl font-semibold tracking-tight">
               Move money without stepping into the dark.
             </h2>
-            <div className="mt-12 grid gap-4 md:grid-cols-3">
-              {trustItems.map((item) => {
+            <div className="mt-12 space-y-10 max-w-4xl mx-auto">
+              {trustItems.map((item, i) => {
                 const Icon = item.icon
+                const flip = i % 2 === 1
                 return (
-                  <div key={item.title} className="flex gap-4 rounded-2xl border border-white/[0.08] p-6">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl gradient-bg text-white">
-                      <Icon className="h-5 w-5" />
+                  <div
+                    key={item.title}
+                    className={`flex flex-col sm:flex-row items-start gap-6 ${flip ? "sm:flex-row-reverse sm:text-right" : ""}`}
+                  >
+                    <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl gradient-bg text-white">
+                      <Icon className="h-6 w-6" />
                     </span>
-                    <span>
-                      <h3 className="font-heading font-semibold">{item.title}</h3>
-                      <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
+                    <span className="flex-1">
+                      <span className="font-mono text-[11px] text-muted-foreground">0{i + 1}</span>
+                      <h3 className="mt-1 font-heading text-xl md:text-2xl font-semibold">{item.title}</h3>
+                      <p className="mt-2 text-muted-foreground leading-relaxed max-w-xl">{item.desc}</p>
                     </span>
                   </div>
                 )
@@ -583,7 +645,7 @@ export function LandingContent() {
         {/* ═══ FINAL CTA — sckoll "simple by design" pattern, DEODES phrase ═══ */}
         <section className="relative z-10 py-24 text-center border-t border-white/[0.06]">
           <div className="container-premium">
-            <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">Ref. 07 — Simple by design</p>
+            <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">Simple by design</p>
             <h2 className="mt-3 font-heading text-4xl md:text-6xl gradient-text-extended max-w-4xl mx-auto">
               Start with the circle. Stay for the momentum.
             </h2>

@@ -79,7 +79,7 @@ const SIMS: ModeSim[] = [
   },
 ]
 
-function MemberDot({ name, paid, isNext }: { name: string; paid: boolean; isNext: boolean }) {
+export function MemberDot({ name, paid, isNext }: { name: string; paid: boolean; isNext: boolean }) {
   return (
     <span
       title={name}
