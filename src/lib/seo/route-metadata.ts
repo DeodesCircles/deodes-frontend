@@ -173,6 +173,55 @@ export const PUBLIC_ROUTES: readonly RouteSeo[] = [
     indexable: true,
   },
   {
+    path: "/contact",
+    title: "Contact — Deodes",
+    description:
+      "Reach the Deodes team: support tickets, X updates and contributor channels.",
+    ogTitle: "Contact the Deodes team",
+    ogDescription:
+      "Support tickets, launch news and open-source contributor paths — three ways to reach us.",
+    keywords: [
+      "deodes",
+      "contact",
+      "support",
+      "contribute",
+    ],
+    indexable: true,
+  },
+  {
+    path: "/transparency",
+    title: "Transparency & Fees — Deodes",
+    description:
+      "Every Deodes fee on one page: 0.5% on payouts only, sub-cent USDC settlement, no custody, Apache 2.0 source.",
+    ogTitle: "Every fee on one page",
+    ogDescription:
+      "0.5% protocol fee on payouts, sub-cent Arc settlement, non-custodial contracts, open source.",
+    keywords: [
+      "deodes",
+      "fees",
+      "transparency",
+      "protocol fee",
+      "open source",
+    ],
+    indexable: true,
+  },
+  {
+    path: "/changelog",
+    title: "Changelog — Deodes",
+    description:
+      "What shipped on Deodes: open pages, mega-nav, dense homepage, Arc rebrand and production serving.",
+    ogTitle: "What shipped on Deodes",
+    ogDescription:
+      "Release log sourced from the real repo history — open site, nav, landing, Arc brand, production builds.",
+    keywords: [
+      "deodes",
+      "changelog",
+      "releases",
+      "updates",
+    ],
+    indexable: true,
+  },
+  {
     path: "/how-it-works",
     title: "How It Works — Deodes",
     description:
@@ -444,9 +493,19 @@ export const PUBLIC_ROUTES: readonly RouteSeo[] = [
     indexable: false,
   },
   {
-    path: "/access-denied",
-    title: "Access Denied (403) — Deodes",
+    path: "/verify-callback",
+    title: "Verifying Session — Deodes",
     description:
+      "Confirming your Deodes session after verification. You will be redirected automatically.",
+    ogTitle: "Verifying session — Deodes",
+    ogDescription:
+      "One moment while your Deodes session is confirmed after verification.",
+    keywords: ["deodes", "verify", "session", "passkey"],
+    indexable: false,
+  },
+  {
+    path: "/access-denied",
+    title: "Access Denied (403) — Deodes",    description:
       "Your Deodes account does not have permission to open this resource. If that seems wrong, the support team can verify your access.",
     ogTitle: "Access denied (403) — Deodes",
     ogDescription:

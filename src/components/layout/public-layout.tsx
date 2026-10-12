@@ -24,9 +24,17 @@ import {
   Landmark,
   ChevronDown,
   ShieldQuestionMark,
+  Shield,
+  FileText,
+  Mail,
+  ScrollText,
+  Activity,
+  LifeBuoy,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { ScrollToTop } from "@/components/shared/scroll-to-top";
+import { WaitlistForm } from "@/components/shared/waitlist-form";
+import { LanguagePicker } from "@/components/shared/language-picker";
 import { cn } from "@/lib/cn";
 import { useAuthStore } from "@/stores/auth-store";
 import { useTranslate } from "@/lib/locale/context";
@@ -108,11 +116,50 @@ const EARN_MENU: NavMenu = {
   ],
 };
 
-const PLAIN_LINKS: Array<{ labelKey: string; fallback: string; href: string }> = [
-  { labelKey: "nav.howItWorks", fallback: "How it works", href: "/how-it-works" },
-  { labelKey: "nav.docs", fallback: "Docs", href: "/docs" },
-  { labelKey: "nav.support", fallback: "Support", href: "/support" },
-];
+const DEV_MENU: NavMenu = {
+  label: "Developers",
+  groups: [
+    {
+      heading: "Build",
+      items: [
+        { title: "Developer hub", description: "Products, tools and community.", href: "/developers", icon: <Code className={iconCls} /> },
+        { title: "API reference", description: "REST endpoints for circles and reputation.", href: "/docs/api", icon: <FileText className={iconCls} /> },
+        { title: "Status", description: "Live uptime and response times.", href: "/status", icon: <Activity className={iconCls} /> },
+      ],
+    },
+    {
+      heading: "Docs",
+      items: [
+        { title: "Documentation", description: "Guides for every workflow.", href: "/docs", icon: <BookOpen className={iconCls} /> },
+        { title: "FAQ", description: "Answers about circles and payouts.", href: "/faq", icon: <CircleQuestionMark className={iconCls} /> },
+        { title: "Changelog", description: "What shipped recently.", href: "/changelog", icon: <ScrollText className={iconCls} /> },
+      ],
+    },
+  ],
+};
+
+const RES_MENU: NavMenu = {
+  label: "Resources",
+  groups: [
+    {
+      heading: "Learn",
+      items: [
+        { title: "How it works", description: "From passkey to payout.", href: "/how-it-works", icon: <ShieldQuestionMark className={iconCls} /> },
+        { title: "About", description: "Mission and why Arc.", href: "/about", icon: <Shield className={iconCls} /> },
+        { title: "Transparency & fees", description: "Protocol economics, open source.", href: "/transparency", icon: <Scale className={iconCls} /> },
+      ],
+    },
+    {
+      heading: "Support",
+      items: [
+        { title: "Support", description: "Tickets and lookups.", href: "/support", icon: <LifeBuoy className={iconCls} /> },
+        { title: "Contact", description: "Reach the team.", href: "/contact", icon: <Mail className={iconCls} /> },
+        { title: "Terms", description: "The fine print.", href: "/terms", icon: <Scale className={iconCls} /> },
+        { title: "Privacy", description: "How data is handled.", href: "/privacy", icon: <Lock className={iconCls} /> },
+      ],
+    },
+  ],
+};
 
 const SOCIALS = [
   { label: "X — cyprianzube", href: "https://x.com/cyprianzube" },
@@ -241,7 +288,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
     return v === key ? fallback : v;
   };
 
-  const allMenus: NavMenu[] = [CIRCLES_MENU, EARN_MENU];
+  const allMenus: NavMenu[] = [CIRCLES_MENU, EARN_MENU, DEV_MENU, RES_MENU];
 
   return (
     <div className="min-h-screen bg-[rgb(var(--background))]">
@@ -279,15 +326,6 @@ export function PublicLayout({ children }: PublicLayoutProps) {
                 onOpen={() => setOpenMega(menu.label)}
                 onClose={() => setOpenMega(null)}
               />
-            ))}
-            {PLAIN_LINKS.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:glass-whisper rounded-lg transition-all duration-300"
-              >
-                {tr(item.labelKey, item.fallback)}
-              </Link>
             ))}
           </div>
 
@@ -409,21 +447,6 @@ export function PublicLayout({ children }: PublicLayoutProps) {
                       )}
                     </div>
                   ))}
-                  {[
-                    { label: tr("nav.howItWorks", "How it works"), href: "/how-it-works", icon: <ShieldQuestionMark className="h-[18px] w-[18px]" /> },
-                    { label: tr("nav.docs", "Docs"), href: "/docs", icon: <BookOpen className="h-[18px] w-[18px]" /> },
-                    { label: tr("nav.support", "Support"), href: "/support", icon: <CircleQuestionMark className="h-[18px] w-[18px]" /> },
-                  ].map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={closeMenu}
-                      className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:glass-whisper transition-all duration-300"
-                    >
-                      <span className="shrink-0">{item.icon}</span>
-                      <span>{item.label}</span>
-                    </Link>
-                  ))}
                   <p className="px-3 pt-6 pb-2 font-heading text-[10px] tracking-[0.25em] uppercase text-muted-foreground/60">
                     Legal
                   </p>
@@ -487,9 +510,9 @@ export function PublicLayout({ children }: PublicLayoutProps) {
       <main id="main-content" tabIndex={-1} className="pt-20">{children}</main>
       <ScrollToTop />
 
-      {/* ════════════════ FAT FOOTER (agentsdb root-footer pattern) ════════════════ */}
+      {/* ════════════════ FAT FOOTER (circle.com column pattern) ════════════════ */}
       <footer className="mt-20 border-t border-white/[0.06] bg-black/[0.4]">
-        <div className="container-premium grid gap-12 py-16 md:grid-cols-[1.2fr_repeat(3,1fr)]">
+        <div className="container-premium grid gap-10 py-16 md:grid-cols-[1.3fr_repeat(3,1fr)] lg:grid-cols-[1.3fr_repeat(6,1fr)]">
           <div>
             <p className="gradient-text-extended font-heading font-bold text-xl">Deodes</p>
             <p className="mt-3 max-w-xs text-sm text-muted-foreground leading-relaxed">
@@ -508,32 +531,59 @@ export function PublicLayout({ children }: PublicLayoutProps) {
                 </a>
               ))}
             </div>
-          </div>
-          <div>
-            <p className="mb-3 text-xs font-heading tracking-[0.25em] uppercase text-muted-foreground/60">Product</p>
-            <div className="flex flex-col space-y-2.5 text-sm font-medium">
-              <Link href="/circles" className="hover:text-foreground text-muted-foreground transition-colors">Circles</Link>
-              <Link href="/circles/create" className="hover:text-foreground text-muted-foreground transition-colors">Start a circle</Link>
-              <Link href="/reputation" className="hover:text-foreground text-muted-foreground transition-colors">DeoScore</Link>
-              <Link href="/how-it-works" className="hover:text-foreground text-muted-foreground transition-colors">How it works</Link>
-              <Link href="/governance" className="hover:text-foreground text-muted-foreground transition-colors">Governance</Link>
+            <div className="mt-6 max-w-xs">
+              <WaitlistForm />
+            </div>
+            <div className="mt-4">
+              <LanguagePicker />
             </div>
           </div>
           <div>
-            <p className="mb-3 text-xs font-heading tracking-[0.25em] uppercase text-muted-foreground/60">Resources</p>
+            <p className="mb-3 text-xs font-heading tracking-[0.25em] uppercase text-muted-foreground/60">Save</p>
+            <div className="flex flex-col space-y-2.5 text-sm font-medium">
+              <Link href="/explore" className="hover:text-foreground text-muted-foreground transition-colors">Explore circles</Link>
+              <Link href="/explore#types" className="hover:text-foreground text-muted-foreground transition-colors">Circle types</Link>
+              <Link href="/register" className="hover:text-foreground text-muted-foreground transition-colors">Start a circle</Link>
+              <Link href="/how-it-works" className="hover:text-foreground text-muted-foreground transition-colors">How it works</Link>
+            </div>
+          </div>
+          <div>
+            <p className="mb-3 text-xs font-heading tracking-[0.25em] uppercase text-muted-foreground/60">Earn</p>
+            <div className="flex flex-col space-y-2.5 text-sm font-medium">
+              <Link href="/payout-modes" className="hover:text-foreground text-muted-foreground transition-colors">Payout modes</Link>
+              <Link href="/deoscore" className="hover:text-foreground text-muted-foreground transition-colors">DeoScore</Link>
+              <Link href="/deoscore#governance" className="hover:text-foreground text-muted-foreground transition-colors">Governance</Link>
+            </div>
+          </div>
+          <div>
+            <p className="mb-3 text-xs font-heading tracking-[0.25em] uppercase text-muted-foreground/60">Developers</p>
             <div className="flex flex-col space-y-2.5 text-sm font-medium">
               <Link href="/developers" className="hover:text-foreground text-muted-foreground transition-colors">{tr("nav.developers", "Developers")}</Link>
               <Link href="/docs" className="hover:text-foreground text-muted-foreground transition-colors">{tr("nav.docs", "Docs")}</Link>
-              <Link href="/faq" className="hover:text-foreground text-muted-foreground transition-colors">{tr("nav.faq", "FAQ")}</Link>
-              <Link href="/support" className="hover:text-foreground text-muted-foreground transition-colors">{tr("nav.support", "Support")}</Link>
+              <Link href="/docs/api" className="hover:text-foreground text-muted-foreground transition-colors">API reference</Link>
               <Link href="/status" className="hover:text-foreground text-muted-foreground transition-colors">Status</Link>
+              <Link href="/changelog" className="hover:text-foreground text-muted-foreground transition-colors">Changelog</Link>
             </div>
           </div>
           <div>
             <p className="mb-3 text-xs font-heading tracking-[0.25em] uppercase text-muted-foreground/60">Company</p>
             <div className="flex flex-col space-y-2.5 text-sm font-medium">
               <Link href="/about" className="hover:text-foreground text-muted-foreground transition-colors">{tr("nav.about", "About")}</Link>
+              <Link href="/contact" className="hover:text-foreground text-muted-foreground transition-colors">Contact</Link>
               <Link href="/become-a-contributor" className="hover:text-foreground text-muted-foreground transition-colors">{tr("common.create", "Contribute")}</Link>
+            </div>
+          </div>
+          <div>
+            <p className="mb-3 text-xs font-heading tracking-[0.25em] uppercase text-muted-foreground/60">Resources</p>
+            <div className="flex flex-col space-y-2.5 text-sm font-medium">
+              <Link href="/faq" className="hover:text-foreground text-muted-foreground transition-colors">{tr("nav.faq", "FAQ")}</Link>
+              <Link href="/support" className="hover:text-foreground text-muted-foreground transition-colors">{tr("nav.support", "Support")}</Link>
+              <Link href="/transparency" className="hover:text-foreground text-muted-foreground transition-colors">Transparency & fees</Link>
+            </div>
+          </div>
+          <div>
+            <p className="mb-3 text-xs font-heading tracking-[0.25em] uppercase text-muted-foreground/60">Legal</p>
+            <div className="flex flex-col space-y-2.5 text-sm font-medium">
               <Link href="/terms" className="hover:text-foreground text-muted-foreground transition-colors">{tr("nav.terms", "Terms")}</Link>
               <Link href="/privacy" className="hover:text-foreground text-muted-foreground transition-colors">{tr("nav.privacy", "Privacy")}</Link>
             </div>

@@ -28,7 +28,7 @@
 const isProduction = process.env.NODE_ENV === "production"
 
 /** Cookie carrying the visitor's chosen locale, mirrored to `<html lang>`. */
-export const LOCALE_COOKIE = "moistello_locale"
+export const LOCALE_COOKIE = "deodes_locale"
 
 /** Locale served when nothing has been chosen yet. */
 export const DEFAULT_LOCALE = "en"

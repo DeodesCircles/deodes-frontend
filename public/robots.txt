@@ -19,6 +19,12 @@ Allow: /developers
 Allow: /support
 Allow: /status
 Allow: /terms
+Allow: /explore
+Allow: /payout-modes
+Allow: /deoscore
+Allow: /contact
+Allow: /transparency
+Allow: /changelog
 
 Disallow: /_next/
 Disallow: /api/
@@ -35,4 +41,4 @@ Disallow: /setup/
 Disallow: /upload/
 Disallow: /wallet/
 
-Sitemap: https://moistello.com/sitemap.xml
+Sitemap: https://deodes.com/sitemap.xml
