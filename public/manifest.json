@@ -1,7 +1,7 @@
 {
-  "name": "Moistello — Stellar Savings Circles",
-  "short_name": "Moistello",
-  "description": "Decentralized rotating savings and credit circles on Stellar",
+  "name": "Deodes — Arc Savings Circles",
+  "short_name": "Deodes",
+  "description": "Decentralized rotating savings and credit circles on Arc",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
