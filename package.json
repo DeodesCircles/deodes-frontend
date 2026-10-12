@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -H 127.0.0.1 -p 1110",
+    "dev": "next dev -H 0.0.0.0 -p 1110",
     "build": "next build",
     "analyze": "node -e \"process.env.ANALYZE='true'; require('child_process').execSync('next build', {stdio: 'inherit'})\"",
     "start": "next start -H 127.0.0.1 -p 1110",
