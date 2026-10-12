@@ -293,6 +293,7 @@ const SPOTLIGHT_TIMEOUT_MS = 5000
 function CircleSpotlight() {
   const [index, setIndex] = useState(0)
   const [paused, setPaused] = useState(false)
+  const touchX = useRef<number | null>(null)
 
   useEffect(() => {
     if (paused) return
@@ -301,10 +302,14 @@ function CircleSpotlight() {
       setIndex((i) => (i + 1) % circleTypes.length)
     }, SPOTLIGHT_TIMEOUT_MS)
     return () => clearInterval(id)
-  }, [paused])
+  }, [paused, index])
 
   const current = circleTypes[index]
   const Icon = current.icon
+  const go = (dir: 1 | -1) => {
+    setIndex((i) => (i + dir + circleTypes.length) % circleTypes.length)
+    setPaused(true)
+  }
 
   return (
     <div
@@ -313,6 +318,16 @@ function CircleSpotlight() {
       onMouseLeave={() => setPaused(false)}
       onFocus={() => setPaused(true)}
       onBlur={() => setPaused(false)}
+      onTouchStart={(e) => {
+        touchX.current = e.touches[0]?.clientX ?? null
+      }}
+      onTouchEnd={(e) => {
+        if (touchX.current === null) return
+        const dx = (e.changedTouches[0]?.clientX ?? touchX.current) - touchX.current
+        touchX.current = null
+        if (dx <= -40) go(1)
+        else if (dx >= 40) go(-1)
+      }}
     >
       <div
         key={current.name}
@@ -330,8 +345,13 @@ function CircleSpotlight() {
             <Icon className="h-7 w-7 md:h-9 md:w-9" />
           </span>
           <span className="flex-1">
-            <span className="inline-block rounded-full px-3 py-1 text-xs font-mono border border-white/10 text-muted-foreground">
-              {current.meta}
+            <span className="flex items-center gap-3">
+              <span className="inline-block rounded-full px-3 py-1 text-xs font-mono border border-white/10 text-muted-foreground">
+                {current.meta}
+              </span>
+              <span className="font-mono text-xs text-muted-foreground">
+                0{index + 1} / 0{circleTypes.length}
+              </span>
             </span>
             <h3 className="mt-3 font-display text-3xl md:text-5xl font-black tracking-tight">
               {current.name}
@@ -340,6 +360,12 @@ function CircleSpotlight() {
               {current.desc}
             </p>
             <p className="mt-2 text-sm md:text-base text-foreground/85 max-w-2xl">{current.join}</p>
+            <span className="mt-4 flex items-center gap-1.5" aria-hidden="true">
+              {["Ada", "Bola", "Chidi", "Dara", "Emeka", "Funke"].map((m, mi) => (
+                <MemberDot key={m} name={m} paid={mi === 0} isNext={mi === 1} />
+              ))}
+              <span className="ml-2 font-mono text-[11px] text-muted-foreground">example round</span>
+            </span>
             <span className="mt-6 flex flex-wrap gap-3">
               <Link
                 href="/explore"
@@ -356,6 +382,13 @@ function CircleSpotlight() {
             </span>
           </span>
         </div>
+        <span
+          key={`progress-${current.name}-${paused ? "paused" : "run"}`}
+          aria-hidden="true"
+          className="spot-progress absolute bottom-0 left-0 h-[3px] w-full origin-left gradient-bg-extended"
+          style={{ animationPlayState: paused ? "paused" : "running" }}
+        />
+      </div>
       </div>
       <div className="mt-5 flex items-center justify-between">
         <div className="flex items-center gap-2" role="tablist" aria-label="Circle types">
@@ -386,21 +419,15 @@ function CircleSpotlight() {
           <button
             type="button"
             aria-label="Previous circle type"
-            onClick={() => {
-              setIndex((i) => (i - 1 + circleTypes.length) % circleTypes.length)
-              setPaused(true)
-            }}
+            onClick={() => go(-1)}
             className="flex h-10 w-10 items-center justify-center rounded-full glass-strong text-muted-foreground hover:text-foreground transition-colors"
           >
             ←
           </button>
           <button
             type="button"
-            aria-label="Next circle type"
-            onClick={() => {
-              setIndex((i) => (i + 1) % circleTypes.length)
-              setPaused(true)
-            }}
+            aria-label={paused ? "Resume auto-rotation" : "Next circle type"}
+            onClick={() => go(1)}
             className="flex h-10 w-10 items-center justify-center rounded-full glass-strong text-muted-foreground hover:text-foreground transition-colors"
           >
             →

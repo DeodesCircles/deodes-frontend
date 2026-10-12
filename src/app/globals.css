@@ -134,7 +134,25 @@
   }
 }
 
+/* ── Spotlight timeout progress: single scaleX loop, compositor-only ── */
+.spot-progress {
+  animation: spot-progress 5s linear forwards;
+  will-change: transform;
+}
+
+@keyframes spot-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .spot-progress {
+    animation: none;
+  }
   .grow-word {
     animation: none;
   }
