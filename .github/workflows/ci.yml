@@ -1,0 +1,133 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [master, main]
+  push:
+    branches: [master, main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Lint + Typecheck + Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            .next/cache
+          key: nextjs-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            nextjs-${{ runner.os }}-
+      - run: npm ci
+      - run: npm run lint
+      - run: npx tsc --noEmit
+      # ── SEO route audit ────────────────────────────────────────────────────
+      # Proves every public route in src/app ships a unique meta description
+      # and OpenGraph/Twitter tags, and that the sitemap only advertises
+      # indexable routes. Static analysis of the route tree, so it needs no
+      # production build and fails on the offending commit rather than after a
+      # deploy. The same rules run under vitest in src/lib/seo/__tests__.
+      - name: Audit SEO metadata on public routes
+        run: npm run audit:seo
+      - run: npm run test -- --run
+      # ── Coverage gate ──────────────────────────────────────────────────────
+      # Runs vitest with the v8 coverage provider and enforces the thresholds
+      # configured in vitest.config.ts (lines/functions/statements ≥ 70%,
+      # branches ≥ 65%) for all files in src/**  except:
+      #   src/app/**        — Next.js page/layout files (covered by Playwright)
+      #   src/components/** — presentational components (covered by e2e + component tests)
+      #   src/providers/**  — React context wrappers (integration-tested)
+      #   src/lib/locale/** — translation data, not business logic
+      #   src/lib/motion/** — animation variant constants only
+      # The thresholds gate critical paths: auth, wallet, crypto, verification.
+      - name: Coverage (vitest --coverage)
+        run: npx vitest run --coverage
+        # perFile: false means a single aggregate check rather than per-file,
+        # keeping the gate stable as new files are added incrementally.
+        env:
+          CI: true
+
+  build:
+    name: Production Build
+    runs-on: ubuntu-latest
+    needs: quality
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Bundle analysis (static)
+        run: |
+          # generate source maps for analysis (Next may need productionBrowserSourceMaps)
+          npx source-map-explorer "./.next/static/**/*.js" --json > bundle-report.json || echo "bundle analysis skipped"
+      - name: Validate CSP headers (headless)
+        # Serve the production build and assert the served Content-Security-Policy
+        # headers — pages must be nonce-based without unsafe-eval/unsafe-inline,
+        # API routes must stay locked down. The script doubles as the readiness
+        # probe, so no extra wait tool is needed.
+        run: |
+          nohup npm run start -- -p 8080 > /tmp/next-start.log 2>&1 &
+          CSP_VALIDATE_URL=http://localhost:8080 node scripts/validate-csp.mjs
+
+  perf:
+    name: Performance (Lighthouse + Bundle Budget)
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Build for perf
+        run: npm run build
+      - name: Start Next.js
+        run: |
+          nohup npm run start -- -p 8080 &
+          npx wait-on http://localhost:8080
+        env:
+          PORT: 8080
+      - name: Run Lighthouse CI
+        run: npx lhci autorun --config=lighthouserc.json
+      - name: Check JS bundle budget
+        run: node tools/check-bundle-size.js
+        env:
+          JS_BUDGET: 1200000
+
+  # E2E tests run on the Playwright config (headless Chromium).
+  e2e:
+    name: E2E (Playwright)
+    runs-on: ubuntu-latest
+    needs: quality
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

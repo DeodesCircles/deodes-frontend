@@ -1,0 +1,26 @@
+import type { BankOption } from "./types"
+
+export const NIGERIAN_BANKS: BankOption[] = [
+  { code: "044", name: "Access Bank" },
+  { code: "035", name: "ALAT by Wema" },
+  { code: "023", name: "Citibank Nigeria" },
+  { code: "063", name: "Diamond Bank" },
+  { code: "050", name: "Ecobank Nigeria" },
+  { code: "011", name: "First Bank of Nigeria" },
+  { code: "214", name: "FCMB" },
+  { code: "070", name: "Fidelity Bank" },
+  { code: "058", name: "GTBank" },
+  { code: "301", name: "Heritage Bank" },
+  { code: "082", name: "Keystone Bank" },
+  { code: "076", name: "Polaris Bank" },
+  { code: "101", name: "Providus Bank" },
+  { code: "221", name: "Stanbic IBTC Bank" },
+  { code: "068", name: "Standard Chartered" },
+  { code: "232", name: "Sterling Bank" },
+  { code: "032", name: "Union Bank of Nigeria" },
+  { code: "033", name: "United Bank for Africa" },
+  { code: "215", name: "Unity Bank" },
+  { code: "035", name: "Wema Bank" },
+  { code: "057", name: "Zenith Bank" },
+  { code: "000", name: "Other Bank" },
+]

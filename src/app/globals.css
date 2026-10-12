@@ -1,0 +1,946 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ═══════════════════════════════════════════════════════════
+   MOISTELLO — EXTREME FUTURISM DESIGN SYSTEM
+   "Holographic Glass + Quantum Depth"
+   Premium Architecture • Mobile-First • Dual-Theme
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── LIGHT THEME ── */
+:root {
+  color-scheme: light;
+  --space-0: 255 255 255;
+  --space-50: 248 248 250;
+  --space-100: 240 240 245;
+  --space-200: 226 226 232;
+  --space-900: 15 15 20;
+  --ink-900: 10 10 15;
+  --ink-700: 45 45 58;
+  --ink-600: 65 65 78;
+  --ink-500: 85 85 100;
+  --ink-400: 110 110 128;
+  --ink-300: 150 150 168;
+  --ink-100: 200 200 215;
+
+  --aurora-indigo: 79 82 221;
+  --aurora-violet: 119 72 236;
+  --aurora-cyan: 4 162 192;
+  --aurora-amber: 225 138 0;
+  --premium-gold: 192 155 35;
+  --premium-copper: 164 95 31;
+  --premium-silver: 148 148 160;
+
+  --background: var(--space-0);
+  --foreground: var(--ink-900);
+  --primary: var(--aurora-violet);
+  --primary-foreground: 255 255 255;
+  --secondary: var(--space-100);
+  --secondary-foreground: var(--ink-900);
+  --muted: var(--space-100);
+  --muted-foreground: var(--ink-600);
+  --card: 255 255 255 / 0.7;
+  --card-border: 255 255 255 / 0.6;
+  --accent: var(--aurora-indigo);
+  --accent-foreground: 255 255 255;
+  --destructive: 220 50 50;
+  --destructive-foreground: 255 255 255;
+  --success: 14 165 114;
+  --success-foreground: 255 255 255;
+  --warning: var(--aurora-amber);
+  --warning-foreground: 255 255 255;
+  --info: var(--aurora-cyan);
+  --info-foreground: 255 255 255;
+  --border: var(--space-200);
+  --input: var(--space-200);
+  --ring: var(--aurora-violet);
+
+  --radius: 0.75rem;
+  --glass-blur: 20px;
+  --glass-saturation: 180%;
+  --glass-opacity: 0.5;
+  --depth-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.04), 0 8px 40px rgba(0,0,0,0.06);
+  --depth-shadow-hover: 0 2px 4px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06), 0 16px 56px rgba(0,0,0,0.08);
+}
+
+/* ── DARK THEME ── */
+.dark {
+  color-scheme: dark;
+  --space-0: 8 8 12;
+  --space-50: 13 13 18;
+  --space-100: 18 18 24;
+  --space-200: 28 28 38;
+  --space-900: 240 240 248;
+  --ink-900: 240 240 248;
+  --ink-700: 180 180 195;
+  --ink-600: 165 165 180;
+  --ink-500: 150 150 170;
+  --ink-400: 130 130 145;
+  --ink-300: 80 80 95;
+  --ink-100: 40 40 55;
+
+  --background: var(--space-0);
+  --foreground: var(--ink-900);
+  --primary: var(--aurora-violet);
+  --primary-foreground: 255 255 255;
+  --secondary: var(--space-100);
+  --secondary-foreground: var(--ink-900);
+  --muted: var(--space-100);
+  --muted-foreground: var(--ink-400);
+  --card: 255 255 255 / 0.06;
+  --card-border: 255 255 255 / 0.08;
+  --accent: var(--aurora-indigo);
+  --accent-foreground: 255 255 255;
+  --destructive: 248 100 100;
+  --destructive-foreground: 255 255 255;
+  --success: 34 197 144;
+  --success-foreground: 255 255 255;
+  --warning: var(--aurora-amber);
+  --warning-foreground: 255 255 255;
+  --info: var(--aurora-cyan);
+  --info-foreground: 255 255 255;
+  --border: var(--space-200);
+  --input: var(--space-200);
+  --depth-shadow: 0 1px 2px rgba(0,0,0,0.2), 0 4px 16px rgba(0,0,0,0.15), 0 8px 40px rgba(0,0,0,0.3);
+  --depth-shadow-hover: 0 2px 4px rgba(0,0,0,0.25), 0 8px 24px rgba(0,0,0,0.2), 0 16px 56px rgba(0,0,0,0.4);
+}
+
+@layer base {
+  * { @apply border-[rgb(var(--border))]; }
+  body {
+    @apply bg-[rgb(var(--background))] text-[rgb(var(--foreground))] antialiased;
+    font-feature-settings: "ss01" 1, "ss02" 1, "cv01" 1, "cv03" 1;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  html { @apply scroll-smooth; }
+  *, *::before, *::after {
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+    }
+  }
+
+  /* ── Font size scaling ── */
+  html { font-size: 16px; }
+  html[data-font-size="small"] { font-size: 14px; }
+  html[data-font-size="large"] { font-size: 18px; }
+
+  /* ── Density spacing variables ── */
+  :root {
+    --density-container: 2rem;
+    --density-card: 1.5rem;
+    --density-element: 1rem;
+    --density-gap: 1rem;
+  }
+  html[data-density="compact"] {
+    --density-container: 1rem;
+    --density-card: 1rem;
+    --density-element: 0.5rem;
+    --density-gap: 0.5rem;
+  }
+
+  ::selection {
+    background: rgb(var(--aurora-violet) / 0.25);
+    color: rgb(var(--foreground));
+  }
+
+  /* ── Viewport safe-area insets ──
+     On a notched device the browser only reports these when the viewport
+     carries `viewport-fit=cover` (see the `viewport` export in app/layout.tsx).
+     They are declared as 0px first and re-declared inside @supports, because a
+     browser that predates `env()` drops the whole declaration rather than
+     falling back to a value — so the literal 0px below is what keeps the
+     utilities in this file resolving instead of becoming invalid-at-computed-
+     value-time.
+
+     None of these are theme-scoped: they describe the physical screen, not the
+     light or dark palette, so they live on :root once and are never repeated
+     under `.dark`. */
+  :root {
+    --safe-area-inset-top: 0px;
+    --safe-area-inset-right: 0px;
+    --safe-area-inset-bottom: 0px;
+    --safe-area-inset-left: 0px;
+  }
+
+  @supports (padding: env(safe-area-inset-bottom)) {
+    :root {
+      --safe-area-inset-top: env(safe-area-inset-top);
+      --safe-area-inset-right: env(safe-area-inset-right);
+      --safe-area-inset-bottom: env(safe-area-inset-bottom);
+      --safe-area-inset-left: env(safe-area-inset-left);
+    }
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PREMIUM GLASS SYSTEM (5 tiers)
+   ═══════════════════════════════════════════════════════════ */
+
+@layer components {
+  /* Tier 1 — whisper glass (subtle hover panels, tooltips) */
+  .glass-whisper {
+    background: rgb(var(--card));
+    backdrop-filter: blur(8px) saturate(var(--glass-saturation));
+    -webkit-backdrop-filter: blur(8px) saturate(var(--glass-saturation));
+    border: 1px solid rgb(var(--card-border));
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  }
+
+  /* Tier 2 — glass (standard cards, modals, surfaces) */
+  .glass {
+    background: rgb(var(--card));
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+    border: 1px solid rgb(var(--card-border));
+    box-shadow: var(--depth-shadow);
+  }
+
+  /* Tier 3 — glass-strong (featured cards, primary containers) */
+  .glass-strong {
+    background: rgb(var(--card));
+    backdrop-filter: blur(32px) saturate(200%);
+    -webkit-backdrop-filter: blur(32px) saturate(200%);
+    border: 1px solid rgb(var(--card-border));
+    box-shadow: var(--depth-shadow);
+  }
+
+  /* Tier 4 — glass-premium (hero sections, flagship cards) */
+  .glass-premium {
+    background: rgb(var(--card));
+    backdrop-filter: blur(48px) saturate(220%);
+    -webkit-backdrop-filter: blur(48px) saturate(220%);
+    border: 1px solid rgb(var(--card-border));
+    box-shadow: var(--depth-shadow-hover);
+    position: relative;
+    overflow: hidden;
+  }
+  .glass-premium::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg,
+      transparent 0%,
+      rgb(var(--aurora-violet) / 0.04) 50%,
+      transparent 100%
+    );
+    pointer-events: none;
+  }
+
+  /* Tier 5 — glass-flagship (maximum depth, only for top-level hero) */
+  .glass-flagship {
+    background: rgb(var(--card));
+    backdrop-filter: blur(64px) saturate(240%);
+    -webkit-backdrop-filter: blur(64px) saturate(240%);
+    border: 1px solid rgb(var(--card-border));
+    box-shadow: 0 4px 8px rgba(0,0,0,0.08), 0 12px 32px rgba(0,0,0,0.08), 0 24px 64px rgba(0,0,0,0.12);
+    position: relative;
+    overflow: hidden;
+  }
+  .glass-flagship::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgb(var(--aurora-indigo) / 0.05) 0%, transparent 40%),
+      linear-gradient(225deg, transparent 60%, rgb(var(--aurora-cyan) / 0.04) 100%);
+    pointer-events: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   HOLOGRAPHIC / IRIDESCENT EFFECTS
+   ═══════════════════════════════════════════════════════════ */
+
+@layer components {
+  .holo-border {
+    position: relative;
+  }
+  .holo-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      160deg,
+      rgb(var(--aurora-indigo) / 0.8),
+      rgb(var(--aurora-violet) / 0.6),
+      rgb(var(--aurora-cyan) / 0.4),
+      rgb(var(--premium-gold) / 0.5),
+      rgb(var(--aurora-indigo) / 0.8)
+    );
+    background-size: 300% 300%;
+    animation: holo-shift 8s ease-in-out infinite;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  .holo-text {
+    background: linear-gradient(
+      160deg,
+      rgb(var(--aurora-indigo)),
+      rgb(var(--aurora-violet)),
+      rgb(var(--aurora-cyan)),
+      rgb(var(--premium-gold)),
+      rgb(var(--aurora-indigo))
+    );
+    background-size: 300% 300%;
+    animation: holo-shift 8s ease-in-out infinite;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .holo-glow {
+    position: relative;
+  }
+  .holo-glow::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: inherit;
+    background: linear-gradient(
+      160deg,
+      rgb(var(--aurora-indigo) / 0.3),
+      rgb(var(--aurora-violet) / 0.2),
+      rgb(var(--aurora-cyan) / 0.15)
+    );
+    filter: blur(20px);
+    z-index: -1;
+    animation: holo-glow-pulse 4s ease-in-out infinite;
+  }
+}
+
+@keyframes holo-shift {
+  0%, 100% { background-position: 0% 50%; }
+  25% { background-position: 100% 0%; }
+  50% { background-position: 100% 100%; }
+  75% { background-position: 0% 100%; }
+}
+
+@keyframes holo-glow-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   3D DEPTH & TRANSFORM UTILITIES
+   ═══════════════════════════════════════════════════════════ */
+
+@layer utilities {
+  .depth-0 { box-shadow: none; }
+  .depth-1 { box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.04); }
+  .depth-2 { box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.04), 0 8px 40px rgba(0,0,0,0.06); }
+  .depth-3 { box-shadow: 0 2px 4px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06), 0 16px 56px rgba(0,0,0,0.08); }
+  .depth-4 { box-shadow: 0 4px 8px rgba(0,0,0,0.06), 0 12px 32px rgba(0,0,0,0.08), 0 24px 80px rgba(0,0,0,0.12); }
+
+  .perspective { perspective: 1200px; }
+  .preserve-3d { transform-style: preserve-3d; }
+  .backface-hidden { backface-visibility: hidden; }
+
+  .rotate-x-1 { transform: rotateX(2deg); }
+  .rotate-x-2 { transform: rotateX(4deg); }
+
+  .tilt-hover {
+    transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.5s ease;
+  }
+  .tilt-hover:hover {
+    transform: translateY(-4px) rotateX(2deg) scale(1.01);
+    box-shadow: var(--depth-shadow-hover);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SCANLINES OVERLAY
+   ═══════════════════════════════════════════════════════════ */
+
+.scanlines {
+  position: relative;
+}
+.scanlines::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.015) 2px,
+    rgba(0,0,0,0.015) 4px
+  );
+  opacity: 0;
+  transition: opacity 3s ease;
+}
+.dark .scanlines::after { opacity: 0.3; }
+
+/* ═══════════════════════════════════════════════════════════
+   NOISE GRAIN
+   ═══════════════════════════════════════════════════════════ */
+
+.grain {
+  position: relative;
+}
+.grain::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  opacity: 0.02;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+}
+.dark .grain::before { opacity: 0.025; }
+
+/* ═══════════════════════════════════════════════════════════
+   AURORAL MESH BACKGROUND
+   ═══════════════════════════════════════════════════════════ */
+
+.auroral-mesh {
+  position: relative;
+  overflow: hidden;
+}
+.auroral-mesh::before,
+.auroral-mesh::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(160px);
+  pointer-events: none;
+  z-index: 0;
+  animation: aurora-drift 24s ease-in-out infinite;
+}
+.auroral-mesh::before {
+  width: 700px;
+  height: 700px;
+  background: rgb(var(--aurora-indigo) / 0.12);
+  top: -30%;
+  left: -20%;
+}
+.auroral-mesh::after {
+  width: 600px;
+  height: 600px;
+  background: rgb(var(--aurora-violet) / 0.1);
+  bottom: -30%;
+  right: -20%;
+  animation-delay: -12s;
+  animation-duration: 28s;
+}
+
+@keyframes aurora-drift {
+  0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+  25% { transform: translate(8%, -6%) scale(1.08) rotate(1deg); }
+  50% { transform: translate(-4%, 8%) scale(0.94) rotate(-1deg); }
+  75% { transform: translate(-8%, -8%) scale(1.04) rotate(0.5deg); }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SPARKLE / PARTICLE
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes sparkle {
+  0%, 100% { opacity: 0; transform: scale(0) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1) rotate(180deg); }
+}
+.animate-sparkle {
+  animation: sparkle 2s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   GRADIENT UTILITIES
+   ═══════════════════════════════════════════════════════════ */
+
+@layer utilities {
+  .gradient-text {
+    background: linear-gradient(135deg, rgb(var(--aurora-indigo)), rgb(var(--aurora-violet)));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .gradient-text-extended {
+    background: linear-gradient(135deg, rgb(var(--aurora-indigo)), rgb(var(--aurora-violet)), rgb(var(--aurora-cyan)));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .gradient-text-gold {
+    background: linear-gradient(135deg, rgb(var(--premium-gold)), rgb(var(--aurora-amber)));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .gradient-bg { background: linear-gradient(135deg, rgb(var(--aurora-indigo)), rgb(var(--aurora-violet))); }
+  .gradient-bg-extended { background: linear-gradient(135deg, rgb(var(--aurora-indigo)), rgb(var(--aurora-violet)), rgb(var(--aurora-cyan))); }
+  .gradient-bg-premium { background: linear-gradient(135deg, rgb(var(--premium-gold)), rgb(var(--aurora-amber)), rgb(var(--aurora-violet))); }
+
+  .gradient-border-bottom {
+    border-bottom: 2px solid transparent;
+    border-image: linear-gradient(90deg, rgb(var(--aurora-indigo)), rgb(var(--aurora-violet)), rgb(var(--aurora-cyan)));
+    border-image-slice: 1;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ANIMATION KEYFRAMES
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 8px rgb(var(--aurora-violet) / 0.15); }
+  50% { box-shadow: 0 0 28px rgb(var(--aurora-violet) / 0.35); }
+}
+.animate-pulse-glow { animation: pulse-glow 2.5s ease-in-out infinite; }
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.animate-float { animation: float 6s ease-in-out infinite; }
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.animate-shimmer {
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgb(var(--foreground) / 0.04) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+@keyframes radial-pulse {
+  0% { transform: scale(0.95); opacity: 0.5; }
+  50% { transform: scale(1.05); opacity: 0.8; }
+  100% { transform: scale(0.95); opacity: 0.5; }
+}
+.animate-radial-pulse { animation: radial-pulse 3s ease-in-out infinite; }
+
+/* ═══════════════════════════════════════════════════════════
+   MOBILE-FIRST RESPONSIVE UTILITIES
+   ═══════════════════════════════════════════════════════════ */
+
+@layer utilities {
+  .container-premium {
+    @apply w-full px-4 mx-auto;
+    max-width: 100%;
+  }
+  @media (min-width: 640px) { .container-premium { @apply px-6; } }
+  @media (min-width: 1024px) { .container-premium { @apply px-8; max-width: 1280px; } }
+  @media (min-width: 1440px) { .container-premium { max-width: 1440px; } }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SAFE-AREA UTILITIES
+   Built on the --safe-area-inset-* tokens declared in @layer base.
+
+   These are deliberately NOT composable with Tailwind's spacing scale through
+   `cn()`: twMerge does not know these class names, so `pb-24 bottom-nav-safe`
+   style combinations would silently emit both declarations and let source order
+   decide the winner. Each utility below therefore carries its own offset inside
+   a calc() so it replaces a hardcoded Tailwind offset outright rather than
+   layering on top of one. Adding the inset to an existing design offset — never
+   replacing it — is the whole point: a 1rem floating gap still reads as 1rem on
+   a notched device, it just moves up out of the home indicator's way.
+
+   Every value degrades to its pre-notch appearance because the tokens are 0px
+   everywhere except a `viewport-fit=cover` notched viewport.
+   ═══════════════════════════════════════════════════════════ */
+
+@layer utilities {
+  /* Floating bottom nav: keeps its 1rem lift off the edge, plus the home
+     indicator. Used together with `.pb-nav-safe` on the scrolling content. */
+  .bottom-nav-safe {
+    bottom: calc(1rem + var(--safe-area-inset-bottom));
+  }
+
+  /* Scrolling content must clear the floating nav (4rem) *and* the home
+     indicator, otherwise the last card is unreachable behind the nav pill. */
+  .pb-nav-safe {
+    padding-bottom: calc(6rem + var(--safe-area-inset-bottom));
+  }
+
+  /* Sticky/fixed top bars sit under a black-translucent status bar on iOS, so
+     the top inset joins their existing offset rather than replacing it. Two
+     variants because the two layouts anchor differently: the dashboard header
+     is `sticky top-3` (offset the box), the public header is `fixed top-0` with
+     `pt-3` (pad the box, because the bar itself must stay glued to the top). */
+  .top-header-safe {
+    top: calc(0.75rem + var(--safe-area-inset-top));
+  }
+  .pt-header-safe {
+    padding-top: calc(0.75rem + var(--safe-area-inset-top));
+  }
+
+  /* Bars pinned flush to an edge (the locale fallback banner at bottom-0, the
+     public header at top-0) take the bare inset as padding, because the surface
+     itself must stay glued to the edge while its content clears the inset. */
+  .pb-edge-safe {
+    padding-bottom: var(--safe-area-inset-bottom);
+  }
+  .pt-edge-safe {
+    padding-top: var(--safe-area-inset-top);
+  }
+
+  /* Full-bleed drawers and sheets also need the horizontal insets so their
+     content is not tucked under the rounded corners in landscape. */
+  .px-edge-safe {
+    padding-left: var(--safe-area-inset-left);
+    padding-right: var(--safe-area-inset-right);
+  }
+
+  /* The landscape notch sits on one specific edge, so a full-height drawer only
+     ever needs the one side it is anchored to. */
+  .pr-edge-safe {
+    padding-right: var(--safe-area-inset-right);
+  }
+  .pl-edge-safe {
+    padding-left: var(--safe-area-inset-left);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PREMIUM SCROLLBAR
+   ═══════════════════════════════════════════════════════════ */
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--muted-foreground) / 0.15);
+  border-radius: 9999px;
+  transition: background 0.3s ease;
+}
+::-webkit-scrollbar-thumb:hover { background: rgb(var(--muted-foreground) / 0.35); }
+
+/* ═══════════════════════════════════════════════════════════
+   FOCUS RING
+   ═══════════════════════════════════════════════════════════ */
+
+.focus-ring {
+  @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--foreground))]
+    focus-visible:ring-offset-2 focus-visible:ring-offset-[rgb(var(--background))];
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PRINT
+   Organizers print circle summaries to run offline meetings, so
+   the printed sheet has to be a document, not a screenshot of the
+   app. Everything below targets that one medium.
+   ═══════════════════════════════════════════════════════════ */
+
+@media print {
+  /* Paper, not screen. Most browsers do not print backgrounds anyway,
+     which is exactly why the dark theme was unreadable on paper:
+     `text-white`/`text-muted-foreground` resolved to light greys that
+     vanished against white. Pin the tokens to ink-on-paper first, then
+     the utility classes below inherit a sane palette for free. */
+  :root,
+  .dark {
+    --background: 255 255 255;
+    --foreground: 0 0 0;
+    --card: 255 255 255;
+    --card-border: 203 203 203;
+    --border: 203 203 203;
+    --muted: 245 245 245;
+    --muted-foreground: 68 68 68;
+    --primary: 0 0 0;
+    --primary-foreground: 255 255 255;
+    --secondary-foreground: 0 0 0;
+    --glass-blur: 0;
+    --glass-saturation: 100%;
+    --depth-shadow: none;
+    --depth-shadow-hover: none;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  /* Real page margins instead of the browser's guess. `size: auto` keeps
+     the reader's chosen paper size; only the margin is fixed. */
+  @page {
+    size: auto;
+    margin: 14mm 12mm;
+  }
+
+  /* Chrome. Everything here is navigation or affordance, never data.
+     The sidebar and header are the app's own layout components, so they
+     carry `data-print-hide` (see components/layout/*) — but the role and
+     tag selectors below are the safety net for anything that renders a
+     button or nav without opting in. */
+  [data-print-hide='true'],
+  nav,
+  aside,
+  header,
+  footer,
+  [role='navigation'],
+  [role='dialog'],
+  [role='alertdialog'],
+  [role='menu'],
+  [role='toolbar'],
+  [aria-hidden='true'] {
+    display: none !important;
+  }
+
+  /* Interactive controls have no meaning on paper and their focus rings
+     would print as stray boxes. */
+  button,
+  [role='button'],
+  input,
+  select,
+  textarea,
+  label[for] {
+    display: none !important;
+  }
+
+  /* Glass tiers, blurs and decorative pseudo-elements all resolve to
+     nothing useful on paper and cost ink. Replace with a hairline. */
+  .glass,
+  .glass-premium,
+  .glass-strong,
+  .glass-flagship,
+  .glass-whisper {
+    background: #fff !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: none !important;
+    border: 1px solid #d0d0d0 !important;
+    overflow: visible !important;
+  }
+
+  .glass-premium::after,
+  .glass-flagship::after,
+  .holo-border::before,
+  .holo-border::after {
+    content: none !important;
+  }
+
+  /* Fixed/sticky positioning is what pins the sidebar and mobile nav to
+     the viewport, and it repeats on every printed page. Release it. */
+  .fixed,
+  .sticky,
+  [data-print-static] {
+    position: static !important;
+    inset: auto !important;
+  }
+
+  /* The dashboard reserves a 72rem left gutter for the sidebar and a
+     bottom band for the mobile nav. On paper that gutter is blank space
+     on every page, so reclaim it. */
+  #main-content,
+  [data-print-content] {
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 0 !important;
+  }
+
+  /* ── Tables ──────────────────────────────────────────────────────────
+     The acceptance criteria for a printed summary are that a table stays
+     readable and no row is ever split across two sheets. */
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    /* Horizontal scroll containers would clip a wide table to the
+       viewport width on paper. Let it use the full page. */
+    overflow: visible !important;
+  }
+
+  /* Repeats the header on every page a long table spans. Requires
+     `display: table-header-group`; without it a continued table has no
+     column labels. */
+  thead {
+    display: table-header-group !important;
+  }
+
+  tfoot {
+    display: table-footer-group !important;
+  }
+
+  tr,
+  img,
+  svg,
+  figure,
+  blockquote,
+  pre {
+    /* A row split across a page boundary loses its borders and reads as
+       one broken record. `page-break-inside` is the legacy spelling and
+       is what Safari honours; `break-inside` covers everything modern. */
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  th,
+  td {
+    border: 1px solid #b8b8b8 !important;
+    padding: 4pt 6pt !important;
+    text-align: left !important;
+    vertical-align: top !important;
+  }
+
+  thead th {
+    background: #f0f0f0 !important;
+    /* `break-after: avoid` keeps a header glued to the first data row
+       beneath it, so a page never opens with a column of values and no
+       labels. */
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+    font-weight: 700 !important;
+  }
+
+  /* A section heading stranded alone at the foot of a page reads as a
+     missing section on the next one. */
+  h1,
+  h2,
+  h3,
+  h4 {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Gradients and text-clips print as grey mush or as nothing. */
+  .gradient-text,
+  .gradient-text-extended,
+  .holo-text,
+  .gradient-bg,
+  .auroral-mesh {
+    background: none !important;
+    -webkit-text-fill-color: #000 !important;
+    color: #000 !important;
+    background-clip: initial !important;
+  }
+
+  a {
+    color: #000 !important;
+    /* The href is useful reference, but only for content links — a printed
+       member address is already visible, so nav links stay clean. */
+    text-decoration: underline;
+  }
+
+  /* Keep print colours only when the user asked for them; browsers strip
+     them by default and this opts back in for a table that relies on a
+     status tint. */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PRINT UTILITIES
+   Tailwind's `print:` variant covers most cases; these are for the
+   handful of rules that need real CSS (page-break behaviour on table
+   rows) rather than a single declaration.
+   ═══════════════════════════════════════════════════════════ */
+
+@layer utilities {
+  /* Applied to <thead>/<caption> wrappers in the print summary so column
+     labels repeat on every sheet. */
+  .print-repeat-header {
+    display: table-header-group;
+  }
+
+  /* Applied to a table row, card or paragraph that must stay whole. */
+  .print-avoid-break {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Applied to a block that should start on a fresh sheet — each major
+     section of a circle summary. */
+  .print-page-break {
+    break-before: page;
+    page-break-before: always;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE TABLES
+   Below `sm` (640px) every `.responsive-table` reflows into stacked
+   cards so no cell is ever only reachable by horizontal scrolling.
+
+   The column headers are NOT removed from the accessibility tree on
+   mobile — they are visually clipped instead (`.responsive-table__head-cell`),
+   so a screen reader still resolves "Amount" for every amount cell even
+   though the header strip is not painted. Removing them with `hidden`
+   would silently strip the header association, which is the exact class
+   of bug this is meant to fix.
+   ═══════════════════════════════════════════════════════════ */
+
+@layer components {
+  .responsive-table__head-cell {
+    @apply sr-only sm:not-sr-only;
+  }
+
+  /* The clipped header must never hold a focusable control: an invisible link
+     or button still takes Tab, which is precisely the "trapped focus with no
+     affordance" failure this whole treatment exists to remove. Interactive
+     header content comes back at `sm`, where the header strip is visible. */
+  .responsive-table__head-cell :where(a, button, input, select, textarea, [tabindex]) {
+    display: none;
+  }
+
+  @media (min-width: 640px) {
+    .responsive-table__head-cell :where(a, button, input, select, textarea, [tabindex]) {
+      display: revert;
+    }
+  }
+
+  .responsive-table__row {
+    @apply block border-b border-border py-1 sm:table-row sm:py-0;
+  }
+
+  .responsive-table__cell {
+    @apply flex items-baseline justify-between gap-4 px-4 py-2 text-left sm:table-cell sm:py-3;
+  }
+
+  .responsive-table__cell::before {
+    content: attr(data-label);
+    @apply shrink-0 font-heading text-2xs uppercase tracking-wider text-muted-foreground sm:hidden;
+  }
+
+  .responsive-table__cell--primary {
+    @apply font-semibold text-foreground sm:font-normal sm:text-inherit;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ACCESSIBLE SCROLL CONTAINER
+   A scrollable region that is focusable and carries a visible focus
+   ring, so keyboard users can reach it, see that they have reached
+   it, and scroll it with the arrow keys. Focus lands on the container
+   once and moves on with Tab — it never traps.
+   ═══════════════════════════════════════════════════════════ */
+
+@layer components {
+  .scroll-region {
+    @apply overflow-x-auto overscroll-x-contain;
+    scrollbar-width: thin;
+  }
+
+  .scroll-region:focus-visible {
+    @apply outline-none ring-2 ring-[rgb(var(--aurora-violet))] ring-offset-2
+      ring-offset-[rgb(var(--background))];
+  }
+}

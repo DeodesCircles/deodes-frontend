@@ -1,0 +1,395 @@
+"use client";
+
+import { logger } from "@/lib/logger"
+import { create } from "zustand";
+import { devtools } from "zustand/middleware";
+import { ApiResponse, User } from "@/types";
+import { post, clearApiClientState } from "@/lib/api-client";
+import { getCsrfHeaders } from "@/lib/auth/csrf";
+import {
+  clearAccessToken,
+  getAccessToken,
+  setAccessToken,
+} from "@/lib/auth/token-store";
+import { computeHmacSha256Sync, isHmacKeyReady, withHmacKey } from "@/lib/wallet/hmac";
+import {
+  encryptToStorage,
+  decryptFromStorage,
+} from "@/lib/security/encryption";
+
+const isDev = process.env.NODE_ENV === "development";
+
+// ── Token storage ──
+//
+// Tokens are never written to localStorage. The access token lives in memory
+// for the life of the tab (see @/lib/auth/token-store) and both tokens are
+// persisted only as HttpOnly cookies, written by /api/auth/session. Script on
+// the page — including anything injected through an XSS — can neither read
+// those cookies nor find a token sitting in storage after a reload.
+//
+// The user profile below is a different matter: it is a display cache, not a
+// credential, and it stays in localStorage under an HMAC so tampering is
+// detected.
+
+const USER_DATA_KEY = "moistello_user";
+
+interface UserStoreWithHmac {
+  user: User;
+  hmac: string;
+}
+
+/** POST the token pair to the server so it can write the HttpOnly cookies. */
+async function persistSession(
+  token: string,
+  refreshToken: string,
+): Promise<boolean> {
+  if (typeof window === "undefined") return false;
+  try {
+    const response = await fetch("/api/auth/session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...getCsrfHeaders() },
+      body: JSON.stringify({ token, refreshToken }),
+    });
+    if (!response.ok) {
+      logger.warn("[auth] Session cookie endpoint rejected the token pair", { status: response.status });
+      return false;
+    }
+    return true;
+  } catch (e) {
+    logger.warn("[auth] Failed to persist session cookie:", e);
+    return false;
+  }
+}
+
+/**
+ * Recover the access token after a page load.
+ *
+ * The cookie is HttpOnly, so this same-origin round trip is the only way back
+ * to the token — and it hands back the access token alone. The refresh token
+ * stays on the server, which is what stops a stolen access token from being
+ * parlayed into an indefinite session.
+ */
+async function rehydrateAccessToken(): Promise<string | null> {
+  if (typeof window === "undefined") return null;
+  try {
+    const response = await fetch("/api/auth/session");
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    if (typeof data?.token !== "string" || !data.token) return null;
+
+    setAccessToken(data.token);
+    return data.token;
+  } catch (e) {
+    logger.warn("[auth] Failed to restore session:", e);
+    return null;
+  }
+}
+
+/** Ask the server to drop the HttpOnly cookies. */
+async function clearSession(): Promise<void> {
+  if (typeof window === "undefined") return;
+  try {
+    await fetch("/api/auth/session", { method: "DELETE", headers: getCsrfHeaders() });
+  } catch (e) {
+    logger.warn("[auth] Failed to clear session cookie:", e);
+  }
+}
+
+function getStoredUser(): User | null {
+  if (typeof window === "undefined") return null;
+  if (!isHmacKeyReady()) return null;
+  try {
+    const raw = localStorage.getItem(USER_DATA_KEY);
+    if (!raw) return null;
+
+    const store: UserStoreWithHmac = JSON.parse(raw);
+    if (!store.hmac || !store.user) return null;
+
+    const expectedHMAC = computeHmacSha256Sync(JSON.stringify(store.user));
+    if (store.hmac !== expectedHMAC) {
+      logger.warn("[auth] HMAC mismatch — user data may be tampered");
+      localStorage.removeItem(USER_DATA_KEY);
+      return null;
+    }
+
+    return store.user;
+  } catch {
+    return null;
+  }
+}
+
+async function getStoredUserAsync(): Promise<User | null> {
+  if (typeof window === "undefined") return null;
+  if (!isHmacKeyReady()) return null;
+  try {
+    const raw = localStorage.getItem(USER_DATA_KEY);
+    if (!raw) return null;
+
+    const passphrase = getUserEncryptionPassphrase();
+    let store: UserStoreWithHmac | null = await decryptFromStorage<UserStoreWithHmac>(
+      USER_DATA_KEY,
+      passphrase,
+    );
+
+    if (!store) {
+      try {
+        store = JSON.parse(raw);
+      } catch {
+        localStorage.removeItem(USER_DATA_KEY);
+        return null;
+      }
+    }
+
+    if (!store || !store.hmac || !store.user) return null;
+
+    const expectedHMAC = computeHmacSha256Sync(JSON.stringify(store.user));
+    if (store.hmac !== expectedHMAC) {
+      logger.warn("[auth] HMAC mismatch — user data may be tampered");
+      localStorage.removeItem(USER_DATA_KEY);
+      return null;
+    }
+
+    return store.user;
+  } catch {
+    return null;
+  }
+}
+
+async function setStoredUser(user: User): Promise<void> {
+  if (typeof window === "undefined") return;
+  // Defer the write until the HMAC key is ready — persisting with an empty
+  // key would silently break tamper detection on the first write.
+  withHmacKey(async () => {
+    try {
+      const hmac = computeHmacSha256Sync(JSON.stringify(user));
+      const store: UserStoreWithHmac = { user, hmac };
+
+      // Encrypt user profile with device-specific passphrase
+      const passphrase = getUserEncryptionPassphrase();
+      await encryptToStorage(USER_DATA_KEY, store, passphrase).catch(() => {
+        // Fallback to unencrypted if encryption fails
+        localStorage.setItem(USER_DATA_KEY, JSON.stringify(store));
+      });
+    } catch (e) {
+      logger.warn("[auth] Failed to persist user data:", e);
+    }
+  });
+}
+
+function removeStoredUser(): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.removeItem(USER_DATA_KEY);
+  } catch (e) {
+    logger.warn("[auth] Failed to remove user data:", e);
+  }
+}
+
+/**
+ * Derive encryption passphrase for user profile storage.
+ *
+ * Uses device fingerprint to create a device-specific key. Key rotates on
+ * re-auth since the profile is re-encrypted on every setStoredUser call.
+ */
+function getUserEncryptionPassphrase(): string {
+  if (typeof window === "undefined") return "ssr-fallback-key";
+  const deviceSeed = `${window.navigator.userAgent}-${window.screen.width}x${window.screen.height}`;
+  return `moistello-user-v1:${deviceSeed}`;
+}
+
+/**
+ * Every localStorage key that has ever held a token in this app.
+ *
+ * Earlier builds persisted tokens here. A browser upgrading to this version
+ * still has those values sitting in storage, so they are deleted on load —
+ * otherwise the very credential this change removes from script's reach would
+ * remain readable for as long as the entry survives.
+ */
+const LEGACY_TOKEN_KEYS = [
+  "moistello_token",
+  "moistello_refresh",
+  "moistello_access_token",
+  "moistello_refresh_token",
+] as const;
+
+function purgeLegacyTokenStorage(): void {
+  if (typeof window === "undefined") return;
+  try {
+    for (const key of LEGACY_TOKEN_KEYS) localStorage.removeItem(key);
+  } catch (e) {
+    logger.warn("[auth] Failed to purge legacy token storage:", e);
+  }
+}
+
+purgeLegacyTokenStorage();
+
+function extractTokenExpiry(token: string): number | null {
+  try {
+    const parts = token.split(".");
+    if (parts.length !== 3) return null;
+    const payload = JSON.parse(atob(parts[1]));
+    return typeof payload.exp === "number" ? payload.exp * 1000 : null;
+  } catch {
+    return null;
+  }
+}
+
+interface AuthState {
+  isAuthenticated: boolean;
+  user: User | null;
+  /** Mirrors the in-memory access token so components can react to sign-in. */
+  token: string | null;
+  isLoading: boolean;
+  tokenExpiresAt: number | null;
+}
+
+interface AuthActions {
+  logout: () => void;
+  checkAuth: () => Promise<void>;
+  /**
+   * Hands a freshly issued token pair to the server for storage. Awaiting the
+   * returned promise matters before any navigation: the middleware gates
+   * protected routes on the session cookie, which does not exist until this
+   * resolves.
+   */
+  setTokens: (
+    accessToken: string,
+    refreshToken: string,
+    user?: User,
+  ) => Promise<void>;
+  /** Refreshes the cached profile without touching the session. */
+  updateUser: (user: User) => void;
+  clearTokens: () => Promise<void>;
+}
+
+type AuthStore = AuthState & AuthActions;
+
+const baseStore = (
+  set: (
+    partial: Partial<AuthStore> | ((state: AuthStore) => Partial<AuthStore>),
+  ) => void,
+  get: () => AuthStore,
+): AuthStore => ({
+  // Nothing is known until checkAuth() has asked the server whether the
+  // HttpOnly session cookie is still good — there is no token in storage to
+  // seed this from any more.
+  isAuthenticated: false,
+  user: getStoredUser(),
+  token: null,
+  isLoading: true,
+  tokenExpiresAt: null,
+
+  logout: () => {
+    post("/auth/logout").catch(() => {});
+    get().clearTokens();
+    set({
+      isAuthenticated: false,
+      user: null,
+      token: null,
+      tokenExpiresAt: null,
+      isLoading: false,
+    });
+    if (typeof window !== "undefined") {
+      import("@/lib/wallet/registry").then(({ getWalletRegistry }) => {
+        try {
+          getWalletRegistry().getAdapter("passkey")?.reset?.();
+        } catch (e) {
+          logger.warn("[auth] Failed to reset passkey adapter:", e);
+        }
+      });
+    }
+  },
+
+  checkAuth: async () => {
+    // A reload wipes the in-memory token, so the session has to be recovered
+    // from the HttpOnly cookie the only way script can: by asking the server.
+    let token = getAccessToken();
+    if (!token) {
+      token = await rehydrateAccessToken();
+    }
+
+    if (!token) {
+      set({
+        isAuthenticated: false,
+        user: null,
+        token: null,
+        isLoading: false,
+      });
+      return;
+    }
+
+    const exp = extractTokenExpiry(token);
+    if (exp && Date.now() < exp) {
+      const storedUser = await getStoredUserAsync();
+      set({
+        isLoading: false,
+        isAuthenticated: true,
+        token,
+        tokenExpiresAt: exp,
+        user: storedUser ?? getStoredUser(),
+      });
+      return;
+    }
+
+    set({ isLoading: true });
+    try {
+      const response = await post<ApiResponse<{ user: User }>>("/auth/me");
+      const data = response.data;
+      if (!data?.user) throw new Error("Invalid session");
+
+      // The interceptor may have swapped in a fresh token behind this call.
+      const currentToken = getAccessToken() ?? token;
+      const updatedExp = extractTokenExpiry(currentToken);
+
+      setStoredUser(data.user);
+
+      set({
+        isAuthenticated: true,
+        user: data.user,
+        token: currentToken,
+        tokenExpiresAt: updatedExp ?? Date.now() + 15 * 60 * 1000,
+        isLoading: false,
+      });
+    } catch (e) {
+      logger.warn("[auth] Token refresh failed, logging out:", e);
+      get().logout();
+    }
+  },
+
+  setTokens: async (accessToken: string, refreshToken: string, user?: User) => {
+    clearApiClientState();
+    setAccessToken(accessToken);
+    const exp = extractTokenExpiry(accessToken);
+    const persisted = await persistSession(accessToken, refreshToken);
+    if (!persisted) {
+      clearAccessToken();
+      throw new Error("Failed to persist session cookies");
+    }
+
+    if (user) setStoredUser(user);
+    set({
+      token: accessToken,
+      tokenExpiresAt: exp ?? Date.now() + 15 * 60 * 1000,
+      isAuthenticated: true,
+      user: user ?? getStoredUser(),
+    });
+  },
+
+  updateUser: (user: User) => {
+    setStoredUser(user);
+    set({ user });
+  },
+
+  clearTokens: async () => {
+    clearApiClientState();
+    removeStoredUser();
+    purgeLegacyTokenStorage();
+    set({ token: null, tokenExpiresAt: null, isAuthenticated: false, user: null });
+    await clearSession();
+  },
+});
+
+export const useAuthStore = create<AuthStore>()(
+  isDev ? devtools(baseStore) : baseStore,
+);

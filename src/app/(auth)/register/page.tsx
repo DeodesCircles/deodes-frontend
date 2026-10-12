@@ -1,0 +1,108 @@
+"use client"
+
+import { useCallback, useState } from "react"
+import { useRouter } from "next/navigation"
+import Link from "next/link"
+import { useForm } from "react-hook-form"
+import { registerSchema, zodResolver, type RegisterInput } from "@/lib/validation"
+import { AuthLayout } from "@/components/auth/auth-layout"
+import { PasswordStrengthMeter } from "@/components/auth/password-strength-meter"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { useAuthStore } from "@/stores/auth-store"
+import { useToast } from "@/hooks/use-toast"
+import { post } from "@/lib/api-client"
+import type { User } from "@/types"
+
+export default function RegisterPage() {
+  const router = useRouter()
+  const setTokens = useAuthStore((s) => s.setTokens)
+  const toast = useToast()
+  const [loading, setLoading] = useState(false)
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<RegisterInput>({
+    resolver: zodResolver(registerSchema),
+    mode: "onTouched",
+  })
+
+  const passwordValue = watch("password") || ""
+
+  const onSubmit = useCallback(
+    async (values: RegisterInput) => {
+      setLoading(true)
+      try {
+        const res = await post<{ token?: string; refreshToken?: string; user?: User }>("/auth/register", values)
+        if (res?.token) {
+          // setTokens persists the HttpOnly session cookie the middleware gates
+          // on, so navigation must wait for it to resolve.
+          await setTokens(res.token, res.refreshToken ?? res.token, res.user)
+          toast.success("Account created successfully!")
+          router.replace("/passkey-setup")
+        } else {
+          throw new Error("Registration failed")
+        }
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : "Registration failed"
+        toast.error(msg)
+      } finally {
+        setLoading(false)
+      }
+    },
+    [setTokens, toast, router],
+  )
+
+  return (
+    <AuthLayout title="Create an Account">
+      <div className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate aria-label="Registration form">
+          <Input
+            id="name"
+            type="text"
+            label="Full Name"
+            placeholder="Jane Doe"
+            autoComplete="name"
+            error={errors.name?.message}
+            {...register("name")}
+          />
+          <Input
+            id="email"
+            type="email"
+            label="Email Address"
+            placeholder="you@example.com"
+            autoComplete="email"
+            error={errors.email?.message}
+            {...register("email")}
+          />
+          <div>
+            <Input
+              id="password"
+              type="password"
+              label="Password"
+              placeholder="••••••••"
+              autoComplete="new-password"
+              error={errors.password?.message}
+              {...register("password")}
+            />
+            <PasswordStrengthMeter password={passwordValue} />
+          </div>
+          <Button type="submit" variant="primary" size="lg" className="w-full" isLoading={loading}>
+            Continue to Passkey Setup
+          </Button>
+        </form>
+
+
+        <p className="text-center text-sm text-muted-foreground">
+          Already have an account?{" "}
+          <Link href="/login" className="text-aurora-violet hover:underline focus:outline-none focus:ring-2 focus:ring-foreground">
+            Sign In
+          </Link>
+        </p>
+      </div>
+    </AuthLayout>
+  )
+}
