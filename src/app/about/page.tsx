@@ -26,8 +26,37 @@ export default function AboutPage() {
               <p className="text-muted-foreground leading-relaxed">Our smart contracts, backend API, and frontend are open source under Apache 2.0. Contribute on GitHub.</p>
             </div>
             <div className="glass rounded-2xl p-8 border-l-4 border-l-premium-gold">
-              <h2 className="font-heading text-xl font-semibold mb-3 gradient-text-gold">Contact</h2>
-              <p className="text-muted-foreground leading-relaxed">Join our Discord or open an issue on our GitHub repository.</p>
+              <h2 className="font-heading text-xl font-semibold mb-3 gradient-text-gold">Founders</h2>
+              <p className="text-muted-foreground leading-relaxed">
+                DEODES is built by two founders — Nzubechukwu Cyprian (cyprianz.com) and
+                Nekwachukwu Ucheokoye. Talk to us on X or through the contact page.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <a
+                  href="https://cyprianz.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center rounded-xl px-4 py-2 text-sm glass-strong hover:bg-white/[0.06] transition-all"
+                >
+                  cyprianz.com
+                </a>
+                <a
+                  href="https://x.com/cyprianzube"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center rounded-xl px-4 py-2 text-sm glass-strong hover:bg-white/[0.06] transition-all"
+                >
+                  @cyprianzube
+                </a>
+                <a
+                  href="https://x.com/nekwasar"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center rounded-xl px-4 py-2 text-sm glass-strong hover:bg-white/[0.06] transition-all"
+                >
+                  @nekwasar
+                </a>
+              </div>
             </div>
           </div>
         </main>

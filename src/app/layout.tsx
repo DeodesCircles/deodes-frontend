@@ -145,9 +145,9 @@ export default function RootLayout({
                "@type": "Organization",
                "name": "Deodes",
                "alternateName": "Deodes Savings Platform",
-               "url": "https://moistello.com",
-               "logo": "https://moistello.com/logo.jpg",
-               "sameAs": ["https://github.com/cocor-tech", "https://x.com/nekwasar"],
+                "url": "https://deodes.com",
+                "logo": "https://deodes.com/logo.jpg",
+                "sameAs": ["https://cyprianz.com", "https://x.com/cyprianzube", "https://github.com/cypriannwokolo2-creator", "https://x.com/nekwasar", "https://github.com/cocor-tech"],
                "description": "Decentralized rotating savings and credit circles on the Arc blockchain.",
              }),
            }}
@@ -160,10 +160,10 @@ export default function RootLayout({
                "@context": "https://schema.org",
                "@type": "WebSite",
                "name": "Deodes",
-               "url": "https://moistello.com",
-               "potentialAction": {
-                 "@type": "SearchAction",
-                 "target": "https://moistello.com/docs?q={search_term_string}",
+                "url": "https://deodes.com",
+                "potentialAction": {
+                  "@type": "SearchAction",
+                  "target": "https://deodes.com/docs?q={search_term_string}",
                  "query-input": "required name=search_term_string",
                },
              }),

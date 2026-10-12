@@ -8,7 +8,7 @@
  * derived from `process.env` inline rather than pulled from a helper.
  */
 
-const DEFAULT_SITE_URL = "https://moistello.com"
+const DEFAULT_SITE_URL = "https://deodes.com"
 
 /**
  * Absolute origin that relative canonicals and `og:url` resolve against.
@@ -28,12 +28,32 @@ export const SITE_URL = (() => {
   }
 })()
 
-export const SITE_NAME = "Moistello"
+export const SITE_NAME = "Deodes"
 
-export const TWITTER_SITE = "@moistello"
-export const TWITTER_CREATOR = "@nekwasar"
+export const TWITTER_SITE = "@deodes"
+export const TWITTER_CREATOR = "@cyprianzube"
+export const TWITTER_CONTRIBUTOR = "@nekwasar"
 
-export const AUTHOR_NAME = "Nekwachukwu Ucheokoye"
+// DEODES is built by two founders. Order and links are intentional.
+export const AUTHOR_NAME = "Nzubechukwu Cyprian & Nekwachukwu Ucheokoye"
+export const FOUNDERS = [
+  {
+    name: "Nzubechukwu Cyprian",
+    role: "Co-founder",
+    site: "https://cyprianz.com",
+    x: "https://x.com/cyprianzube",
+    xHandle: "@cyprianzube",
+    github: "https://github.com/cypriannwokolo2-creator",
+  },
+  {
+    name: "Nekwachukwu Ucheokoye",
+    role: "Co-founder",
+    site: "https://nekwasar.com",
+    x: "https://x.com/nekwasar",
+    xHandle: "@nekwasar",
+    github: "https://github.com/nekwasar",
+  },
+] as const
 
 /**
  * Default social card. Served from `public/logo.jpg` (1200x630), which is the

@@ -1,8 +1,9 @@
 import type { Metadata } from "next"
 import Link from "next/link"
-import { ArrowRight, LifeBuoy, Mail, MessagesSquare } from "lucide-react"
+import { ArrowRight, LifeBuoy, Mail, MessagesSquare, Users } from "lucide-react"
 import { buildRouteMetadata } from "@/lib/seo/route-metadata"
 import { PublicLayout } from "@/components/layout/public-layout"
+import { FOUNDERS } from "@/lib/seo/site"
 
 export const metadata: Metadata = buildRouteMetadata("/contact")
 
@@ -63,6 +64,39 @@ export default function ContactPage() {
                 </div>
               )
             })}
+          </div>
+
+          <div className="mt-12">
+            <h2 className="font-heading text-2xl md:text-3xl font-semibold">The founders</h2>
+            <p className="mt-2 text-sm text-muted-foreground max-w-2xl">
+              DEODES is built by two founders. Reach either of us directly:
+            </p>
+            <div className="mt-6 grid gap-4 md:grid-cols-2">
+              {FOUNDERS.map((f) => (
+                <div key={f.name} className="glass-premium rounded-2xl p-6 md:p-8">
+                  <h3 className="font-heading text-lg font-semibold">{f.name}</h3>
+                  <p className="text-xs uppercase tracking-widest text-muted-foreground mt-1">{f.role}</p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <a
+                      href={f.site}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center rounded-xl px-4 py-2 text-sm glass-strong hover:bg-white/[0.06] transition-all"
+                    >
+                      {f.site.replace("https://", "")}
+                    </a>
+                    <a
+                      href={f.x}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center rounded-xl px-4 py-2 text-sm glass-strong hover:bg-white/[0.06] transition-all"
+                    >
+                      {f.xHandle}
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </main>
       </div>
