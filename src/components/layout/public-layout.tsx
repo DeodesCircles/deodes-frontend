@@ -706,6 +706,29 @@ export function PublicLayout({ children }: PublicLayoutProps) {
             deodes.com
           </p>
         </div>
+        <div className="container-premium mt-8 border-t border-white/[0.06] py-6 text-[11px] leading-relaxed text-muted-foreground/80">
+          <p className="font-heading text-xs font-semibold tracking-[0.2em] uppercase text-muted-foreground mb-3">
+            Risk disclosure
+          </p>
+          <p>
+            DEODES savings circles run on Arc, an open Layer-1 blockchain operated by a
+            permissioned validator set. Arc is provided &quot;as is&quot; and &quot;as
+            available.&quot; Blockchain use carries inherent risks, including smart-contract
+            vulnerabilities, network disruptions, and the absence of recourse for transaction
+            errors or losses. Transacting on Arc requires obtaining and using USDC to pay gas
+            fees. DEODES contributors provide software only and do not offer regulated financial
+            or advisory services. Features may be modified, delayed, or cancelled at any time
+            without notice. Nothing on this site constitutes investment, legal, tax, or regulatory
+            advice — you are solely responsible for how you use DEODES and for complying with
+            applicable laws.
+          </p>
+          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1">
+            <a href="https://www.arc.io" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Arc Network</a>
+            <a href="https://docs.arc.io" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Arc Docs</a>
+            <a href="https://portal.arc.io" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Arc Portal</a>
+            <span className="text-muted-foreground/60">Arc name and mark belong to Circle Internet Group, Inc.</span>
+          </div>
+        </div>
         <div className="container-premium mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-white/[0.06] py-5 text-xs text-muted-foreground">
           <span>&copy; {new Date().getFullYear()} Deodes. All rights reserved.</span>
           <span className="flex flex-wrap items-center gap-x-4 gap-y-2">
