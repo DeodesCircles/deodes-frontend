@@ -12,7 +12,6 @@ import {
   Search,
   Users,
   Lock,
-  Landmark,
   Crown,
   Dices,
   ListOrdered,
@@ -32,8 +31,7 @@ import { useTranslate } from "@/lib/locale/context"
 // Structure references: sckoll.com (two-sided paths, search, stats strip,
 // category grid, numbered flow, trust layer) + agentsdb apps/web (black hero,
 // trust strip, top-cards band, CTA band). Content is DEODES: ROSCA savings
-// circles on Arc with USDC + DeoScore reputation — Moistello's mechanics,
-// DEODES' brand and chain.
+// circles on Arc with USDC + DeoScore reputation.
 
 const stats = [
   { value: "1.7B+", label: "unbanked adults served" },
@@ -161,7 +159,7 @@ export function LandingContent() {
   return (
     <>
       <div className="auroral-mesh min-h-screen">
-        {/* ═══ HERO — black canvas, giant type, dual paths ═══ */}
+        {/* ═══ HERO — giant type, dual paths ═══ */}
         <section className="relative z-10 min-h-[92vh] flex flex-col justify-center">
           <div className="container-premium">
             <p className="font-heading text-xs tracking-[0.3em] uppercase text-muted-foreground mb-6">
@@ -226,7 +224,7 @@ export function LandingContent() {
               </button>
             </form>
 
-            {/* Savers / organizers split pills */}
+            {/* Saver pills */}
             <div className="mt-10">
               <div className="glass-strong rounded-full px-6 py-3 inline-flex flex-wrap items-center justify-center gap-8 text-sm">
                 <span className="flex items-center gap-1.5">
