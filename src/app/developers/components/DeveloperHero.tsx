@@ -14,7 +14,7 @@ export function DeveloperHero() {
             Build on <span className="gradient-text-extended">Moistello</span>
           </h1>
           <p className="text-muted-foreground text-base md:text-lg mb-8 max-w-lg mx-auto">
-            Complete API documentation, smart contracts, and resources for building decentralized savings on Stellar.
+            Complete API documentation, smart contracts, and resources for building decentralized savings on Arc.
           </p>
         </div>
       </div>

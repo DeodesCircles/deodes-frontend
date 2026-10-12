@@ -27,7 +27,7 @@ export default function BecomeAContributorPage() {
                 Join Our <span className="gradient-text-extended">Mission</span>
               </h1>
               <p className="text-muted-foreground text-base md:text-lg mb-8 max-w-lg mx-auto">
-                Build the future of decentralized savings on Stellar. We welcome developers, designers, writers, and
+                Build the future of decentralized savings on Arc. We welcome developers, designers, writers, and
                 community builders.
               </p>
             </div>

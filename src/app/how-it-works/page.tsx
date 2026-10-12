@@ -9,7 +9,7 @@ export const metadata: Metadata = buildRouteMetadata("/how-it-works")
 const steps = [
   { num: "01", title: "Sign in with Passkey", desc: "Use Face ID, fingerprint, or PIN to create your account. No email, no password, no wallet setup needed." },
   { num: "02", title: "Create or Join a Circle", desc: "Set the contribution amount, frequency, member count, and payout type. Your Arc wallet is created automatically when you join." },
-  { num: "03", title: "Contribute Each Cycle", desc: "You and all members contribute USDC or XLM each cycle. Smart contracts track every payment on-chain." },
+  { num: "03", title: "Contribute Each Cycle", desc: "You and all members contribute USDC each cycle. Smart contracts track every payment on-chain." },
   { num: "04", title: "Receive Your Payout", desc: "Each cycle, one member gets the full pool. Order: random, fixed, auction, or vote-based." },
   { num: "05", title: "Build Your Reputation", desc: "Every on-time payment builds your DeoScore (0-1000). Higher scores unlock larger circles and better terms." },
 ]

@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   // reads as "Ada joined Deodes" rather than as generic site marketing.
   const description =
     profile.bio ||
-    `${profile.displayName} saves in ${APP_NAME} savings circles on Stellar.`;
+    `${profile.displayName} saves in ${APP_NAME} savings circles on Arc.`;
 
   return {
     title: `${profile.displayName} (${params.handle}) — ${APP_NAME}`,

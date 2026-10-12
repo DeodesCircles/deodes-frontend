@@ -142,7 +142,7 @@ export default function CreateProposalPage() {
             <label htmlFor="proposal-execution-payload" className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Smart Contract Execution Payload (Optional)
             </label>
-            <span className="text-xs text-muted-foreground font-mono">JSON / Soroban Call</span>
+            <span className="text-xs text-muted-foreground font-mono">JSON / Arc Call</span>
           </div>
           <textarea
             id="proposal-execution-payload"

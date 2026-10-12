@@ -196,14 +196,12 @@ export function ChooseWalletStep({ mode, onPasskeyLogin }: ChooseWalletStepProps
         <div className="flex flex-col items-center gap-3 py-6">
           <Wallet className="h-10 w-10 text-muted-foreground/50" />
           <p className="text-sm text-muted-foreground text-center">
-            No wallets detected. Install a Stellar wallet like{" "}
+            No wallets detected. Install an Arc-compatible wallet — see the{" "}
             <a
-              href="https://freighter.app"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/docs"
               className="text-aurora-cyan hover:underline"
             >
-              Freighter
+              wallet setup guide
             </a>
             {" "}or use WalletConnect.
           </p>

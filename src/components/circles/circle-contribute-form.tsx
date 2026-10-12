@@ -56,7 +56,7 @@ export function CircleContributeForm({
       await post("/api/contributions", payload);
 
       setPhase("signing");
-      const message = `Moistello Contribution: ${contributionAmount} ${currency} to ${circleName} (circle: ${circleId})`;
+      const message = `Deodes Contribution: ${contributionAmount} ${currency} to ${circleName} (circle: ${circleId})`;
       const signedXdr = await signMessage(message);
 
       setPhase("verifying");
@@ -122,7 +122,7 @@ export function CircleContributeForm({
               You are about to contribute{" "}
               <strong>{formatCurrency(contributionAmount, currency)}</strong> to{" "}
               <strong>{circleName}</strong>. This transaction will be signed using your
-              connected wallet and processed on the Stellar network.
+              connected wallet and processed on the Arc network.
             </p>
           </div>
 

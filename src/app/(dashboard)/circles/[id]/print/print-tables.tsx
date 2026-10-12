@@ -161,7 +161,7 @@ function capitalize(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1)
 }
 
-/** Full Stellar addresses are too wide to print legibly; the tail identifies them. */
+/** Full wallet addresses are too wide to print legibly; the tail identifies them. */
 function shortenAddress(address: string): string {
   return address.length <= 12 ? address : `…${address.slice(-6)}`
 }

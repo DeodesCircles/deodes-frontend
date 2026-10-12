@@ -307,7 +307,7 @@ export default function ProposalDetailPage() {
             </p>
             <p className="font-mono text-2xl font-bold text-foreground">{countdown}</p>
             <p className="text-xs text-muted-foreground">
-              Passed proposals require a mandatory timelock window before execution on Soroban smart contracts.
+              Passed proposals require a mandatory timelock window before execution on Arc smart contracts.
             </p>
           </div>
 

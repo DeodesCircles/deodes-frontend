@@ -14,12 +14,12 @@ export default function AboutPage() {
             <div className="glass-premium rounded-2xl p-8 holo-border border-l-4 border-l-aurora-indigo">
               <h2 className="font-heading text-xl font-semibold mb-3 gradient-text">Our Mission</h2>
               <p className="text-muted-foreground leading-relaxed">
-                1.3 billion adults remain unbanked globally. In communities across Africa, Latin America, South Asia, and Southeast Asia, people rely on informal savings circles — esusu, tontines, chit funds, tandas — to access capital and build financial resilience. Moistello wraps this centuries-old model in Soroban smart contracts on Stellar, bringing transparency, security, and portable on-chain reputation to every participant.
+                1.3 billion adults remain unbanked globally. In communities across Africa, Latin America, South Asia, and Southeast Asia, people rely on informal savings circles — esusu, tontines, chit funds, tandas — to access capital and build financial resilience. Deodes wraps this centuries-old model in Arc smart contracts, bringing transparency, security, and portable on-chain reputation to every participant.
               </p>
             </div>
             <div className="glass rounded-2xl p-8 border-l-4 border-l-aurora-violet">
-              <h2 className="font-heading text-xl font-semibold mb-3 gradient-text">Why Stellar</h2>
-              <p className="text-muted-foreground leading-relaxed">Stellar&apos;s sub-cent transaction fees and 3-5 second settlement make contribution cycles practical. The Soroban smart contract platform provides the programmability for complex payout rules, auction mechanics, and reputation tracking — all while keeping gas costs negligible.</p>
+              <h2 className="font-heading text-xl font-semibold mb-3 gradient-text">Why Arc</h2>
+              <p className="text-muted-foreground leading-relaxed">Arc&apos;s sub-cent transaction fees and fast settlement make contribution cycles practical. The Arc smart contract platform provides the programmability for complex payout rules, auction mechanics, and reputation tracking — all while keeping gas costs negligible.</p>
             </div>
             <div className="glass rounded-2xl p-8 border-l-4 border-l-aurora-cyan">
               <h2 className="font-heading text-xl font-semibold mb-3 gradient-text">Open Source</h2>

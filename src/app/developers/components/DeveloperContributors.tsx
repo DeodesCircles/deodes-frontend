@@ -60,10 +60,10 @@ export function DeveloperContributors() {
             </div>
             <div className="mt-5 pt-5 border-t border-white/10">
               <p className="text-xs text-muted-foreground mb-3">
-                <span className="text-foreground font-medium">Contributions:</span> Architected full Moistello (frontend, backend, 5 Soroban contracts on Mainnet)
+                <span className="text-foreground font-medium">Contributions:</span> Architected full Deodes (frontend, backend, 5 Arc contracts on Mainnet)
               </p>
               <p className="text-xs text-muted-foreground">
-                <span className="text-foreground font-medium">Stack:</span> TypeScript · Node.js · Next.js · React · Soroban · PostgreSQL · Docker
+                <span className="text-foreground font-medium">Stack:</span> TypeScript · Node.js · Next.js · React · Arc · PostgreSQL · Docker
               </p>
             </div>
           </div>

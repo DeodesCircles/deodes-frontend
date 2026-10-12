@@ -62,7 +62,7 @@ export default function PersonProfilePage() {
               <div className="flex items-center gap-2 mt-2">
                 <CopyButton text={person.walletAddress} label={person.walletAddress} />
                 <a
-                  href={`https://stellar.expert/explorer/testnet/account/${person.walletAddress}`}
+                  href={`https://explorer.arc.network/account/${person.walletAddress}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-muted-foreground hover:text-aurora-cyan transition-colors"
@@ -95,7 +95,7 @@ export default function PersonProfilePage() {
           </span>
           <span className="flex items-center gap-1.5">
             <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
-            Verified Soroban Participant
+            Verified Arc Participant
           </span>
         </div>
       </div>

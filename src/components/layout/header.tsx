@@ -46,7 +46,7 @@ function HeaderComponent({ onToggleMobileMenu, isMobileMenuOpen }: HeaderProps) 
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-2 select-none">
               <span className="gradient-text-extended font-heading font-bold text-lg tracking-tight">
-                Moistello
+                Deodes
               </span>
             </Link>
           </div>
@@ -175,7 +175,7 @@ function ConnectWalletModal({ onClose }: { onClose: () => void }) {
           Connect Wallet
         </h3>
         <p className="text-sm text-muted-foreground font-body mb-5">
-          Connect your wallet to access Stellar features.
+          Connect your wallet to access Arc features.
         </p>
 
         {error && (
@@ -198,9 +198,7 @@ function ConnectWalletModal({ onClose }: { onClose: () => void }) {
         <p className="mt-3 text-center text-xs text-muted-foreground font-body">
           Need a wallet?{" "}
           <a
-            href="https://stellar.org/wallets"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/docs"
             className="text-[rgb(var(--aurora-cyan))] hover:underline"
           >
             Find one here

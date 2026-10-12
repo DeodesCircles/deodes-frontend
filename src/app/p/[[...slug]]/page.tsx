@@ -149,10 +149,10 @@ export async function generateMetadata({
   // A content page can supply its own copy, but it must never fall through to
   // a bare slug: an untitled OG card is the thing this is fixing.
   const summary =
-    description || `${pageTitle} — published on Moistello, the decentralized Stellar savings platform.`;
+    description || `${pageTitle} — published on Deodes, the decentralized Arc savings platform.`;
 
   return {
-    title: `${pageTitle} — Moistello`,
+    title: `${pageTitle} — Deodes`,
     description: summary,
     alternates: { canonical },
     robots: { index: true, follow: true },
@@ -161,14 +161,14 @@ export async function generateMetadata({
       locale: "en_US",
       url: absoluteUrl(canonical),
       siteName: "Deodes",
-      title: `${pageTitle} — Moistello`,
+      title: `${pageTitle} — Deodes`,
       description: summary,
       images: [OG_IMAGE],
     },
     twitter: {
       card: "summary_large_image",
       site: TWITTER_SITE,
-      title: `${pageTitle} — Moistello`,
+      title: `${pageTitle} — Deodes`,
       description: summary,
       images: [OG_IMAGE.url],
     },

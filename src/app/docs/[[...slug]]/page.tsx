@@ -63,7 +63,7 @@ export async function generateMetadata({
     title: `${pageTitle} — Moistello`,
     description:
       description ||
-      `Moistello docs: ${pageTitle.toLowerCase()} — passkey authentication, auto-provisioned Stellar wallets, USDC savings circles and Soroban contracts.`,
+      `Deodes docs: ${pageTitle.toLowerCase()} — passkey authentication, auto-provisioned Arc wallets, USDC savings circles and Arc contracts.`,
     alternates: { canonical },
     openGraph: {
       ...base.openGraph,
