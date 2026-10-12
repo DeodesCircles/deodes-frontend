@@ -20,6 +20,20 @@ const WalletSelector = dynamic(
   { ssr: false }
 )
 
+interface LoginEnvelope {
+  success?: boolean
+  data?: {
+    token?: string
+    refreshToken?: string
+    user?: User
+  }
+  token?: string
+  refreshToken?: string
+  user?: User
+  error?: string
+  message?: string
+}
+
 export default function LoginPage() {
   const router = useRouter()
   const setTokens = useAuthStore((s) => s.setTokens)
@@ -39,11 +53,16 @@ export default function LoginPage() {
     async (values: LoginInput) => {
       setLoading(true)
       try {
-        const res = await post<{ token?: string; refreshToken?: string; user?: User }>("/auth/login", values)
-        if (res?.token) {
+        const res = await post<LoginEnvelope>("/auth/login", values)
+        const data = res?.data ?? res
+        const token = data?.token
+        if (res?.success === false) {
+          throw new Error(res.error || res.message || "Login failed")
+        }
+        if (token) {
           // setTokens persists the HttpOnly session cookie the middleware gates
           // on, so navigation must wait for it to resolve.
-          await setTokens(res.token, res.refreshToken ?? res.token, res.user)
+          await setTokens(token, data?.refreshToken ?? token, data?.user)
           toast.success("Welcome back!")
           router.replace("/")
         } else {
