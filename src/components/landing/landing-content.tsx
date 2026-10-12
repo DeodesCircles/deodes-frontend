@@ -110,21 +110,36 @@ const scoreWeights = [
   { label: "Volume — total contributed", pct: 20 },
   { label: "Recency — recent activity", pct: 15 },
 ]
-
-const trustItems = [  {
+const trustItems = [
+  {
     icon: FileLock2,
     title: "Enforced on-chain",
     desc: "Arc smart contracts hold contributions and release payouts. No custodian, no middleman to trust.",
+    points: [
+      "Money locks in audited contracts — organizers can never touch the pool",
+      "Late fees and grace periods execute as code, not negotiations",
+      "Payouts release automatically when rounds close",
+    ],
   },
   {
     icon: BadgeCheck,
     title: "Portable reputation",
     desc: "DeoScore follows your wallet for life — across every circle, community and app on DEODES.",
+    points: [
+      "0–1000 score from streaks, completions, volume and recency",
+      "High scores unlock premium circles and lower collateral",
+      "Your history travels with your wallet, not a platform account",
+    ],
   },
   {
     icon: HandCoins,
     title: "Sub-cent economics",
     desc: "Arc settles for fractions of a cent with USDC. A flat 0.5% protocol fee only on payouts.",
+    points: [
+      "Contributions cost ~$0.001 to settle — no ETH needed, USDC is gas",
+      "0.5% applies once, on payouts: a $500 pool costs $2.50 total",
+      "Zero fees to join, contribute, or build score",
+    ],
   },
 ]
 
@@ -546,6 +561,14 @@ export function LandingContent() {
                       <span className="font-mono text-[11px] text-muted-foreground">0{i + 1}</span>
                       <h3 className="mt-1 font-heading text-xl md:text-2xl font-semibold">{item.title}</h3>
                       <p className="mt-2 text-muted-foreground leading-relaxed max-w-xl">{item.desc}</p>
+                      <ul className="mt-4 space-y-2">
+                        {item.points.map((p) => (
+                          <li key={p} className="flex items-start gap-2.5 text-sm">
+                            <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-aurora-cyan" />
+                            <span className="text-foreground/90">{p}</span>
+                          </li>
+                        ))}
+                      </ul>
                     </span>
                   </div>
                 )
