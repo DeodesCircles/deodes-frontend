@@ -136,8 +136,7 @@ const scoreWeights = [
   { label: "Recency — recent activity", pct: 15 },
 ]
 
-const trustItems = [
-  {
+const trustItems = [  {
     icon: FileLock2,
     title: "Enforced on-chain",
     desc: "Arc smart contracts hold contributions and release payouts. No custodian, no middleman to trust.",
@@ -187,6 +186,83 @@ function RotatingGrow() {
         {current.word}
       </span>
     </span>
+  )
+}
+
+// ── Audience tabs (arc.io use-case tabs pattern) ─────────────────────────────
+// Instant switching (no animation library): one state, conditional render.
+const AUDIENCES = [
+  {
+    id: "savers",
+    tab: "For savers",
+    title: "Join a circle, get paid on your round.",
+    desc: "Pick a public circle or redeem an invite, contribute USDC each round, and receive the full pool when your turn lands. Your DeoScore grows with every on-time payment.",
+    points: ["Passkey wallet in one tap", "VRF-fair or fixed payouts", "Portable 0–1000 reputation"],
+    cta: { label: "Explore circles", href: "/explore" },
+  },
+  {
+    id: "organizers",
+    tab: "For organizers",
+    title: "Run a circle without becoming a treasurer.",
+    desc: "Set the amount, frequency and payout rule. Contracts collect, enforce late fees and release payouts — you just invite the people.",
+    points: ["Daily, weekly or monthly rounds", "Late fees + grace periods on-chain", "Invite links with usage caps"],
+    cta: { label: "Start a circle", href: "/register" },
+  },
+  {
+    id: "communities",
+    tab: "For communities",
+    title: "Turn your group chat into a savings engine.",
+    desc: "Token-gated circles for DAOs and holder groups, multi-sig guarded, with community votes directing payouts where need is greatest.",
+    points: ["Token-gated membership", "Vote-based payouts", "Shared DeoScore standing"],
+    cta: { label: "How it works", href: "/how-it-works" },
+  },
+] as const
+
+function AudienceTabs() {
+  const [active, setActive] = useState<(typeof AUDIENCES)[number]["id"]>("savers")
+  const current = AUDIENCES.find((a) => a.id === active) ?? AUDIENCES[0]
+
+  return (
+    <div>
+      <div className="flex flex-wrap gap-2" role="tablist" aria-label="Who is Deodes for">
+        {AUDIENCES.map((a) => (
+          <button
+            key={a.id}
+            type="button"
+            role="tab"
+            aria-selected={active === a.id}
+            onClick={() => setActive(a.id)}
+            className={
+              active === a.id
+                ? "rounded-full px-5 py-2 text-sm font-heading font-semibold text-white gradient-bg-extended"
+                : "rounded-full px-5 py-2 text-sm font-heading font-medium text-muted-foreground glass-whisper hover:text-foreground transition-colors"
+            }
+          >
+            {a.tab}
+          </button>
+        ))}
+      </div>
+      <div key={current.id} className="mt-8 grid gap-8 lg:grid-cols-2 lg:items-center">
+        <div>
+          <h3 className="font-heading text-3xl md:text-4xl font-bold tracking-tight">{current.title}</h3>
+          <p className="mt-3 text-muted-foreground leading-relaxed">{current.desc}</p>
+          <Link
+            href={current.cta.href}
+            className="mt-6 inline-flex items-center gap-2 rounded-2xl px-6 py-3 text-sm font-heading font-semibold glass-strong hover:bg-white/[0.06] transition-all"
+          >
+            {current.cta.label} <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+        <ul className="space-y-3">
+          {current.points.map((p) => (
+            <li key={p} className="flex items-center gap-3 rounded-2xl border border-white/[0.08] px-5 py-4 text-sm">
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-aurora-cyan" />
+              {p}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
   )
 }
 
@@ -272,6 +348,26 @@ export function LandingContent() {
                 <span>{t("landing.settlement")}</span>
               </div>
             </div>
+
+            {/* Settlement trust strip (arc.io logo-wall pattern) */}
+            <div className="mt-12 flex flex-wrap items-center gap-x-8 gap-y-4">
+              <span className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
+                Settles on
+              </span>
+              <span className="flex items-center gap-2">
+                <img src="/arc-logo.svg" alt="Arc" className="h-6 w-6" />
+                <span className="font-heading font-bold tracking-tight">Arc</span>
+              </span>
+              <span className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
+                USDC gas
+              </span>
+              <span className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
+                Sub-second finality
+              </span>
+              <span className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
+                Predictable fees
+              </span>
+            </div>
           </div>
         </section>
 
@@ -289,10 +385,23 @@ export function LandingContent() {
           </div>
         </section>
 
+        {/* ═══ AUDIENCES (arc.io use-case tabs pattern) ═══ */}
+        <section className="relative z-10 py-24 md:py-32">
+          <div className="container-premium">
+            <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">Ref. 01 — Who it serves</p>
+            <h2 className="mt-2 font-heading text-4xl md:text-5xl gradient-text-extended">
+              Built for savers, organizers, communities.
+            </h2>
+            <div className="mt-10">
+              <AudienceTabs />
+            </div>
+          </div>
+        </section>
+
         {/* ═══ CIRCLE TYPES (sckoll category-grid analog) ═══ */}
         <section className="relative z-10 py-24 md:py-32">
           <div className="container-premium">
-            <p className="text-sm uppercase tracking-widest text-muted-foreground">Find your circle</p>
+            <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">Ref. 02 — Find your circle</p>
             <h2 className="mt-2 font-heading text-4xl md:text-5xl gradient-text-extended">
               Every kind of saver has a circle here.
             </h2>
@@ -338,7 +447,7 @@ export function LandingContent() {
           <div className="container-premium py-16 md:py-24">
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
-                <p className="text-sm uppercase tracking-widest text-muted-foreground">Payout modes</p>
+                <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">Ref. 03 — Payout modes</p>
                 <h2 className="mt-2 font-heading text-3xl md:text-4xl font-semibold tracking-tight">
                   Four ways the pool finds you.
                 </h2>
@@ -375,7 +484,7 @@ export function LandingContent() {
         {/* ═══ HOW IT WORKS — numbered flow (sckoll 01–05 pattern) ═══ */}
         <section className="relative z-10 py-24 md:py-32 border-t border-white/[0.06]">
           <div className="container-premium">
-            <p className="text-sm uppercase tracking-widest text-muted-foreground">How DEODES works</p>
+            <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">Ref. 04 — How DEODES works</p>
             <h2 className="mt-2 font-heading text-4xl md:text-5xl gradient-text-extended max-w-3xl">
               From passkey to payout in five moves.
             </h2>
@@ -395,7 +504,7 @@ export function LandingContent() {
         <section className="relative z-10 py-24 md:py-32 border-t border-white/[0.06]">
           <div className="container-premium grid gap-12 lg:grid-cols-2 lg:items-center">
             <div>
-              <p className="text-sm uppercase tracking-widest text-muted-foreground">DeoScore reputation</p>
+              <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">Ref. 05 — DeoScore reputation</p>
               <h2 className="mt-2 font-heading text-4xl md:text-5xl font-black tracking-tight">
                 <span className="gradient-text">Good saving follows you.</span>
               </h2>
@@ -432,8 +541,8 @@ export function LandingContent() {
         {/* ═══ TRUST LAYER (sckoll trust pattern) ═══ */}
         <section className="relative z-10 py-24 border-t border-white/[0.06]">
           <div className="container-premium">
-            <p className="text-center text-sm uppercase tracking-widest text-muted-foreground">
-              The trust layer
+            <p className="text-center font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
+              Ref. 06 — The trust layer
             </p>
             <h2 className="mt-2 text-center font-heading text-3xl md:text-4xl font-semibold tracking-tight">
               Move money without stepping into the dark.
@@ -474,7 +583,7 @@ export function LandingContent() {
         {/* ═══ FINAL CTA — sckoll "simple by design" pattern, DEODES phrase ═══ */}
         <section className="relative z-10 py-24 text-center border-t border-white/[0.06]">
           <div className="container-premium">
-            <p className="text-sm uppercase tracking-widest text-muted-foreground">Simple by design</p>
+            <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">Ref. 07 — Simple by design</p>
             <h2 className="mt-3 font-heading text-4xl md:text-6xl gradient-text-extended max-w-4xl mx-auto">
               Start with the circle. Stay for the momentum.
             </h2>
