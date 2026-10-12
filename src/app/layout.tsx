@@ -20,6 +20,7 @@ import { LocaleProvider } from "@/lib/locale/context"
 import { getServerDictionary } from "@/lib/locale/server-dictionaries"
 import { LOCALE_BOOTSTRAP_SCRIPT, dirForLocale, resolveLocale } from "@/lib/locale/locale-cookie"
 import { HmacProvider } from "@/providers/HmacProvider"
+import { ScrollManager } from "@/components/shared/scroll-manager"
 import { PwaRegister } from "@/components/pwa-register"
 import {
   AUTHOR_NAME,
@@ -216,6 +217,7 @@ export default function RootLayout({
         className={`font-body bg-[rgb(var(--background))] text-[rgb(var(--foreground))] antialiased`}
       >
         <PwaRegister />
+        <ScrollManager />
         <QueryProvider>
           <WsProvider>
           <ThemeProvider>
