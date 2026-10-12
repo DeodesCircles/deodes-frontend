@@ -151,7 +151,6 @@ export const Routes = {
   DOCS: "/docs",
   SUPPORT: "/support",
   BECOME_CONTRIBUTOR: "/become-a-contributor",
-  DEVELOPERS: "/developers",
   STATUS: "/status",
   ACCESS_DENIED: "/access-denied",
   AUTH_REQUIRED: "/auth-required",

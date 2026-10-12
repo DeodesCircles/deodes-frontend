@@ -8,24 +8,18 @@ import {
   X,
   Scale,
   Lock,
-  Code,
   BookOpen,
   CircleQuestionMark,
   Globe,
-  Users,
-  Crown,
   Compass,
   CirclePlus,
   Dices,
-  ListOrdered,
-  Gavel,
-  Vote,
   Trophy,
   Landmark,
   ChevronDown,
+  ChevronRight,
   ShieldQuestionMark,
   Shield,
-  FileText,
   Mail,
   ScrollText,
   Activity,
@@ -56,6 +50,7 @@ interface NavChild {
   description: string;
   href: string;
   icon: React.ReactNode;
+  children?: Array<{ title: string; description: string; href: string }>;
 }
 
 interface NavGroup {
@@ -70,68 +65,53 @@ interface NavMenu {
 
 const iconCls = "h-[18px] w-[18px]";
 
-const CIRCLES_MENU: NavMenu = {
-  label: "Save",
+const PLATFORM_MENU: NavMenu = {
+  label: "Platform",
   groups: [
     {
-      heading: "Discover",
+      heading: "Save",
       items: [
         { title: "Explore circles", description: "Browse public, private and community circles.", href: "/explore", icon: <Compass className={iconCls} /> },
-        { title: "Circle types", description: "Permissionless, invite-only, token-gated, premium.", href: "/explore#types", icon: <Globe className={iconCls} /> },
+        {
+          title: "Circle types",
+          description: "Permissionless, invite-only, token-gated, premium.",
+          href: "/explore#types",
+          icon: <Globe className={iconCls} />,
+          children: [
+            { title: "Public circles", description: "Open to all qualifying savers.", href: "/explore#types" },
+            { title: "Private circles", description: "Invite-only via link or code.", href: "/explore#types" },
+            { title: "Community circles", description: "Token-gated for DAOs and holders.", href: "/explore#types" },
+            { title: "Premium circles", description: "Higher limits, collateralized.", href: "/explore#types" },
+          ],
+        },
+        { title: "Start a circle", description: "Spin up daily, weekly or monthly rounds.", href: "/register", icon: <CirclePlus className={iconCls} /> },
         { title: "How circles work", description: "Lifecycle, penalties and collateral explained.", href: "/how-it-works", icon: <BookOpen className={iconCls} /> },
       ],
     },
     {
-      heading: "Get started",
+      heading: "Earn",
       items: [
-        { title: "Start a circle", description: "Spin up daily, weekly or monthly rounds.", href: "/register", icon: <CirclePlus className={iconCls} /> },
-        { title: "Join with invite", description: "Redeem an organizer's invite code.", href: "/how-it-works", icon: <Lock className={iconCls} /> },
-        { title: "Communities", description: "Save with your DAO or holder group.", href: "/explore#types", icon: <Users className={iconCls} /> },
-        { title: "Premium circles", description: "Higher limits for proven savers.", href: "/explore#types", icon: <Crown className={iconCls} /> },
-      ],
-    },
-  ],
-};
-
-const EARN_MENU: NavMenu = {
-  label: "Earn",
-  groups: [
-    {
-      heading: "Payout modes",
-      items: [
-        { title: "Random", description: "Provably-fair VRF draw each round.", href: "/payout-modes#random", icon: <Dices className={iconCls} /> },
-        { title: "Fixed order", description: "Sequential, pre-defined distribution.", href: "/payout-modes#fixed", icon: <ListOrdered className={iconCls} /> },
-        { title: "Auction", description: "Chit-fund bidding for the pool.", href: "/payout-modes#auction", icon: <Gavel className={iconCls} /> },
-        { title: "Vote-based", description: "Community votes the recipient.", href: "/payout-modes#vote", icon: <Vote className={iconCls} /> },
-      ],
-    },
-    {
-      heading: "Reputation",
-      items: [
+        {
+          title: "Payout modes",
+          description: "Random, fixed, auction and vote-based rules.",
+          href: "/payout-modes",
+          icon: <Dices className={iconCls} />,
+          children: [
+            { title: "Random", description: "Provably-fair VRF draw.", href: "/payout-modes#random" },
+            { title: "Fixed order", description: "Known sequence, day one.", href: "/payout-modes#fixed" },
+            { title: "Auction", description: "Chit-fund bidding.", href: "/payout-modes#auction" },
+            { title: "Vote-based", description: "Community decides.", href: "/payout-modes#vote" },
+          ],
+        },
         { title: "DeoScore", description: "Portable 0–1000 savings reputation.", href: "/deoscore", icon: <Trophy className={iconCls} /> },
         { title: "Governance", description: "Vote on circles and disputes.", href: "/deoscore#governance", icon: <Landmark className={iconCls} /> },
-        { title: "Developers", description: "Build on the DEODES API.", href: "/developers", icon: <Code className={iconCls} /> },
       ],
     },
-  ],
-};
-
-const DEV_MENU: NavMenu = {
-  label: "Developers",
-  groups: [
     {
       heading: "Build",
       items: [
-        { title: "Developer hub", description: "Products, tools and community.", href: "/developers", icon: <Code className={iconCls} /> },
-        { title: "API reference", description: "REST endpoints for circles and reputation.", href: "/docs/api", icon: <FileText className={iconCls} /> },
-        { title: "Status", description: "Live uptime and response times.", href: "/status", icon: <Activity className={iconCls} /> },
-      ],
-    },
-    {
-      heading: "Docs",
-      items: [
         { title: "Documentation", description: "Guides for every workflow.", href: "/docs", icon: <BookOpen className={iconCls} /> },
-        { title: "FAQ", description: "Answers about circles and payouts.", href: "/faq", icon: <CircleQuestionMark className={iconCls} /> },
+        { title: "Status", description: "Live uptime and response times.", href: "/status", icon: <Activity className={iconCls} /> },
         { title: "Changelog", description: "What shipped recently.", href: "/changelog", icon: <ScrollText className={iconCls} /> },
       ],
     },
@@ -146,6 +126,7 @@ const RES_MENU: NavMenu = {
       items: [
         { title: "How it works", description: "From passkey to payout.", href: "/how-it-works", icon: <ShieldQuestionMark className={iconCls} /> },
         { title: "About", description: "Mission and why Arc.", href: "/about", icon: <Shield className={iconCls} /> },
+        { title: "FAQ", description: "Answers about circles and payouts.", href: "/faq", icon: <CircleQuestionMark className={iconCls} /> },
         { title: "Transparency & fees", description: "Protocol economics, open source.", href: "/transparency", icon: <Scale className={iconCls} /> },
       ],
     },
@@ -185,8 +166,14 @@ function MegaDropdown({
   onOpen: () => void;
   onClose: () => void;
 }) {
+  const [openChild, setOpenChild] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!open) setOpenChild(null);
+  }, [open ]);
+
   return (
-    <div className="relative" onMouseEnter={onOpen} onMouseLeave={onClose}>
+    <div className="relative" onMouseEnter={onOpen} onMouseLeave={() => { onClose(); setOpenChild(null); }}>
       <button
         type="button"
         onClick={() => (open ? onClose() : onOpen())}
@@ -206,10 +193,10 @@ function MegaDropdown({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 8 }}
             transition={{ duration: 0.18 }}
-            className="absolute left-1/2 top-full z-50 w-[560px] -translate-x-1/2 pt-3"
+            className="absolute left-1/2 top-full z-50 w-[780px] max-w-[90vw] -translate-x-1/2 pt-3"
           >
             <div className="bg-[#f7f7fa] dark:bg-[#0b0b13] backdrop-blur-2xl rounded-2xl border border-black/10 dark:border-white/[0.12] p-4 shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 {menu.groups.map((group) => (
                   <div key={group.heading}>
                     <p className="px-3 pb-2 font-heading text-[10px] tracking-[0.25em] uppercase text-muted-foreground/60">
@@ -217,21 +204,70 @@ function MegaDropdown({
                     </p>
                     <div className="space-y-0.5">
                       {group.items.map((item) => (
-                        <Link
-                          key={item.title}
-                          href={item.href}
-                          scroll={false}
-                          onClick={onClose}
-                          className="flex items-start gap-3 rounded-xl px-3 py-2.5 hover:glass-whisper transition-all duration-200"
-                        >
-                          <span className="mt-0.5 shrink-0 text-muted-foreground">{item.icon}</span>
-                          <span>
-                            <span className="block text-sm font-medium text-foreground">{item.title}</span>
-                            <span className="block text-xs text-muted-foreground mt-0.5 leading-snug">
-                              {item.description}
+                        item.children !== undefined && item.children.length > 0 ? (
+                          <div
+                            key={item.title}
+                            className="relative"
+                            onMouseEnter={() => setOpenChild(item.title)}
+                            onMouseLeave={() => setOpenChild((c) => (c === item.title ? null : c))}
+                          >
+                            <Link
+                              href={item.href}
+                              scroll={false}
+                              onClick={onClose}
+                              className="flex items-start gap-3 rounded-xl px-3 py-2.5 hover:glass-whisper transition-all duration-200"
+                            >
+                              <span className="mt-0.5 shrink-0 text-muted-foreground">{item.icon}</span>
+                              <span className="flex-1">
+                                <span className="block text-sm font-medium text-foreground">{item.title}</span>
+                                <span className="block text-xs text-muted-foreground mt-0.5 leading-snug">
+                                  {item.description}
+                                </span>
+                              </span>
+                              <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground" />
+                            </Link>
+                            <AnimatePresence>
+                              {openChild === item.title && (
+                                <motion.div
+                                  initial={{ opacity: 0, x: -6 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  exit={{ opacity: 0, x: -6 }}
+                                  transition={{ duration: 0.15 }}
+                                  className="absolute left-full top-0 z-50 ml-2 w-64 rounded-2xl bg-[#f7f7fa] dark:bg-[#0b0b13] border border-black/10 dark:border-white/[0.12] p-2 shadow-[0_24px_80px_rgba(0,0,0,0.45)]"
+                                >
+                                  {item.children.map((child) => (
+                                    <Link
+                                      key={child.title}
+                                      href={child.href}
+                                      scroll={false}
+                                      onClick={onClose}
+                                      className="block rounded-xl px-3 py-2 hover:glass-whisper transition-all duration-200"
+                                    >
+                                      <span className="block text-sm font-medium text-foreground">{child.title}</span>
+                                      <span className="block text-xs text-muted-foreground mt-0.5">{child.description}</span>
+                                    </Link>
+                                  ))}
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                        ) : (
+                          <Link
+                            key={item.title}
+                            href={item.href}
+                            scroll={false}
+                            onClick={onClose}
+                            className="flex items-start gap-3 rounded-xl px-3 py-2.5 hover:glass-whisper transition-all duration-200"
+                          >
+                            <span className="mt-0.5 shrink-0 text-muted-foreground">{item.icon}</span>
+                            <span>
+                              <span className="block text-sm font-medium text-foreground">{item.title}</span>
+                              <span className="block text-xs text-muted-foreground mt-0.5 leading-snug">
+                                {item.description}
+                              </span>
                             </span>
-                          </span>
-                        </Link>
+                          </Link>
+                        )
                       ))}
                     </div>
                   </div>
@@ -250,6 +286,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [openMega, setOpenMega] = useState<string | null>(null);
   const [openAcc, setOpenAcc] = useState<string | null>(null);
+  const [openSub, setOpenSub] = useState<string | null>(null);
   const { t } = useTranslate();
 
   const closeMenu = useCallback(() => setMenuOpen(false), []);
@@ -289,7 +326,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
     return v === key ? fallback : v;
   };
 
-  const allMenus: NavMenu[] = [CIRCLES_MENU, EARN_MENU, DEV_MENU, RES_MENU];
+  const allMenus: NavMenu[] = [PLATFORM_MENU, RES_MENU];
 
   return (
     <div className="min-h-screen bg-[rgb(var(--background))]">
@@ -432,15 +469,54 @@ export function PublicLayout({ children }: PublicLayoutProps) {
                               </p>
                               <div className="mt-1">
                                 {group.items.map((item) => (
-                                  <Link
-                                    key={item.title}
-                                    href={item.href}
-                                    scroll={false}
-                                    onClick={closeMenu}
-                                    className="block px-1 py-1.5 text-sm text-muted-foreground hover:text-foreground"
-                                  >
-                                    {item.title}
-                                  </Link>
+                                  item.children !== undefined && item.children.length > 0 ? (
+                                    <div key={item.title}>
+                                      <button
+                                        type="button"
+                                        onClick={() => setOpenSub(openSub === item.title ? null : item.title)}
+                                        aria-expanded={openSub === item.title}
+                                        className="flex w-full items-center justify-between px-1 py-1.5 text-sm text-muted-foreground hover:text-foreground"
+                                      >
+                                        {item.title}
+                                        <ChevronDown
+                                          className={cn("h-3.5 w-3.5 transition-transform duration-200", openSub === item.title && "rotate-180")}
+                                        />
+                                      </button>
+                                      {openSub === item.title && (
+                                        <div className="ml-3 space-y-0.5 border-l border-white/10 pl-3">
+                                          <Link
+                                            href={item.href}
+                                            scroll={false}
+                                            onClick={closeMenu}
+                                            className="block px-1 py-1.5 text-sm font-medium text-foreground"
+                                          >
+                                            View all →
+                                          </Link>
+                                          {item.children.map((child) => (
+                                            <Link
+                                              key={child.title}
+                                              href={child.href}
+                                              scroll={false}
+                                              onClick={closeMenu}
+                                              className="block px-1 py-1.5 text-sm text-muted-foreground hover:text-foreground"
+                                            >
+                                              {child.title}
+                                            </Link>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
+                                  ) : (
+                                    <Link
+                                      key={item.title}
+                                      href={item.href}
+                                      scroll={false}
+                                      onClick={closeMenu}
+                                      className="block px-1 py-1.5 text-sm text-muted-foreground hover:text-foreground"
+                                    >
+                                      {item.title}
+                                    </Link>
+                                  )
                                 ))}
                               </div>
                             </div>
@@ -512,8 +588,8 @@ export function PublicLayout({ children }: PublicLayoutProps) {
       <main id="main-content" tabIndex={-1} className="pt-20">{children}</main>
       <ScrollToTop />
 
-      {/* ════════════════ FAT FOOTER (circle.com column pattern) ════════════════ */}
-      <footer className="mt-20 border-t border-white/[0.06] bg-black/[0.4]">
+      {/* ════════════════ FAT FOOTER — solid light, readable in both themes ════════════════ */}
+      <footer className="mt-20 border-t border-black/10 dark:border-white/[0.06] bg-[#f7f7fa] dark:bg-black/[0.4]">
         <div className="container-premium grid gap-10 py-16 md:grid-cols-[1.3fr_repeat(3,1fr)] lg:grid-cols-[1.3fr_repeat(6,1fr)]">
           <div>
             <p className="gradient-text-extended font-heading font-bold text-xl">Deodes</p>
@@ -558,11 +634,9 @@ export function PublicLayout({ children }: PublicLayoutProps) {
             </div>
           </div>
           <div>
-            <p className="mb-3 text-xs font-heading tracking-[0.25em] uppercase text-muted-foreground/60">Developers</p>
+            <p className="mb-3 text-xs font-heading tracking-[0.25em] uppercase text-muted-foreground/60">Build</p>
             <div className="flex flex-col space-y-2.5 text-sm font-medium">
-              <Link href="/developers" className="hover:text-foreground text-muted-foreground transition-colors">{tr("nav.developers", "Developers")}</Link>
               <Link href="/docs" className="hover:text-foreground text-muted-foreground transition-colors">{tr("nav.docs", "Docs")}</Link>
-              <Link href="/docs/api" className="hover:text-foreground text-muted-foreground transition-colors">API reference</Link>
               <Link href="/status" className="hover:text-foreground text-muted-foreground transition-colors">Status</Link>
               <Link href="/changelog" className="hover:text-foreground text-muted-foreground transition-colors">Changelog</Link>
             </div>

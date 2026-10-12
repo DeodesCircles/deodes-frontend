@@ -156,9 +156,14 @@ const trustItems = [
 
 // ── Zero-lag rotating hero word ──────────────────────────────────────────────
 // Compositor-only animation (transform + opacity): no layout, no paint, no
-// gradient re-raster. The old holo-text gradient-shift repainted a giant text
-// layer every frame. Respects prefers-reduced-motion (static first word).
-const GROW_WORDS = ["Grow.", "Save.", "Earn.", "Rise."]
+// gradient re-raster. Each word carries its own static gradient + glow mix,
+// painted once — the swap animation never touches pixels.
+const GROW_WORDS = [
+  { word: "Grow.", gradient: "gradient-text-extended", glow: "glow-violet" },
+  { word: "Save.", gradient: "gradient-text-gold", glow: "glow-gold" },
+  { word: "Earn.", gradient: "gradient-text-cyan", glow: "glow-cyan" },
+  { word: "Rise.", gradient: "gradient-text", glow: "glow-indigo" },
+]
 
 function RotatingGrow() {
   const [index, setIndex] = useState(0)
@@ -171,13 +176,15 @@ function RotatingGrow() {
     return () => clearInterval(id)
   }, [])
 
+  const current = GROW_WORDS[index]
+
   return (
     <span className="block text-left" aria-live="polite">
       <span
         key={index}
-        className="grow-word gradient-text font-display text-5xl md:text-7xl xl:text-8xl font-black tracking-tight"
+        className={`grow-word ${current.gradient} ${current.glow} font-display text-5xl md:text-7xl xl:text-8xl font-black tracking-tight`}
       >
-        {GROW_WORDS[index]}
+        {current.word}
       </span>
     </span>
   )

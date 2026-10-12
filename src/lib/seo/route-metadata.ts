@@ -266,50 +266,6 @@ export const PUBLIC_ROUTES: readonly RouteSeo[] = [
     indexable: true,
   },
   {
-    path: "/docs/api",
-    title: "API Reference — Deodes",
-    description:
-      "Interactive reference for the Deodes REST API. Every endpoint, request body and response shape for passkey auth, wallets, circles, contributions and reputation, served as live Swagger docs.",
-    ogTitle: "Deodes API reference — live Swagger docs",
-    ogDescription:
-      "Browse every Deodes REST endpoint with schemas and examples: passkey auth, auto-provisioned wallets, circles, contributions and reputation.",
-    keywords: [
-      "deodes",
-      "api",
-      "api reference",
-      "rest",
-      "swagger",
-      "openapi",
-      "endpoints",
-      "developers",
-      "arc",
-    ],
-    indexable: true,
-  },
-  {
-    path: "/developers",
-    title: "Developers — Deodes",
-    description:
-      "Build on Deodes: a full REST API reference, WebAuthn passkey authentication, auto-provisioned Arc wallets and seven Arc smart contracts, all Apache 2.0 licensed.",
-    ogTitle: "Developers — build on Deodes's Arc platform",
-    ogDescription:
-      "API docs, the passkey auth flow and a smart-contract reference for building on Deodes. Zero platform fees, no KYC, Apache 2.0 throughout.",
-    keywords: [
-      "deodes",
-      "developers",
-      "api",
-      "rest",
-      "typescript",
-      "react",
-      "arc",
-      "arc",
-      "smart contracts",
-      "webauthn",
-      "open source",
-    ],
-    indexable: true,
-  },
-  {
     path: "/docs",
     title: "Documentation — Deodes",
     description:

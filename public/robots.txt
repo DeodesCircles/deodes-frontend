@@ -3,7 +3,6 @@ Allow: /
 Allow: /about
 Allow: /become-a-contributor
 Allow: /docs
-Allow: /docs/api
 Allow: /docs/getting-started
 Allow: /docs/circles
 Allow: /docs/reputation
@@ -15,7 +14,6 @@ Allow: /login
 Allow: /register
 Allow: /privacy
 Allow: /how-it-works
-Allow: /developers
 Allow: /support
 Allow: /status
 Allow: /terms
