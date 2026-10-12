@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v1'
+const CACHE_VERSION = 'v3'
 const STATIC_CACHE = `static-${CACHE_VERSION}`
 const DYNAMIC_CACHE = `dynamic-${CACHE_VERSION}`
 const API_CACHE = `api-${CACHE_VERSION}`
@@ -12,10 +12,11 @@ function swLog(message, ...context) {
   }
 }
 
-// Static assets to cache on install
+// Static assets to cache on install.
+// NOTE: '/favicon.ico' is intentionally NOT precached — it returned HTTP 500
+// in dev, which makes cache.addAll reject and poisons installs.
 const STATIC_ASSETS = [
   '/',
-  '/favicon.ico',
   '/offline',
 ]
 

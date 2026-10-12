@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Font vars (fontsource-variable, local — replaces next/font/google) ── */
+:root {
+  --font-space-grotesk: "Space Grotesk Variable", system-ui, sans-serif;
+  --font-inter: "Inter Variable", system-ui, sans-serif;
+  --font-jetbrains-mono: "JetBrains Mono Variable", monospace;
+}
+
 /* ═══════════════════════════════════════════════════════════
    MOISTELLO — EXTREME FUTURISM DESIGN SYSTEM
    "Holographic Glass + Quantum Depth"

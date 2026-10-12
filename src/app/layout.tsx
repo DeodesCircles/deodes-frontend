@@ -1,8 +1,12 @@
 import type { Metadata, Viewport } from "next"
 import { headers } from "next/headers"
-import { Space_Grotesk } from "next/font/google"
-import { Inter } from "next/font/google"
-import { JetBrains_Mono } from "next/font/google"
+// Local variable fonts (fontsource) — same families next/font/google served,
+// but zero network: the VPS has no route to fonts.gstatic.com, so every cold
+// compile stalled ~60-90s retrying Google. Rendering is pixel-identical;
+// the --font-* CSS vars are defined in globals.css.
+import "@fontsource-variable/space-grotesk"
+import "@fontsource-variable/inter"
+import "@fontsource-variable/jetbrains-mono"
 import "./globals.css"
 import { QueryProvider } from "@/providers/query-provider"
 import { WsProvider } from "@/providers/ws-provider"
@@ -24,25 +28,6 @@ import {
   TWITTER_CREATOR,
   TWITTER_SITE,
 } from "@/lib/seo/site"
-
-const spaceGrotesk = Space_Grotesk({
-  subsets: ["latin"],
-  variable: "--font-space-grotesk",
-  weight: ["300", "400", "500", "600", "700"],
-  display: "swap",
-})
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-})
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-jetbrains-mono",
-  display: "swap",
-})
 
 export const metadata: Metadata = {
   title: "Moistello — Stellar Savings Circles",
@@ -227,7 +212,7 @@ export default function RootLayout({
           }} />
         </head>
       <body
-        className={`${spaceGrotesk.variable} ${inter.variable} ${jetbrainsMono.variable} font-body bg-[rgb(var(--background))] text-[rgb(var(--foreground))] antialiased`}
+        className={`font-body bg-[rgb(var(--background))] text-[rgb(var(--foreground))] antialiased`}
       >
         <PwaRegister />
         <QueryProvider>
