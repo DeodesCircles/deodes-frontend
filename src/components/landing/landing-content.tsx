@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import {
   Shield,
@@ -388,7 +388,6 @@ function CircleSpotlight() {
           className="spot-progress absolute bottom-0 left-0 h-[3px] w-full origin-left gradient-bg-extended"
           style={{ animationPlayState: paused ? "paused" : "running" }}
         />
-      </div>
       </div>
       <div className="mt-5 flex items-center justify-between">
         <div className="flex items-center gap-2" role="tablist" aria-label="Circle types">
