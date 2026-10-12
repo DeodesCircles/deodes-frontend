@@ -19,7 +19,9 @@ import {
   Vote,
   Gift,
   Search,
+  ArrowUpRight,
 } from "lucide-react";
+import { useAppHost } from "@/hooks/use-app-host";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { cn } from "@/lib/cn";
 import { Routes } from "@/lib/constants";
@@ -48,6 +50,7 @@ function SidebarComponent() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const unreadCount = useUnreadCount();
   const { t } = useTranslate();
+  const isAppHost = useAppHost();
 
   const openCommandPalette = () => setCommandPaletteOpen(true);
 
@@ -106,8 +109,13 @@ function SidebarComponent() {
         <div className="flex h-16 items-center justify-between px-5 pt-2">
           <Link href="/" className="flex items-center gap-2 select-none">
             <span className="gradient-text font-heading font-bold text-xl tracking-tight">
-              Moistello
+              Deodes
             </span>
+            {isAppHost && (
+              <span className="rounded-md px-1.5 py-0.5 font-mono text-[10px] font-bold tracking-widest text-white gradient-bg-extended">
+                APP
+              </span>
+            )}
           </Link>
           <ThemeToggle size="sm" />
         </div>
@@ -202,7 +210,7 @@ function SidebarComponent() {
                   {user.displayName ?? "User"}
                 </p>
                 <p className="text-[10px] text-muted-foreground font-mono truncate">
-                  Moi Score: {user.moiScore}
+                  DeoScore: {user.moiScore}
                 </p>
               </div>
               <div className="flex h-2 w-2 rounded-full bg-emerald-400" />
@@ -210,9 +218,18 @@ function SidebarComponent() {
           </div>
         )}
 
-        <div className="shrink-0 border-t border-white/[0.04] px-5 py-3">
+        <div className="shrink-0 border-t border-white/[0.04] px-5 py-3 space-y-2">
+          {isAppHost && (
+            <a
+              href="https://deodes.com"
+              className="flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowUpRight className="h-3.5 w-3.5" />
+              Back to site
+            </a>
+          )}
           <p className="text-[10px] text-muted-foreground/50 font-body tracking-wider">
-            &copy; {new Date().getFullYear()} Moistello
+            &copy; {new Date().getFullYear()} Deodes
           </p>
         </div>
       </aside>

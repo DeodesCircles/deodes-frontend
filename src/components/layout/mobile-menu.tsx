@@ -95,7 +95,7 @@ function MobileMenuComponent({ isOpen, onClose }: MobileMenuProps) {
         style={{ overscrollBehavior: "contain" }}
       >
         <div className="flex h-16 items-center justify-between px-5 border-b border-white/[0.05]">
-          <span className="gradient-text-extended font-heading font-bold text-lg">Moistello</span>
+          <span className="gradient-text-extended font-heading font-bold text-lg">Deodes</span>
           <button
             type="button"
             onClick={onClose}

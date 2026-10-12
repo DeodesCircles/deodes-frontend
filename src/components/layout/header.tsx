@@ -8,6 +8,7 @@ import {
   Wallet,
   Bell,
 } from "lucide-react";
+import { useAppHost } from "@/hooks/use-app-host";
 import { cn } from "@/lib/cn";
 import { formatAddress } from "@/lib/formatters";
 import { Routes } from "@/lib/constants";
@@ -27,6 +28,7 @@ function HeaderComponent({ onToggleMobileMenu, isMobileMenuOpen }: HeaderProps) 
   const { isConnected, address } = useMultiWallet();
   const unreadCount = useUnreadCount();
   const [showConnectModal, setShowConnectModal] = useState(false);
+  const isAppHost = useAppHost();
 
   return (
     <>
@@ -48,6 +50,11 @@ function HeaderComponent({ onToggleMobileMenu, isMobileMenuOpen }: HeaderProps) 
               <span className="gradient-text-extended font-heading font-bold text-lg tracking-tight">
                 Deodes
               </span>
+              {isAppHost && (
+                <span className="rounded-md px-1.5 py-0.5 font-mono text-[10px] font-bold tracking-widest text-white gradient-bg-extended">
+                  APP
+                </span>
+              )}
             </Link>
           </div>
 
