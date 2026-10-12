@@ -216,13 +216,24 @@ const nextConfig = {
   },
 };
 
-const configWithSentry = withSentryConfig(nextConfig, {
-  org: process.env.SENTRY_ORG,
-  project: process.env.SENTRY_PROJECT,
-  authToken: process.env.SENTRY_AUTH_TOKEN,
-  silent: true,
-  hideSourceMaps: true,
-  widenClientFileUpload: true,
-})
+const sentryEnabled = Boolean(
+  process.env.NEXT_PUBLIC_SENTRY_DSN ||
+  process.env.SENTRY_AUTH_TOKEN ||
+  process.env.SENTRY_DSN
+)
+
+// Sentry is runtime-disabled without a DSN, so wrapping the config without
+// one only bloats bundles (~MBs of SDK) with zero benefit. Wrap only when
+// Sentry is actually configured — prod keeps full behavior unchanged.
+const configWithSentry = sentryEnabled
+  ? withSentryConfig(nextConfig, {
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+      silent: true,
+      hideSourceMaps: true,
+      widenClientFileUpload: true,
+    })
+  : nextConfig
 
 export default withBundleAnalyzer(configWithSentry)
