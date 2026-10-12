@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import {
   Shield,
@@ -19,7 +19,6 @@ import {
   Gavel,
   Vote,
   Wallet,
-  CirclePlus,
   HandCoins,
   Trophy,
   BadgeCheck,
@@ -284,155 +283,49 @@ function RoundStrip() {
   )
 }
 
-// ── Circle spotlight: fullscreen auto-rotating showcase ──────────────────────
-// One circle type fills the stage; every 5s the next takes over. Dots + arrows
-// for manual control, pause on hover/focus, frozen under reduced-motion.
-// Entry animation is the shared grow-in (transform + opacity only).
-const SPOTLIGHT_TIMEOUT_MS = 5000
+// ── Circle type list: static editorial rows ────────────────────────────────────
+// One row per type: number, icon, name, copy, join line, deep link. No timers,
+// no autoplay — every row is always visible and every link works first try.
+const TYPE_ANCHORS: Record<string, string> = {
+  "Public circles": "public",
+  "Private circles": "private",
+  "Community circles": "community",
+  "Premium circles": "premium",
+}
 
-function CircleSpotlight() {
-  const [index, setIndex] = useState(0)
-  const [paused, setPaused] = useState(false)
-  const touchX = useRef<number | null>(null)
-
-  useEffect(() => {
-    if (paused) return
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
-    const id = setInterval(() => {
-      setIndex((i) => (i + 1) % circleTypes.length)
-    }, SPOTLIGHT_TIMEOUT_MS)
-    return () => clearInterval(id)
-  }, [paused, index])
-
-  const current = circleTypes[index]
-  const Icon = current.icon
-  const go = (dir: 1 | -1) => {
-    setIndex((i) => (i + dir + circleTypes.length) % circleTypes.length)
-    setPaused(true)
-  }
-
+function CircleTypeList() {
   return (
-    <div
-      className="mt-10"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-      onFocus={() => setPaused(true)}
-      onBlur={() => setPaused(false)}
-      onTouchStart={(e) => {
-        touchX.current = e.touches[0]?.clientX ?? null
-      }}
-      onTouchEnd={(e) => {
-        if (touchX.current === null) return
-        const dx = (e.changedTouches[0]?.clientX ?? touchX.current) - touchX.current
-        touchX.current = null
-        if (dx <= -40) go(1)
-        else if (dx >= 40) go(-1)
-      }}
-    >
-      <div
-        key={current.name}
-        className="grow-word relative overflow-hidden rounded-3xl glass-premium p-8 md:p-12 min-h-[380px] md:min-h-[420px] flex flex-col justify-center"
-        aria-live="polite"
-      >
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute -right-4 -top-8 select-none font-display text-[10rem] md:text-[16rem] font-black leading-none text-white/[0.04] dark:text-white/[0.05]"
-        >
-          0{circleTypes.indexOf(current) + 1}
-        </span>
-        <div className="relative flex flex-col md:flex-row md:items-center gap-8">
-          <span className="w-16 h-16 md:w-20 md:h-20 shrink-0 rounded-3xl gradient-bg-extended flex items-center justify-center text-white">
-            <Icon className="h-7 w-7 md:h-9 md:w-9" />
-          </span>
-          <span className="flex-1">
-            <span className="flex items-center gap-3">
-              <span className="inline-block rounded-full px-3 py-1 text-xs font-mono border border-white/10 text-muted-foreground">
-                {current.meta}
-              </span>
-              <span className="font-mono text-xs text-muted-foreground">
-                0{index + 1} / 0{circleTypes.length}
-              </span>
-            </span>
-            <h3 className="mt-3 font-display text-3xl md:text-5xl font-black tracking-tight">
-              {current.name}
-            </h3>
-            <p className="mt-3 text-muted-foreground md:text-lg leading-relaxed max-w-2xl">
-              {current.desc}
-            </p>
-            <p className="mt-2 text-sm md:text-base text-foreground/85 max-w-2xl">{current.join}</p>
-            <span className="mt-4 flex items-center gap-1.5" aria-hidden="true">
-              {["Ada", "Bola", "Chidi", "Dara", "Emeka", "Funke"].map((m, mi) => (
-                <MemberDot key={m} name={m} paid={mi === 0} isNext={mi === 1} />
-              ))}
-              <span className="ml-2 font-mono text-[11px] text-muted-foreground">example round</span>
-            </span>
-            <span className="mt-6 flex flex-wrap gap-3">
-              <Link
-                href="/explore"
-                className="inline-flex items-center gap-2 rounded-2xl px-6 py-3 text-sm font-heading font-semibold glass-strong hover:bg-white/[0.06] transition-all"
-              >
-                Explore {current.name.toLowerCase()} <ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link
-                href={Routes.REGISTER}
-                className="inline-flex items-center gap-2 text-sm font-heading font-semibold text-muted-foreground hover:text-foreground transition-all px-2 py-3"
-              >
-                <CirclePlus className="h-4 w-4" /> Start your own
-              </Link>
-            </span>
-          </span>
-        </div>
-        <span
-          key={`progress-${current.name}-${paused ? "paused" : "run"}`}
-          aria-hidden="true"
-          className="spot-progress absolute bottom-0 left-0 h-[3px] w-full origin-left gradient-bg-extended"
-          style={{ animationPlayState: paused ? "paused" : "running" }}
-        />
-      </div>
-      <div className="mt-5 flex items-center justify-between">
-        <div className="flex items-center gap-2" role="tablist" aria-label="Circle types">
-          {circleTypes.map((c, i) => (
-            <button
-              key={c.name}
-              type="button"
-              role="tab"
-              aria-selected={index === i}
-              aria-label={c.name}
-              onClick={() => {
-                if (index === i) {
-                  setPaused(false)
-                } else {
-                  setIndex(i)
-                  setPaused(true)
-                }
-              }}
-              className={
-                index === i
-                  ? "h-2 w-8 rounded-full gradient-bg-extended transition-all"
-                  : "h-2 w-2 rounded-full bg-white/15 hover:bg-white/30 transition-all"
-              }
-            />
-          ))}
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            aria-label="Previous circle type"
-            onClick={() => go(-1)}
-            className="flex h-10 w-10 items-center justify-center rounded-full glass-strong text-muted-foreground hover:text-foreground transition-colors"
+    <div className="mt-10 overflow-hidden rounded-3xl border border-white/[0.08]">
+      {circleTypes.map((c, i) => {
+        const Icon = c.icon
+        const anchor = TYPE_ANCHORS[c.name] ?? ""
+        return (
+          <Link
+            key={c.name}
+            href={`/explore#${anchor}`}
+            scroll={false}
+            className="group flex flex-col sm:flex-row sm:items-center gap-5 p-6 md:p-8 border-b border-white/[0.06] last:border-0 hover:bg-white/[0.03] transition-colors"
           >
-            ←
-          </button>
-          <button
-            type="button"
-            aria-label={paused ? "Resume auto-rotation" : "Next circle type"}
-            onClick={() => go(1)}
-            className="flex h-10 w-10 items-center justify-center rounded-full glass-strong text-muted-foreground hover:text-foreground transition-colors"
-          >
-            →
-          </button>
-        </div>
-      </div>
+            <span className="font-mono text-sm text-muted-foreground w-10 shrink-0">
+              0{i + 1}
+            </span>
+            <span className="w-12 h-12 shrink-0 rounded-2xl gradient-bg-extended flex items-center justify-center text-white">
+              <Icon className="h-5 w-5" />
+            </span>
+            <span className="flex-1 min-w-0">
+              <span className="flex flex-wrap items-center gap-3">
+                <span className="font-heading text-lg md:text-xl font-semibold">{c.name}</span>
+                <span className="rounded-full px-3 py-0.5 text-[11px] font-mono border border-white/10 text-muted-foreground">
+                  {c.meta}
+                </span>
+              </span>
+              <span className="block text-muted-foreground text-sm leading-relaxed mt-1">{c.desc}</span>
+              <span className="block mt-1 text-[13px] text-foreground/80">{c.join}</span>
+            </span>
+            <ArrowRight className="h-5 w-5 shrink-0 text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all" />
+          </Link>
+        )
+      })}
     </div>
   )
 }
@@ -558,7 +451,7 @@ export function LandingContent() {
               </Link>
             </div>
           </div>
-          <CircleSpotlight />
+          <CircleTypeList />
         </section>
 
         <LedgerDivider caption="Round ledger — R1 → R5" />
