@@ -3,6 +3,7 @@ import {
   GOOGLE_STATE_COOKIE,
   STATE_TTL_SECONDS,
   buildAuthUrl,
+  cookieDomain,
   googleConfigured,
   newState,
   publicOrigin,
@@ -25,6 +26,7 @@ export async function GET(request: NextRequest) {
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
+    ...cookieDomain(),
     maxAge: STATE_TTL_SECONDS,
   })
   return response

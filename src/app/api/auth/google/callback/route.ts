@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import {
   GOOGLE_STATE_COOKIE,
+  cookieDomain,
+  defaultNext,
   exchangeCode,
   mintSessionJwt,
   publicOrigin,
@@ -22,7 +24,7 @@ function fail(request: NextRequest, reason: string): NextResponse {
   const url = new URL("/login", publicOrigin(request.url))
   url.searchParams.set("error", reason)
   const response = NextResponse.redirect(url)
-  response.cookies.set(GOOGLE_STATE_COOKIE, "", { path: "/", maxAge: 0 })
+  response.cookies.set(GOOGLE_STATE_COOKIE, "", { path: "/", ...cookieDomain(), maxAge: 0 })
   return response
 }
 
@@ -46,7 +48,9 @@ export async function GET(request: NextRequest) {
     const profile = await verifyIdToken(tokens.id_token)
     const session = mintSessionJwt(profile)
 
-    const response = NextResponse.redirect(new URL(next, publicOrigin(request.url)))
+    const response = NextResponse.redirect(
+      next === "/" ? defaultNext() : new URL(next, publicOrigin(request.url)),
+    )
     response.cookies.set(ACCESS_TOKEN_COOKIE, session, {
       ...SESSION_COOKIE_OPTIONS,
       maxAge: ACCESS_TOKEN_MAX_AGE,
@@ -62,7 +66,7 @@ export async function GET(request: NextRequest) {
       ...SESSION_COOKIE_OPTIONS,
       maxAge: REFRESH_TOKEN_MAX_AGE,
     })
-    response.cookies.set(GOOGLE_STATE_COOKIE, "", { path: "/", maxAge: 0 })
+    response.cookies.set(GOOGLE_STATE_COOKIE, "", { path: "/", ...cookieDomain(), maxAge: 0 })
     return response
   } catch {
     return fail(request, "google-failed")

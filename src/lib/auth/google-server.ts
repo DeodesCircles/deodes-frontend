@@ -46,6 +46,16 @@ export function publicOrigin(requestUrl: string): string {
   return appOrigin();
 }
 
+/** Cookie domain shared by apex + app in production; host-only otherwise. */
+export function cookieDomain(): { domain?: string } {
+  return process.env.NODE_ENV === "production" ? { domain: ".deodes.com" } : {};
+}
+
+/** Where a fresh Google login lands: the app host in prod, apex path locally. */
+export function defaultNext(): string {
+  return process.env.NODE_ENV === "production" ? "https://app.deodes.com/" : "/";
+}
+
 export function newState(): string {
   return crypto.randomBytes(24).toString("base64url");
 }

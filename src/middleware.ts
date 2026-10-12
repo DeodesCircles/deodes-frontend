@@ -151,6 +151,45 @@ export function middleware(request: NextRequest) {
     }
   }
 
+  // ── Apex/app host split ──────────────────────────────────────────────
+  // Marketing lives on deodes.com; the authenticated app lives on
+  // app.deodes.com. Cookies are shared across .deodes.com, so a login on
+  // either host is visible on both:
+  //   apex + session cookie → app host, same path (all page visits)
+  //   app host, no cookie → apex: /login for protected paths, apex home
+  //   for public pages (marketing has one canonical home)
+  // API/static/telemetry traffic is never redirected. Only GET/HEAD — a
+  // form POST must never turn into a cross-host redirect.
+  if (!isApiRoute && (request.method === "GET" || request.method === "HEAD")) {
+    const host = (request.headers.get("host") ?? "").split(":")[0].toLowerCase()
+    const isAppHost = host === "app.deodes.com"
+    const isApexHost = host === "deodes.com" || host === "www.deodes.com"
+    if (isAppHost || isApexHost) {
+      const go = (target: URL): NextResponse => {
+        const redirect = NextResponse.redirect(target)
+        redirect.headers.set(cspHeaderName, csp)
+        if (shouldSetCsrfCookie) attachCsrfCookie(redirect, csrfToken)
+        return redirect
+      }
+      if (isApexHost && token) {
+        const target = new URL(request.url)
+        target.hostname = "app.deodes.com"
+        target.protocol = "https:"
+        return go(target)
+      }
+      if (isAppHost && !token) {
+        const isProtected = PROTECTED_PATHS.some(
+          (p) => pathname === p || pathname.startsWith(p + "/"),
+        )
+        const target = new URL(request.url)
+        target.hostname = "deodes.com"
+        target.protocol = "https:"
+        target.pathname = isProtected ? "/login" : target.pathname
+        return go(target)
+      }
+    }
+  }
+
   // Redirect unauthenticated users to login for protected routes
   if (!token) {
     for (const path of PROTECTED_PATHS) {
