@@ -10,7 +10,6 @@ import {
   Lock,
   BookOpen,
   CircleQuestionMark,
-  Globe,
   Users,
   Compass,
   CirclePlus,
@@ -74,18 +73,6 @@ const PLATFORM_MENU: NavMenu = {
       heading: "Save",
       items: [
         { title: "Explore circles", description: "Browse public, private and community circles.", href: "/explore", icon: <Compass className={iconCls} /> },
-        {
-          title: "Circle types",
-          description: "Permissionless, invite-only, token-gated, premium.",
-          href: "/explore#types",
-          icon: <Globe className={iconCls} />,
-          children: [
-            { title: "Public circles", description: "Open to all qualifying savers.", href: "/explore#public" },
-            { title: "Private circles", description: "Invite-only via link or code.", href: "/explore#private" },
-            { title: "Community circles", description: "Token-gated for DAOs and holders.", href: "/explore#community" },
-            { title: "Premium circles", description: "Higher limits, collateralized.", href: "/explore#premium" },
-          ],
-        },
         { title: "Start a circle", description: "Spin up daily, weekly or monthly rounds.", href: "/register", icon: <CirclePlus className={iconCls} /> },
         { title: "How circles work", description: "Lifecycle, penalties and collateral explained.", href: "/how-it-works", icon: <BookOpen className={iconCls} /> },
       ],
@@ -648,7 +635,6 @@ export function PublicLayout({ children }: PublicLayoutProps) {
             <p className="mb-3 text-xs font-heading tracking-[0.25em] uppercase text-muted-foreground/60">Save</p>
             <div className="flex flex-col space-y-2.5 text-sm font-medium">
               <Link href="/explore" className="hover:text-foreground text-muted-foreground transition-colors">Explore circles</Link>
-              <Link href="/explore#types" scroll={false} className="hover:text-foreground text-muted-foreground transition-colors">Circle types</Link>
               <Link href="/register" className="hover:text-foreground text-muted-foreground transition-colors">Start a circle</Link>
               <Link href="/how-it-works" className="hover:text-foreground text-muted-foreground transition-colors">How it works</Link>
             </div>
