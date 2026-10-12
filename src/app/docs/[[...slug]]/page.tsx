@@ -42,7 +42,7 @@ export async function generateMetadata({
 
   if (!fs.existsSync(filePath)) {
     return {
-      title: "Doc Not Found — Moistello",
+      title: "Doc Not Found — Deodes",
       description: "That documentation page does not exist.",
       robots: { index: false, follow: false },
     };

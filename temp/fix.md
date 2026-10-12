@@ -1,10 +1,10 @@
-# Moistello V1 — Fix List
+# Deodes V1 — Fix List
 
 ## 🔴 Critical
 
 | # | Area | Problem | Fix |
 |---|------|---------|-----|
-| 1 | `POST /v1/circles/:id/contribute` | Handler is a stub — accepts request, discards everything, returns `success: true` | Call `contribution.Service.Record()` + Soroban `contribute()` |
+| 1 | `POST /v1/circles/:id/contribute` | Handler is a stub — accepts request, discards everything, returns `success: true` | Call `contribution.Service.Record()` + Arc `contribute()` |
 | 2 | `POST /v1/circles/:id/dispute` | Stub — accepts body, ignores it, returns success | Wire to actual service call |
 | 3 | `POST /v1/circles/:id/vote` | Stub — accepts body, ignores it, returns success | Wire to actual service call |
 | 4 | `POST /v1/circles/:id/auction-bid` | Stub — accepts body, ignores it, returns success | Wire to actual service call |
@@ -50,8 +50,8 @@
 
 | # | Area | Problem | Fix |
 |---|------|---------|-----|
-| 27 | `WalletService.setTrustline` | Empty — needs sponsored transaction | Implement Stellar `ChangeTrust` operation |
+| 27 | `WalletService.setTrustline` | Empty — needs sponsored transaction | Implement Arc `ChangeTrust` operation |
 | 28 | `WalletService.SignTransaction` | Returns "not implemented" | Wire encrypted key decryption + signing |
 | 29 | `migrate` command | `cmd/migrate/main.go` is a stub (just logs and exits) | Implement SQL file reader + executor |
-| 30 | Soroban bindings to production code | No contract calls wired in production handlers | Wire `soroban.CircleClient` into circle service |
+| 30 | Arc bindings to production code | No contract calls wired in production handlers | Wire `arc.CircleClient` into circle service |
 | 31 | Contribute flow end-to-end | User needs to sign USDC tx with passkey | Wire encrypted key decrypt → sign → submit |

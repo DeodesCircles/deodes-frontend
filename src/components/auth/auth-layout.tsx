@@ -18,7 +18,7 @@ interface AuthLayoutProps {
 }
 
 export function AuthLayout({
-  title = "Moistello",
+  title = "Deodes",
   children,
   footerLinks,
   className,

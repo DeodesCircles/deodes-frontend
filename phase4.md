@@ -1,4 +1,4 @@
-# Moistello Wallet Integration — Phase 4 Documentation
+# Deodes Wallet Integration — Phase 4 Documentation
 
 ## Phase Metadata
 
@@ -24,7 +24,7 @@ Implementing Agent: Enterprise AI Agent
 [ ] Previous phase tests still pass (regression check)
 [ ] Feature flag defined and default value set
 [ ] Rollback path tested (feature flag off → old behavior confirmed)
-[ ] All adapter interfaces reviewed against Ledger Stellar app documentation
+[ ] All adapter interfaces reviewed against Ledger Arc app documentation
 [ ] Security level tags assigned to every sensitive function
 
 DO NOT PROCEED to implementation until ALL gates are checked.
@@ -36,29 +36,29 @@ DO NOT PROCEED to implementation until ALL gates are checked.
 
 ### 1.1 Conceptual Overview
 
-Phase 4 delivers the **Ledger Hardware Wallet Adapter** — a full implementation of the `WalletAdapter` interface from Phase 1 that connects Moistello to **Ledger devices** (Nano S, Nano S Plus, Nano X, Stax, Flex) via USB on desktop and Bluetooth on mobile. This is the security-primacy integration: for Diamond-tier users with large circle contributions ($10K+), DAO treasuries managing community funds, and power users requiring hardware-backed key isolation.
+Phase 4 delivers the **Ledger Hardware Wallet Adapter** — a full implementation of the `WalletAdapter` interface from Phase 1 that connects Deodes to **Ledger devices** (Nano S, Nano S Plus, Nano X, Stax, Flex) via USB on desktop and Bluetooth on mobile. This is the security-primacy integration: for Diamond-tier users with large circle contributions ($10K+), DAO treasuries managing community funds, and power users requiring hardware-backed key isolation.
 
-Without Phase 4, Moistello cannot serve the highest-security user segment. With Phase 4, a DAO treasurer connects their Ledger Nano X via USB, opens the Stellar app, confirms their public key on the device screen, and every subsequent transaction requires physical button-press confirmation — the private key NEVER leaves the hardware secure element (CC EAL5+/EAL6+ certified chip). This phase brings Moistello into compliance with enterprise-grade asset custody best practices: separation of key material from the internet-connected application layer, physical attestation for every signature, and firmware-level tamper resistance.
+Without Phase 4, Deodes cannot serve the highest-security user segment. With Phase 4, a DAO treasurer connects their Ledger Nano X via USB, opens the Arc app, confirms their public key on the device screen, and every subsequent transaction requires physical button-press confirmation — the private key NEVER leaves the hardware secure element (CC EAL5+/EAL6+ certified chip). This phase brings Deodes into compliance with enterprise-grade asset custody best practices: separation of key material from the internet-connected application layer, physical attestation for every signature, and firmware-level tamper resistance.
 
 The Ledger adapter implements every method of the `WalletAdapter` interface from Phase 1 (`connect`, `disconnect`, `isConnected`, `signMessage`, `signTransaction`, `getPublicKey`, `getNetwork`), wrapping Ledger's HID/USB and BLE transport layers. It handles:
 - **Device detection** — probes WebUSB (desktop) and Web Bluetooth (mobile) availability, auto-selects transport
-- **Connect + unlock flow** — establishes transport, opens Stellar app on device, reads public key from derivation path `44'/148'/0'`
-- **Transaction signing** — sends Stellar XDR to device, user reviews transaction details on device screen, physically confirms with button press, returns signed XDR
-- **SEP-0007 message signing** — sends structured message to Ledger Stellar app for signing via `signHash` or custom message path
+- **Connect + unlock flow** — establishes transport, opens Arc app on device, reads public key from derivation path `44'/148'/0'`
+- **Transaction signing** — sends Arc XDR to device, user reviews transaction details on device screen, physically confirms with button press, returns signed XDR
+- **SEP-0007 message signing** — sends structured message to Ledger Arc app for signing via `signHash` or custom message path
 - **Transport lifecycle** — manages USB connection persistence, BLE pairing state, auto-reconnect on same transport
-- **Firmware verification** — checks device firmware and Stellar app version, warns if outdated
+- **Firmware verification** — checks device firmware and Arc app version, warns if outdated
 
-**Why Ledger specifically (not Trezor/SafePal/etc.):** Ledger has the most mature Stellar app in the hardware wallet ecosystem. The `@ledgerhq/hw-app-str` package is the ONLY official Stellar SDK for hardware wallets and is maintained by Ledger's team with direct Stellar Development Foundation collaboration. The Ledger Stellar app supports the full SEP-0005 transaction specification including all Stellar operations (payment, path payment, manage offer, create account, set options, change trust, bump sequence, etc.), the full SEP-0007 message signing specification, and the BIP-44 derivation scheme. Trezor's Stellar support is limited and has no maintained web SDK. Keystone and SafePal require WalletConnect bridging (covered in Phase 2), not direct hardware integration.
+**Why Ledger specifically (not Trezor/SafePal/etc.):** Ledger has the most mature Arc app in the hardware wallet ecosystem. The `@ledgerhq/hw-app-str` package is the ONLY official Arc SDK for hardware wallets and is maintained by Ledger's team with direct Arc Development Foundation collaboration. The Ledger Arc app supports the full SEP-0005 transaction specification including all Arc operations (payment, path payment, manage offer, create account, set options, change trust, bump sequence, etc.), the full SEP-0007 message signing specification, and the BIP-44 derivation scheme. Trezor's Arc support is limited and has no maintained web SDK. Keystone and SafePal require WalletConnect bridging (covered in Phase 2), not direct hardware integration.
 
 ### 1.2 New Files Created
 
 | # | File Path | Purpose | Estimated Lines | Enterprise Pattern |
 |---|---|---|---|---|
-| 1 | `src/lib/wallet/adapters/ledger.ts` | Ledger adapter — implements `WalletAdapter`, manages transport lifecycle, Stellar app communication, device detection, signing flows | 280 | Adapter Pattern — wraps Ledger transport + Stellar app in uniform WalletAdapter interface |
+| 1 | `src/lib/wallet/adapters/ledger.ts` | Ledger adapter — implements `WalletAdapter`, manages transport lifecycle, Arc app communication, device detection, signing flows | 280 | Adapter Pattern — wraps Ledger transport + Arc app in uniform WalletAdapter interface |
 | 2 | `src/lib/wallet/adapters/ledger-transport.ts` | Transport abstraction layer — detects WebUSB vs WebBLE availability, creates appropriate transport, handles connection lifecycle, reconnection logic | 120 | Strategy Pattern — select USB or BLE transport at runtime based on browser capabilities |
-| 3 | `src/components/wallet/ledger-prompt.tsx` | Ledger connection wizard modal — step-by-step UI: "1. Connect Ledger → 2. Open Stellar App → 3. Unlock with PIN → 4. Confirm public key → 5. Verify on device screen" | 150 | Wizard Pattern — multi-step guided flow with device-state-aware transitions |
+| 3 | `src/components/wallet/ledger-prompt.tsx` | Ledger connection wizard modal — step-by-step UI: "1. Connect Ledger → 2. Open Arc App → 3. Unlock with PIN → 4. Confirm public key → 5. Verify on device screen" | 150 | Wizard Pattern — multi-step guided flow with device-state-aware transitions |
 | 4 | `src/components/wallet/ledger-device-sim.tsx` | Device screen simulation preview — shows what user should see on their Ledger's display during each step, serving as a visual reference for first-time hardware wallet users | 100 | Preview Component — renders SVG mock of Ledger screen with current expected display state |
-| 5 | `src/lib/wallet/__tests__/ledger.test.ts` | Ledger adapter unit tests — 8 adapter interface tests with mocked transport + Stellar app | 200 | Test Suite |
+| 5 | `src/lib/wallet/__tests__/ledger.test.ts` | Ledger adapter unit tests — 8 adapter interface tests with mocked transport + Arc app | 200 | Test Suite |
 | 6 | `src/lib/wallet/__tests__/ledger-integration.test.ts` | Ledger integration tests — 3 end-to-end flow tests with mocked transport | 150 | Integration Test Suite |
 | 7 | `src/lib/wallet/__tests__/ledger-security.test.ts` | Ledger security tests — 2 attack simulation tests | 100 | Security Test Suite |
 
@@ -71,7 +71,7 @@ The Ledger adapter implements every method of the `WalletAdapter` interface from
 | 1 | `src/lib/wallet/registry.ts` | Register Ledger adapter in the adapter registry at priority 20 (below extension adapters at priority 5 and WC2 at priority 10 — hardware wallets shown last since they require physical device). Add `isHardwareSupported()` check to detect WebUSB/WebBLE. | YES — additive. Registry unchanged for existing adapters. | YES — `NEXT_PUBLIC_FEATURE_HARDWARE_WALLET` |
 | 2 | `src/lib/wallet/adapters/index.ts` | Add Ledger adapter export. Auto-registration in barrel. | YES — additive export | YES — behind feature flag |
 | 3 | `src/components/wallet/wallet-selector.tsx` | Add Ledger card to wallet selection grid. Hardware badge, OS compatibility indicator (desktop-only for USB, desktop+mobile for Nano X BLE). | YES — new card in existing grid | YES — hidden when flag off |
-| 4 | `src/stores/multi-wallet-store.ts` | Add Ledger-specific state: `ledgerTransportType`, `ledgerConnectionState`, `ledgerFirmwareVersion`, `ledgerStellarAppVersion`. | YES — additive fields | YES |
+| 4 | `src/stores/multi-wallet-store.ts` | Add Ledger-specific state: `ledgerTransportType`, `ledgerConnectionState`, `ledgerFirmwareVersion`, `ledgerArcAppVersion`. | YES — additive fields | YES |
 
 ### 1.4 New Dependencies
 
@@ -79,16 +79,16 @@ The Ledger adapter implements every method of the `WalletAdapter` interface from
 |---|---|---|---|---|---|---|
 | `@ledgerhq/hw-transport-webusb` | 6.29.4 (exact pin) | Apache-2.0 | Ledger SAS | WebUSB transport for Ledger devices on Chromium-based desktop browsers. Alternative: raw WebUSB API implementation (rejected: ~400 lines of HID protocol code to maintain, Ledger APDU framing, error handling for all Ledger models). | ~14 KB gzipped | `npm audit` — 0 known CVEs as of 2026-05-14 |
 | `@ledgerhq/hw-transport-webble` | 6.29.4 (exact pin) | Apache-2.0 | Ledger SAS | Web Bluetooth transport for Ledger Nano X on mobile and desktop. Alternative: none — Web Bluetooth is the only way to communicate with Ledger wirelessly from a browser without a companion app. | ~10 KB gzipped | `npm audit` — 0 known CVEs |
-| `@ledgerhq/hw-app-str` | 7.0.4 (exact pin) | Apache-2.0 | Ledger SAS + SDF | Official Stellar app communication library. Handles APDU command construction, SEP-0005 transaction signing, SEP-0007 message signing, BIP-32 derivation path encoding. Alternative: none — this is the ONLY library that speaks the Ledger Stellar app's APDU protocol. | ~16 KB gzipped | `npm audit` — 0 known CVEs |
+| `@ledgerhq/hw-app-str` | 7.0.4 (exact pin) | Apache-2.0 | Ledger SAS + SDF | Official Arc app communication library. Handles APDU command construction, SEP-0005 transaction signing, SEP-0007 message signing, BIP-32 derivation path encoding. Alternative: none — this is the ONLY library that speaks the Ledger Arc app's APDU protocol. | ~16 KB gzipped | `npm audit` — 0 known CVEs |
 
 **Total bundle increase: ~40 KB gzipped (under the 50KB per-package and 150KB total thresholds).**
 
 **Ledger SDK version compatibility verification:**
 
-| Package | Our Version | Ledger Stellar App Version Required | Compatible? |
+| Package | Our Version | Ledger Arc App Version Required | Compatible? |
 |---|---|---|---|
-| `@ledgerhq/hw-app-str` | 7.0.4 | Stellar app v3.3.0+ | YES |
-| `@ledgerhq/hw-app-str` | 7.0.4 | Stellar app v3.4.0+ (latest) | YES |
+| `@ledgerhq/hw-app-str` | 7.0.4 | Arc app v3.3.0+ | YES |
+| `@ledgerhq/hw-app-str` | 7.0.4 | Arc app v3.4.0+ (latest) | YES |
 | `@ledgerhq/hw-transport-webusb` | 6.29.4 | Ledger firmware v2.0.0+ | YES |
 | `@ledgerhq/hw-transport-webble` | 6.29.4 | Ledger Nano X firmware v2.0.0+ | YES |
 
@@ -104,33 +104,33 @@ Before `npm install` or `cargo add`:
 
 [x] Is this version compatible with the EXISTING dependency tree? (check peer deps)
     All three packages share @ledgerhq/hw-transport@6.29.4 as a transitive dependency.
-    No conflicts with Moistello's existing dependency tree.
+    No conflicts with Deodes's existing dependency tree.
     @ledgerhq/* packages use Buffer, which is polyfilled by Next.js automatically.
     React peer dep: none — these are pure TypeScript libraries.
 
-[x] For blockchain/Stellar packages: does the SDK version match the deployed contract SDK version?
-    @ledgerhq/hw-app-str@7.0.4 communicates with the Ledger Stellar app via APDU protocol.
-    The protocol is versioned by the Stellar app firmware, not the JS SDK.
-    @ledgerhq/hw-app-str@7.0.4 is confirmed compatible with Stellar app v3.3.0–v3.4.0.
-    All Stellar transaction types supported (payment, path payment, manage offer, set options,
+[x] For blockchain/Arc packages: does the SDK version match the deployed contract SDK version?
+    @ledgerhq/hw-app-str@7.0.4 communicates with the Ledger Arc app via APDU protocol.
+    The protocol is versioned by the Arc app firmware, not the JS SDK.
+    @ledgerhq/hw-app-str@7.0.4 is confirmed compatible with Arc app v3.3.0–v3.4.0.
+    All Arc transaction types supported (payment, path payment, manage offer, set options,
     change trust, account merge, bump sequence, create claimable balance, clawback, etc.).
 
 [x] For wallet packages: does the package version match the wallet extension's current API version?
     Not applicable — Ledger communicates via USB HID / BLE GATT, not a browser extension API.
-    The compatibility boundary is: Ledger firmware + Stellar app version.
+    The compatibility boundary is: Ledger firmware + Arc app version.
     Verified: @ledgerhq/hw-app-str@7.0.4 supports all Ledger models running firmware >=2.0.0
-    with Stellar app >=3.3.0. This covers >99% of Ledger devices in the field.
+    with Arc app >=3.3.0. This covers >99% of Ledger devices in the field.
 
 [x] Has this exact version been tested in ANY environment before? If no: what's the rollback plan?
     @ledgerhq/hw-transport-webusb@6.29.4 has 60K+ weekly npm downloads, used in production by
-    Ledger Live, Stellar Laboratory, StellarTerm, and dozens of Stellar dApps.
+    Ledger Live, Arc Laboratory, ArcTerm, and dozens of Arc dApps.
     @ledgerhq/hw-app-str@7.0.4 is the official SDK maintained by Ledger + SDF.
     Rollback: set NEXT_PUBLIC_FEATURE_HARDWARE_WALLET=false → Ledger adapter never loads.
 
 [x] Bundle size impact: measure before AND after install. Reject if >50KB gzipped increase.
     Before: ~6 KB (Phase 1 wallet layer). After: ~46 KB total (~40 KB increase).
     All individual packages under 50KB. Total under 150KB threshold.
-    WebUSB transport: ~14 KB, WebBLE transport: ~10 KB, Stellar app: ~16 KB.
+    WebUSB transport: ~14 KB, WebBLE transport: ~10 KB, Arc app: ~16 KB.
 
 [x] Known CVEs in this version: check `npm audit` or `cargo audit` before install.
     npm audit on 2026-05-14: 0 known CVEs in @ledgerhq/* ecosystem for these exact versions.
@@ -155,7 +155,7 @@ export class LedgerAdapter implements WalletAdapter {
     name: "Ledger",
     category: "hardware",
     icon: "/icons/ledger.svg",
-    installUrl: "https://www.ledger.com/stellar-wallet",
+    installUrl: "https://www.ledger.com/arc-wallet",
     description: "Hardware wallet — maximum security for significant holdings",
     priority: 20,
     isAvailable: () => typeof window !== "undefined" &&
@@ -163,7 +163,7 @@ export class LedgerAdapter implements WalletAdapter {
   }
 
   private transport: Transport | null = null
-  private stellarApp: StellarApp | null = null
+  private arcApp: ArcApp | null = null
   private publicKey: string | null = null
   private derivationPath: string = "44'/148'/0'"
   private transportManager: LedgerTransportManager
@@ -186,7 +186,7 @@ export class LedgerAdapter implements WalletAdapter {
   async getNetwork(): Promise<NetworkType> { /* ... */ }
 
   // ── Hardware-specific ──
-  async getFirmwareVersion(): Promise<{ firmware: string; stellarApp: string }> { /* ... */ }
+  async getFirmwareVersion(): Promise<{ firmware: string; arcApp: string }> { /* ... */ }
   async pingDevice(): Promise<boolean> { /* ... */ }
 }
 ```
@@ -198,10 +198,10 @@ export class LedgerAdapter implements WalletAdapter {
 | Adapter category is "hardware" | `category: "hardware"` | "extension" or "mobile" | Hardware wallets are a distinct UX category. They require physical device interaction, have a different trust model (key never leaves secure element), and have unique connection UX (USB plug-in / BLE pairing). Categorizing separately ensures correct placement and distinct visual treatment in the wallet selector grid. |
 | `isAvailable()` checks WebUSB AND Web Bluetooth | True if either `navigator.usb` OR `navigator.bluetooth` exists | Check only for WebUSB (desktop) | Ledger Nano X supports Bluetooth on both mobile and desktop. Checking both capabilities maximizes supported platforms. On Chromium desktop: USB; on Chrome Android: Bluetooth; on Safari: neither (unsupported). Gracefully degrades: "Ledger requires Chrome, Edge, or Brave." |
 | Transport auto-selection: USB preferred over BLE | `detectTransport()` tries WebUSB first, falls back to WebBLE | Always BLE, always USB, or user choice | USB is more reliable (lower latency, no pairing, no battery dependency). BLE is fallback for mobile or desktop without USB ports. Auto-selection reduces user confusion. Transport type shown in UI as informational badge ("Connected via USB" / "Connected via Bluetooth"). |
-| Derivation path `44'/148'/0'` is hardcoded | BIP-44 standard Stellar path | Configurable or multi-account derivation | `44'/148'/0'` is the Stellar standard derivation path (BIP-44 coin type 148 for XLM). This is what Ledger Live, Stellar Laboratory, and virtually all Stellar wallets use. Allowing custom paths adds complexity without user demand (Ledger Stellar app only supports BIP-44 paths when using the `getPublicKey` with `display: false` on non-standard paths). |
+| Derivation path `44'/148'/0'` is hardcoded | BIP-44 standard Arc path | Configurable or multi-account derivation | `44'/148'/0'` is the Arc standard derivation path (BIP-44 coin type 148 for USDC). This is what Ledger Live, Arc Laboratory, and virtually all Arc wallets use. Allowing custom paths adds complexity without user demand (Ledger Arc app only supports BIP-44 paths when using the `getPublicKey` with `display: false` on non-standard paths). |
 | `connect()` triggers device enumeration, not auto-connect | Calls `TransportWebUSB.request()` which shows browser device picker | Auto-connect to first available device | Ledger WebUSB must use `requestDevice()` which triggers the browser's device chooser dialog. Auto-connect is only possible after the user has already granted permission (stored by browser). We eagerly enumerate already-authorized devices on page load and offer "Reconnect to Ledger" if a previously authorized device is found. |
 | Transport manager wraps transport as a singleton with lifecycle | `LedgerTransportManager` class manages open/close state, reconnection, concurrent access prevention | Raw transport object passed around | Transport is a physical resource (USB HID channel or BLE GATT connection). Only one operation can be in-flight at a time (Ledger's communication is serial, not concurrent). The transport manager enforces operation queuing, handles device disconnect events (USB unplug, BLE range), and provides auto-reconnect logic. |
-| `signMessage` uses SEP-0007 Transaction approach | Construct a `manageData` transaction with the message hash, sign via `signTransaction` on Ledger, extract signature from envelope | Hash directly via `stellarApp.signHash()` | Ledger Stellar app's `signHash` method has complex domain separation requirements and is less tested in the Stellar ecosystem. The SEP-0007 approach via `manageData` operation is the Stellar standard for message signing, has been battle-tested across all Stellar wallets and dApps, and produces signatures that are universally verifiable by the Stellar network's Ed25519 verification. |
+| `signMessage` uses SEP-0007 Transaction approach | Construct a `manageData` transaction with the message hash, sign via `signTransaction` on Ledger, extract signature from envelope | Hash directly via `arcApp.signHash()` | Ledger Arc app's `signHash` method has complex domain separation requirements and is less tested in the Arc ecosystem. The SEP-0007 approach via `manageData` operation is the Arc standard for message signing, has been battle-tested across all Arc wallets and dApps, and produces signatures that are universally verifiable by the Arc network's Ed25519 verification. |
 | Session state stored in memory only | `publicKey`, transport reference, connection state all in Zustand store (JS memory) | Persist to encrypted localStorage | Hardware wallet "session" is the physical connection. If USB is unplugged or BLE disconnected, the session ends — there's nothing meaningful to persist. A public key alone (without the device) cannot sign anything. Forcing reconnection on page refresh reinforces the security property: you must have the physical device present to sign. |
 
 ### 2.2 Algorithm Documentation
@@ -234,15 +234,15 @@ Pseudocode:
 5. Return: { type: selectedTransport, requiresPermission: !hadAuthorizedDevice }
 
 Security properties:
-  - Device enumeration does not reveal Stellar public key (only USB vendor/product ID)
-  - WebUSB permission scoped to origin (moistello.io) — other origins cannot see the device
+  - Device enumeration does not reveal Arc public key (only USB vendor/product ID)
+  - WebUSB permission scoped to origin (deodes.io) — other origins cannot see the device
   - BLE device scanning shows device name only (user-configured, default "Nano X XXXXX")
-  - No Stellar data exchanged during detection — only USB/BLE transport layer
+  - No Arc data exchanged during detection — only USB/BLE transport layer
 
 Failure modes:
   - Browser doesn't support WebUSB/WebBLE: return null → wallet selector shows "Unsupported browser"
   - User has never authorized device: requires browser permission dialog on first connect
-  - Ledger device connected but no Stellar app running: detection succeeds (USB), but getPublicKey will fail → user prompted to open Stellar app
+  - Ledger device connected but no Arc app running: detection succeeds (USB), but getPublicKey will fail → user prompted to open Arc app
   - Multiple Ledger devices connected: browser device chooser shows all, user selects one
   - Device permissions revoked in browser settings: treated as first-time connection, prompts again
 
@@ -289,25 +289,25 @@ Pseudocode:
    c. Ping device: send LEDGER_CLA + INS_GET_VERSION APDU
       - Timeout: 5 seconds
       - IF timeout: return device_not_responding error
-4. Open Stellar app on device:
-   a. IF device not in dashboard or Stellar app not open:
+4. Open Arc app on device:
+   a. IF device not in dashboard or Arc app not open:
       - Firmware >=2.0.0: app auto-opens via APDU command
-      - Firmware <2.0.0: return device_prompt needed — user must manually open Stellar app
+      - Firmware <2.0.0: return device_prompt needed — user must manually open Arc app
    b. Wait for app to be ready:
       - Poll with INS_GET_VERSION every 500ms
       - Timeout: 15 seconds
-      - IF app not opened: return stellar_app_not_open error
-         "Please open the Stellar app on your Ledger device."
-5. Initialize Stellar app communication:
-   a. stellarApp = new StellarApp(transport)
+      - IF app not opened: return arc_app_not_open error
+         "Please open the Arc app on your Ledger device."
+5. Initialize Arc app communication:
+   a. arcApp = new ArcApp(transport)
 6. Read firmware and app versions:
-   a. firmwareVersion = await stellarApp.getAppConfiguration()
+   a. firmwareVersion = await arcApp.getAppConfiguration()
    b. IF firmwareVersion.major < 2:
       - return firmware_outdated warning (not error — still works, but warn user to update)
-   c. IF stellarAppVersion < "3.3.0":
-      - return stellar_app_outdated warning
+   c. IF arcAppVersion < "3.3.0":
+      - return arc_app_outdated warning
 7. Get public key:
-   a. result = await stellarApp.getPublicKey(this.derivationPath, {
+   a. result = await arcApp.getPublicKey(this.derivationPath, {
         display: true,  // Show on device screen for user verification
         chainCode: false
       })
@@ -330,32 +330,32 @@ Pseudocode:
 Security properties:
   - Public key displayed on device screen for user verification (attack vector: what if malicious code requests a different derivation path?)
       Mitigation: display: true in getPublicKey forces on-device display. User should verify
-      the address on their Ledger screen matches what Moistello shows. Derivation path
+      the address on their Ledger screen matches what Deodes shows. Derivation path
       is hardcoded to 44'/148'/0' — cannot be overridden by external input.
   - Transport is exclusive — no other application can interleave commands (USB HID exclusive lock)
-  - Stellar app is the only app that can respond to Stellar APDU commands on the device
+  - Arc app is the only app that can respond to Arc APDU commands on the device
   - No private key material ever transmitted over transport — only public key and signed outputs
 
 Failure modes:
   - Device not plugged in / out of BLE range: transport creation fails → hardware_not_found
   - LEDGER_SERVICE_UUID not in BLE advertisement: device filtering fails → device not found
-  - Stellar app not installed on Ledger: INS_GET_VERSION returns error → stellar_app_not_installed
-     "Stellar app not found. Install it from Ledger Live Manager."
+  - Arc app not installed on Ledger: INS_GET_VERSION returns error → arc_app_not_installed
+     "Arc app not found. Install it from Ledger Live Manager."
   - Device locked (PIN not entered): getPublicKey returns 0x6982 (security status not satisfied)
      → "Please unlock your Ledger with your PIN."
   - User rejects address display on device: returns user_rejected
   - USB cable is charge-only (no data): device enumerates but communication fails → device_not_responding
-  - Device firmware too old for app auto-open: user must manually navigate to Stellar app
+  - Device firmware too old for app auto-open: user must manually navigate to Arc app
 
 Time complexity: O(1) for all transport and APDU operations + O(user_confirmation_time) for on-device review
-Memory complexity: O(1) — single transport instance, single Stellar app instance, public key string (56 bytes)
+Memory complexity: O(1) — single transport instance, single Arc app instance, public key string (56 bytes)
 
 Cryptographic citations:
-  - BIP-44 derivation path: Bitcoin Improvement Proposal 44 (BIP-0044), coin type 148 = Stellar
+  - BIP-44 derivation path: Bitcoin Improvement Proposal 44 (BIP-0044), coin type 148 = Arc
   - Ed25519 public key validation: RFC 8032 Section 5.1.5 (key validation)
-  - Stellar address encoding: SEP-0001 (base32 with G prefix)
+  - Arc address encoding: SEP-0001 (base32 with G prefix)
   - Ledger APDU protocol: ISO/IEC 7816-4 (Smart card APDU commands)
-  - Ledger Stellar app communication: Stellar Development Foundation SEP-0005
+  - Ledger Arc app communication: Arc Development Foundation SEP-0005
 ```
 
 #### 2.2.3 Transaction Signing Algorithm
@@ -363,7 +363,7 @@ Cryptographic citations:
 ```
 Algorithm: LedgerAdapter.signTransaction(xdr, opts?)
 
-Input: xdr: string (base64 Stellar transaction envelope XDR), opts?: { network?: NetworkType }
+Input: xdr: string (base64 Arc transaction envelope XDR), opts?: { network?: NetworkType }
 Output: { signedXdr: string } | WalletError
 
 Pseudocode:
@@ -371,16 +371,16 @@ Pseudocode:
    a. IF !this.transport: return not_connected error
    b. Ping device with INS_GET_VERSION (timeout: 3 seconds)
    c. IF ping fails: transport dead → attempt reconnect (see Section 2.2.5)
-2. Verify Stellar app is still the active app:
-   a. getVersion = await stellarApp.getAppConfiguration()
-   b. IF app name !== "Stellar": return stellar_app_not_open error
-      "Please open the Stellar app on your Ledger."
+2. Verify Arc app is still the active app:
+   a. getVersion = await arcApp.getAppConfiguration()
+   b. IF app name !== "Arc": return arc_app_not_open error
+      "Please open the Arc app on your Ledger."
 3. Validate input XDR:
    a. IF !xdr || xdr.length === 0: return invalid_xdr error
    b. Attempt base64 decode:
       - Decode XDR envelope to verify it's parseable
       - IF decode fails: return invalid_xdr error
-   c. Verify XDR is a Stellar transaction envelope:
+   c. Verify XDR is a Arc transaction envelope:
       - Must be TransactionEnvelope (not FeeBumpTransactionEnvelope for direct signing)
       - IF FeeBump: error — "Fee bump transactions must be signed by the fee source account.
         Sign the inner transaction instead."
@@ -394,10 +394,10 @@ Pseudocode:
    b. ELSE: default to "testnet" (safety default — never sign mainnet without explicit intent)
    c. IF network === "mainnet" AND no explicit confirmation flag:
       - Await user confirmation: "You are about to sign a MAINNET transaction.
-        This will use real XLM. Continue?"
+        This will use real USDC. Continue?"
       - IF user declines: return user_rejected
 5. Send XDR to Ledger for signing:
-   a. signature = await stellarApp.signTransaction(
+   a. signature = await arcApp.signTransaction(
         this.derivationPath,
         xdr
       )
@@ -436,17 +436,17 @@ Security properties:
   - Mainnet safety gate: explicit user confirmation before signing any mainnet transaction
   - Private key: NEVER leaves CC EAL5+ secure element — signing happens inside the chip
   - Anti-tampering: Ledger secure element verifies firmware integrity at boot, rejects modified firmware
-  - No blind signing: Ledger Stellar app v3.3.0+ shows full transaction details, not just a hash
-  - Sequence number protection: Stellar's per-account sequence numbers prevent replay attacks at protocol level
+  - No blind signing: Ledger Arc app v3.3.0+ shows full transaction details, not just a hash
+  - Sequence number protection: Arc's per-account sequence numbers prevent replay attacks at protocol level
 
 Failure modes:
   - USB disconnected mid-sign: transport throws DisconnectedDevice error → attempt reconnect (user must re-plug)
   - BLE connection lost mid-sign: transport throws — BLE auto-reconnect attempts, or user must re-pair
   - Device battery dies mid-sign: transport lost → reconnect after charging (session lost, restart)
-  - Stellar app crashes on device: transport returns error → user re-opens app, retry sign
-  - Malformed XDR passes base64 but fails Stellar parsing: Ledger Stellar app rejects → protocol_error
+  - Arc app crashes on device: transport returns error → user re-opens app, retry sign
+  - Malformed XDR passes base64 but fails Arc parsing: Ledger Arc app rejects → protocol_error
   - User doesn't know what to verify: screen simulation component shows expected display, instructions
-  - Transaction too large for device memory: Ledger Stellar app has ~2KB buffer for XDR → large transactions with many operations may fail → chunked signing not supported by Stellar protocol
+  - Transaction too large for device memory: Ledger Arc app has ~2KB buffer for XDR → large transactions with many operations may fail → chunked signing not supported by Arc protocol
 
 Time complexity: O(1) for APDU send + O(user_review_time) for on-device verification
 Memory complexity: O(|XDR|) — stored in memory during signing, then discarded
@@ -454,8 +454,8 @@ Memory complexity: O(|XDR|) — stored in memory during signing, then discarded
 Cryptographic citations:
   - Ed25519 signing: RFC 8032 Section 5.1.6 (Sign algorithm)
   - Signature performed inside Ledger secure element (CC EAL5+ certified, ST33K1M5 / ST33J2M0 chip)
-  - Transaction signing: Stellar SEP-0005 (Key Derivation Methods for Stellar)
-  - XDR encoding: Stellar XDR specification (Stellar Core protocol)
+  - Transaction signing: Arc SEP-0005 (Key Derivation Methods for Arc)
+  - XDR encoding: Arc XDR specification (Arc Core protocol)
   - Ledger APDU security: ISO/IEC 7816-4 secure messaging
 ```
 
@@ -468,11 +468,11 @@ Input: message: string (arbitrary message to sign)
 Output: { signature: string; publicKey: string } | WalletError
 
 Pseudocode:
-1. Verify transport and Stellar app (same as Section 2.2.3 steps 1-2)
+1. Verify transport and Arc app (same as Section 2.2.3 steps 1-2)
 2. Validate input:
    a. IF !message || message.length === 0: return invalid_message error
    b. IF message.length > 8192: return message_too_large error
-      Reason: Stellar manageData operation value is limited to 64 bytes.
+      Reason: Arc manageData operation value is limited to 64 bytes.
       For long messages, we hash first then sign the hash.
 3. Construct SEP-0007 signing transaction:
    a. IF message.length > 64:
@@ -480,18 +480,18 @@ Pseudocode:
       - dataValue = messageHash (32 bytes, fits in manageData)
    b. ELSE:
       - dataValue = message (raw, if it fits)
-   c. Build Stellar transaction:
+   c. Build Arc transaction:
       - sourceAccount: this.publicKey
       - fee: "100" (stroops, minimal — this is a signing-only transaction, never submitted)
       - sequence: "0" (SEP-0007 convention for non-submitted signing transactions)
       - operation: manageData({
-          name: "Moistello Auth",
+          name: "Deodes Auth",
           value: dataValue
         })
       - memo: none
    d. Convert to XDR (base64)
 4. Send XDR to Ledger for signing:
-   a. signedXdr = await stellarApp.signTransaction(this.derivationPath, xdr)
+   a. signedXdr = await arcApp.signTransaction(this.derivationPath, xdr)
    b. Timeout: 60 seconds (message signing is faster than full transaction review)
    c. Handle same device-level errors as Section 2.2.3 step 6
 5. Extract signature from signed XDR:
@@ -503,8 +503,8 @@ Pseudocode:
 Security properties:
   - Message content shown on device screen (manageData operation name + value hex)
   - Physical confirmation required for signature
-  - SEP-0007 standard ensures interoperability — any Stellar wallet can verify the signature
-  - Signature is over the Stellar transaction hash (SHA-256 of transaction envelope), not raw message
+  - SEP-0007 standard ensures interoperability — any Arc wallet can verify the signature
+  - Signature is over the Arc transaction hash (SHA-256 of transaction envelope), not raw message
   - This means the signature binds: public key + transaction structure + message content
   - For messages >64 bytes: device shows hash, not original message → user can't verify content
     Mitigation: UI displays full message alongside device simulator, user cross-references
@@ -512,16 +512,16 @@ Security properties:
 Failure modes:
   - Same transport/device failures as transaction signing (Section 2.2.3)
   - Message >64 bytes: device shows hash only — UX must show original message for comparison
-  - Sequence number 0 may confuse Ledger Stellar app: app shows sequence = 0 → user education needed
-  - Empty manageData name may confuse display: "Moistello Auth" chosen for clarity
+  - Sequence number 0 may confuse Ledger Arc app: app shows sequence = 0 → user education needed
+  - Empty manageData name may confuse display: "Deodes Auth" chosen for clarity
 
 Time complexity: O(1) + O(user_confirmation_time)
 Memory complexity: O(1)
 
 Cryptographic citations:
-  - SEP-0007: Stellar Ecosystem Proposal 0007 — URI Scheme to facilitate delegated signing
+  - SEP-0007: Arc Ecosystem Proposal 0007 — URI Scheme to facilitate delegated signing
   - SHA-256: FIPS 180-4 (Secure Hash Standard)
-  - Ed25519 signature extraction from XDR: RFC 8032, Stellar Core implementation
+  - Ed25519 signature extraction from XDR: RFC 8032, Arc Core implementation
 ```
 
 #### 2.2.5 Transport Lifecycle & Auto-Reconnect Algorithm
@@ -572,9 +572,9 @@ Pseudocode:
       - Timeout: 60 seconds → session expired, must full reconnect
    e. IF device reconnected within timeout:
       - Re-open transport
-      - Re-initialize Stellar app (stellarApp = new StellarApp(transport))
+      - Re-initialize Arc app (arcApp = new ArcApp(transport))
       - Verify same public key (insurance against device swap):
-        oldPubKey === await stellarApp.getPublicKey("44'/148'/0'", { display: false })
+        oldPubKey === await arcApp.getPublicKey("44'/148'/0'", { display: false })
       - IF mismatch: session invalidated, must full reconnect
       - Restore state: connectionState = "connected", broadcast event
       - Resolve any pending operations that were interrupted
@@ -606,18 +606,18 @@ Memory complexity: O(1) — event listeners + transport reference + timer handle
 Algorithm: LedgerAdapter.getFirmwareVersion()
 
 Input: (none — reads from connected device)
-Output: { firmware: string, stellarApp: string, isUpToDate: boolean, warnings: string[] }
+Output: { firmware: string, arcApp: string, isUpToDate: boolean, warnings: string[] }
 
 Pseudocode:
-1. IF !this.transport or !this.stellarApp: return not_connected error
+1. IF !this.transport or !this.arcApp: return not_connected error
 2. Read device firmware version:
    a. Standard APDU: CLA=0xE0, INS=0x01 (GET_VERSION command)
    b. Transport sends raw APDU, Ledger OS responds
    c. Response: { major, minor, patch, flags }
    d. firmware = `${major}.${minor}.${patch}`
-3. Read Stellar app version:
-   a. result = await stellarApp.getAppConfiguration()
-   b. stellarAppVersion = result.version
+3. Read Arc app version:
+   a. result = await arcApp.getAppConfiguration()
+   b. arcAppVersion = result.version
 4. Determine status:
    a. warnings = []
    b. IF firmware.major < 2:
@@ -626,22 +626,22 @@ Pseudocode:
       - isUpToDate = false
    c. ELSE IF firmware.minor < 60:  // Current firmware is 2.2.x, warn if <2.0.x
       - warnings.push("Ledger firmware update available. Update via Ledger Live
-        for improved security and Stellar app features.")
+        for improved security and Arc app features.")
       - isUpToDate = false
-   d. IF stellarAppVersion < "3.3.0":
-      - warnings.push("Stellar app v3.3.0+ is required for full transaction detail display.
+   d. IF arcAppVersion < "3.3.0":
+      - warnings.push("Arc app v3.3.0+ is required for full transaction detail display.
         Update via Ledger Live Manager.")
       - isUpToDate = false
-   e. IF stellarAppVersion < "3.4.0":
-      - warnings.push("Stellar app v3.4.0+ adds support for Soroban smart contract transactions.
+   e. IF arcAppVersion < "3.4.0":
+      - warnings.push("Arc app v3.4.0+ adds support for Arc smart contract transactions.
         Update via Ledger Live Manager.")
-      // This is a soft warning — v3.3.0 is sufficient for classic Stellar operations
+      // This is a soft warning — v3.3.0 is sufficient for classic Arc operations
    f. IF no warnings: isUpToDate = true
-5. Return { firmware, stellarApp: stellarAppVersion, isUpToDate, warnings }
+5. Return { firmware, arcApp: arcAppVersion, isUpToDate, warnings }
 
 Security properties:
   - Firmware version check prevents use of outdated firmware with known vulnerabilities
-  - Stellar app version check ensures on-device transaction detail display is working
+  - Arc app version check ensures on-device transaction detail display is working
   - Warnings are advisory, not blocking — user can still use device with outdated firmware
   - Version strings validated by signature on the Ledger device (firmware self-attestation)
 
@@ -669,7 +669,7 @@ State additions to multi-wallet-store:
   ledgerConnectionState: "idle" | "detecting" | "connecting" | "waiting_for_app" | 
                          "waiting_for_confirm" | "connected" | "disconnected" | "error",
   ledgerFirmwareVersion: string | null,
-  ledgerStellarAppVersion: string | null,
+  ledgerArcAppVersion: string | null,
   ledgerFirmwareWarnings: string[],
   ledgerConnectionError: LedgerError | null,
 }
@@ -677,8 +677,8 @@ State additions to multi-wallet-store:
 Lifecycle:
   1. App loads → check browser capability → ledgerTransportType set ("usb" | "ble" | null)
   2. User clicks "Connect Ledger" → ledgerConnectionState = "detecting"
-  3. Transport created → "connecting" → Stellar app check
-  4. Stellar app not open? → "waiting_for_app" → user guided to open app
+  3. Transport created → "connecting" → Arc app check
+  4. Arc app not open? → "waiting_for_app" → user guided to open app
   5. App opened → getPublicKey sent → "waiting_for_confirm"
   6. User confirms on device → "connected" → adapter registered in wallets map
   7. USB unplugged → "disconnected" → auto-reconnect timer starts
@@ -702,7 +702,7 @@ Rationale for in-memory-only state:
   Storing a public key doesn't help because:
     1. The user cannot sign without the device present
     2. The device could be swapped by a different Ledger
-    3. The Stellar app might not be open on the device
+    3. The Arc app might not be open on the device
   Forcing reconnection on refresh ensures the security invariant: you must prove
   you have the physical device to perform any action.
 ```
@@ -715,16 +715,16 @@ Rationale for in-memory-only state:
 |---|---|---|---|---|
 | `ledger_unsupported_browser` | Browser doesn't support WebUSB or WebBLE | "Ledger requires Chrome, Edge, or Brave browser. Please switch browsers or use WalletConnect instead." | navigator.userAgent, detected APIs | NO — user must switch browser |
 | `ledger_device_not_found` | No Ledger device detected on USB/BLE | "Ledger not detected. Is it plugged in? Unlocked? On Windows, you may need to install the Ledger Live app for USB drivers." | Transport type, device enumeration results | YES — retry after connecting device |
-| `ledger_stellar_app_not_open` | Device connected but Stellar app not active | "Please open the Stellar app on your Ledger device. Navigate to the Stellar icon and press both buttons to open." | Current active app (if detectable), firmware version | YES — retry after opening app |
-| `ledger_stellar_app_not_installed` | Stellar app not found on device | "Stellar app not installed on this Ledger. Open Ledger Live → Manager → Search 'Stellar' → Install." | Device firmware version, installed apps list | NO — user must install app |
+| `ledger_arc_app_not_open` | Device connected but Arc app not active | "Please open the Arc app on your Ledger device. Navigate to the Arc icon and press both buttons to open." | Current active app (if detectable), firmware version | YES — retry after opening app |
+| `ledger_arc_app_not_installed` | Arc app not found on device | "Arc app not installed on this Ledger. Open Ledger Live → Manager → Search 'Arc' → Install." | Device firmware version, installed apps list | NO — user must install app |
 | `ledger_device_locked` | Device PIN not entered | "Please unlock your Ledger by entering your PIN on the device." | Device security status code | YES — retry after unlocking |
 | `ledger_user_rejected` | User rejected on device screen (cancelled address display or transaction review) | "Connection cancelled on Ledger. Please try again and approve when prompted." | APDU status word, step where rejection occurred | YES — retry |
 | `ledger_timeout` | Operation timed out (user didn't confirm within time limit) | "Operation timed out. Please try again and confirm on your Ledger when the prompt appears. [Retry]" | Operation type, timeout duration, transport latency | YES — retry |
 | `ledger_transport_disconnected` | USB unplugged or BLE disconnected during operation | "Ledger disconnected. Please reconnect your device and try again. Check your USB cable or Bluetooth connection." | Transport type, disconnect reason, operation in progress | YES — after reconnection |
-| `ledger_firmware_outdated` | Firmware or Stellar app version below minimum | "Your Ledger firmware (v{X}) or Stellar app (v{Y}) is outdated. Update via Ledger Live for the best security. You can continue, but transaction details may not display correctly." | Firmware version, stellar app version, minimum required versions | NO — advisory warning, operation continues |
+| `ledger_firmware_outdated` | Firmware or Arc app version below minimum | "Your Ledger firmware (v{X}) or Arc app (v{Y}) is outdated. Update via Ledger Live for the best security. You can continue, but transaction details may not display correctly." | Firmware version, arc app version, minimum required versions | NO — advisory warning, operation continues |
 | `ledger_wrong_account` | Transaction source account doesn't match connected Ledger | "This transaction is for account ending in ...{XYZ}. Your Ledger has account ending in ...{ABC}. Switch to the correct account or use a different wallet." | Expected public key, actual public key, derivation path | NO — user must switch account or wallet |
 | `ledger_xdr_invalid` | XDR is malformed or unparseable | "Invalid transaction data. The transaction could not be processed. [Dismiss]" | XDR decode error, operation attempted | NO — developer error or corrupted data |
-| `ledger_mainnet_confirm_required` | User attempted to sign mainnet transaction without explicit confirmation | "You are about to sign a MAINNET transaction using real XLM from your Ledger. Please confirm this is intentional. [Cancel] [I Understand — Sign on Mainnet]" | Transaction hash, amount, destination | NO — requires explicit user opt-in |
+| `ledger_mainnet_confirm_required` | User attempted to sign mainnet transaction without explicit confirmation | "You are about to sign a MAINNET transaction using real USDC from your Ledger. Please confirm this is intentional. [Cancel] [I Understand — Sign on Mainnet]" | Transaction hash, amount, destination | NO — requires explicit user opt-in |
 
 **Error propagation in Ledger adapter:**
 
@@ -752,8 +752,8 @@ LedgerAdapter method encounters error
   └─ Recovery path:
       ├─ Transport errors: prompt reconnect with clear instructions
       ├─ User-reject errors: show retry button
-      ├─ App-state errors: show guided instructions (how to open Stellar app, unlock device)
-      └─ Fatal errors (unsupported browser, no Stellar app): show fallback wallet options
+      ├─ App-state errors: show guided instructions (how to open Arc app, unlock device)
+      └─ Fatal errors (unsupported browser, no Arc app): show fallback wallet options
 ```
 
 ### 2.X — SSR SAFETY AUDIT (Mandatory Pre-Implementation)
@@ -816,7 +816,7 @@ Before writing ANY code, every file must answer:
       - TransportWebBLE.create() called inside getOrCreateTransport() behind SSR guard.
     @ledgerhq/hw-app-str:
       - Imported but never instantiated at module scope.
-      - new StellarApp(transport) called inside connect() behind SSR guard.
+      - new ArcApp(transport) called inside connect() behind SSR guard.
 
 [ ] If the file is a React hook: does `useEffect` guard browser-only code?
 
@@ -862,22 +862,22 @@ Rule: Every file that touches browser APIs MUST start execution with
 
 | Surface | Threat Model | Mitigation |
 |---|---|---|
-| WebUSB transport | Malicious website attempts to communicate with user's Ledger via WebUSB to extract keys or sign unauthorized transactions | WebUSB permission model: browser prompts user to select device. Permission is scoped to origin (moistello.io). Only the origin that was granted permission can communicate with the device. Ledger device requires on-device confirmation for every sensitive operation (display public key, sign transaction). Browser restricts WebUSB to secure contexts (HTTPS). |
+| WebUSB transport | Malicious website attempts to communicate with user's Ledger via WebUSB to extract keys or sign unauthorized transactions | WebUSB permission model: browser prompts user to select device. Permission is scoped to origin (deodes.io). Only the origin that was granted permission can communicate with the device. Ledger device requires on-device confirmation for every sensitive operation (display public key, sign transaction). Browser restricts WebUSB to secure contexts (HTTPS). |
 | Web Bluetooth (BLE) transport | Attacker within BLE range (~10 meters) attempts to connect to user's Nano X and sign transactions or read public key | BLE pairing requires physical confirmation on Ledger device (PIN entry for first-time pairing). BLE connection is encrypted (LE Secure Connections with ECDH key exchange). Browser Bluetooth API limits scanning to user-initiated actions (requestDevice requires user gesture). Ledger BLE advertising is not constantly on — only during active pairing mode. |
 | Browser device chooser spoofing | Attacker creates a device with identical USB VID/PID to Ledger's (0x2c97), tricks user into selecting it in browser device chooser | USB VID/PID are USB-IF assigned identifiers. Spoofing requires physical device. Even if spoofed, the fake device cannot respond to Ledger APDU commands because it lacks the Ledger secure element private key. The adapter detects this: INS_GET_VERSION response won't match Ledger's format, or subsequent cryptographic operations will fail. The real Ledger device attests to its identity cryptographically (device attestation in Ledger OS). |
-| Man-in-the-middle on USB | Hardware MITM device inserted between Ledger and computer, intercepting/modifying APDU commands | USB is a point-to-point protocol. Physical MITM requires specialized hardware inserted in the cable. Even with MITM: (1) transaction details are displayed on the Ledger screen — user can verify the destination/amount shown on their device matches what Moistello displays. (2) The signature is produced inside the secure element — MITM cannot forge a signature for a modified transaction because it doesn't have the private key. (3) The MITM can only substitute the entire XDR → user would see different transaction on screen than expected → reject. |
-| Malicious dApp version of Moistello | Attacker clones Moistello frontend, hosts on similar domain, tricks user into connecting Ledger and signing transactions | Ledger displays dApp metadata (from the origin that requested the connection). User should verify "moistello.io" in the browser's address bar. Ledger device shows the transaction details — user responsibility to verify. The attacker's clone cannot redirect funds without user seeing the wrong destination on their Ledger screen. The hardware wallet is the final verification checkpoint. |
-| Transaction replay attack | Attacker captures a signed XDR and attempts to submit it multiple times | Stellar protocol prevents replay: each transaction has a unique sequence number per source account. Once a transaction is confirmed on the ledger, its sequence number is consumed. Replaying the same XDR would be rejected by the Stellar network (transaction already processed). Additionally, every transaction includes the source account's current sequence — the attacker would need to submit before the real transaction, which is a race condition the network resolves (first seen, first valid). |
-| Derivation path manipulation | Attacker modifies the derivation path to access different accounts on the same Ledger device | Derivation path is hardcoded in the adapter (`44'/148'/0'`). It is not user-configurable and not read from any external source. The Ledger Stellar app shows the derivation path on the device screen when displaying the public key — user should see `44'/148'/0'` and verify. For non-standard paths, the app requires `display: true` which forces on-device display. |
+| Man-in-the-middle on USB | Hardware MITM device inserted between Ledger and computer, intercepting/modifying APDU commands | USB is a point-to-point protocol. Physical MITM requires specialized hardware inserted in the cable. Even with MITM: (1) transaction details are displayed on the Ledger screen — user can verify the destination/amount shown on their device matches what Deodes displays. (2) The signature is produced inside the secure element — MITM cannot forge a signature for a modified transaction because it doesn't have the private key. (3) The MITM can only substitute the entire XDR → user would see different transaction on screen than expected → reject. |
+| Malicious dApp version of Deodes | Attacker clones Deodes frontend, hosts on similar domain, tricks user into connecting Ledger and signing transactions | Ledger displays dApp metadata (from the origin that requested the connection). User should verify "deodes.io" in the browser's address bar. Ledger device shows the transaction details — user responsibility to verify. The attacker's clone cannot redirect funds without user seeing the wrong destination on their Ledger screen. The hardware wallet is the final verification checkpoint. |
+| Transaction replay attack | Attacker captures a signed XDR and attempts to submit it multiple times | Arc protocol prevents replay: each transaction has a unique sequence number per source account. Once a transaction is confirmed on the ledger, its sequence number is consumed. Replaying the same XDR would be rejected by the Arc network (transaction already processed). Additionally, every transaction includes the source account's current sequence — the attacker would need to submit before the real transaction, which is a race condition the network resolves (first seen, first valid). |
+| Derivation path manipulation | Attacker modifies the derivation path to access different accounts on the same Ledger device | Derivation path is hardcoded in the adapter (`44'/148'/0'`). It is not user-configurable and not read from any external source. The Ledger Arc app shows the derivation path on the device screen when displaying the public key — user should see `44'/148'/0'` and verify. For non-standard paths, the app requires `display: true` which forces on-device display. |
 | Firmware downgrade attack | Attacker convinces user to install malicious/outdated Ledger firmware with known vulnerabilities | Ledger firmware updates are cryptographically signed by Ledger SAS. The Ledger secure element verifies the firmware signature before installation. Downgrading to a vulnerable firmware version requires the user to explicitly install it via Ledger Live (with warnings). Our adapter detects firmware version and warns if outdated (see Section 2.2.6). |
-| Unlocked device attack | Attacker gains physical access to unlocked Ledger and attempts to use it through Moistello | Ledger auto-locks after 10 minutes of inactivity (configurable, handled by Ledger OS). Physical access to an unlocked device with the Stellar app open would allow signing. This is an inherent physical security limitation — the hardware wallet is a "something you have" factor. Mitigation: (1) auto-lock timer, (2) PIN required to unlock, (3) wipe after 3 incorrect PIN attempts, (4) user education: "Never leave your Ledger unlocked and unattended." |
-| Browser extension interference | Malicious browser extension intercepts WebUSB/WebBLE API calls | Browser extensions with sufficient permissions can intercept `navigator.usb.requestDevice`, `navigator.bluetooth.requestDevice`, and related APIs. This is a browser-level vulnerability, not Ledger-specific. Mitigation: (1) Ledger device still shows transaction details and requires physical confirmation, (2) user should verify transaction details on the device screen match what Moistello shows, (3) browser permission model limits which extensions can access WebUSB. |
-| Supply chain attack on @ledgerhq packages | Attacker publishes malicious version of @ledgerhq/hw-app-str that exfiltrates XDR/keys | Dependencies pinned to exact versions with integrity hashes in lockfile. CI verifies integrity hashes. Ledger packages are published under Ledger SAS's npm organization with 2FA. Version bumps reviewed manually. Even if a malicious package modifies the XDR before sending to the device, the user would see different transaction details on their Ledger screen than what Moistello shows. Private key never leaves the secure element — even the legitimate packages cannot access it. |
+| Unlocked device attack | Attacker gains physical access to unlocked Ledger and attempts to use it through Deodes | Ledger auto-locks after 10 minutes of inactivity (configurable, handled by Ledger OS). Physical access to an unlocked device with the Arc app open would allow signing. This is an inherent physical security limitation — the hardware wallet is a "something you have" factor. Mitigation: (1) auto-lock timer, (2) PIN required to unlock, (3) wipe after 3 incorrect PIN attempts, (4) user education: "Never leave your Ledger unlocked and unattended." |
+| Browser extension interference | Malicious browser extension intercepts WebUSB/WebBLE API calls | Browser extensions with sufficient permissions can intercept `navigator.usb.requestDevice`, `navigator.bluetooth.requestDevice`, and related APIs. This is a browser-level vulnerability, not Ledger-specific. Mitigation: (1) Ledger device still shows transaction details and requires physical confirmation, (2) user should verify transaction details on the device screen match what Deodes shows, (3) browser permission model limits which extensions can access WebUSB. |
+| Supply chain attack on @ledgerhq packages | Attacker publishes malicious version of @ledgerhq/hw-app-str that exfiltrates XDR/keys | Dependencies pinned to exact versions with integrity hashes in lockfile. CI verifies integrity hashes. Ledger packages are published under Ledger SAS's npm organization with 2FA. Version bumps reviewed manually. Even if a malicious package modifies the XDR before sending to the device, the user would see different transaction details on their Ledger screen than what Deodes shows. Private key never leaves the secure element — even the legitimate packages cannot access it. |
 
 ### 3.2 Authentication & Authorization
 
 ```
-User → Browser (Moistello) → USB/BLE → Ledger Device → Secure Element
+User → Browser (Deodes) → USB/BLE → Ledger Device → Secure Element
   │         │                   │            │                │
   │  1. User plugs in Ledger via USB (or pairs BLE)
   │         │                   │            │                │
@@ -891,31 +891,31 @@ User → Browser (Moistello) → USB/BLE → Ledger Device → Secure Element
   │         │  WebUSB: exclusive claim on USB interface
   │         │  WebBLE: encrypted BLE connection (LE Secure Connections)
   │         │                   │            │                │
-  │  6. Moistello: opens communication channel to Ledger
+  │  6. Deodes: opens communication channel to Ledger
   │         │  sends APDU: CLA=0xE0, INS=0x01 (GET_VERSION)
   │         │                   │            │                │
   │         │                   │  7. Ledger responds: firmware v2.2.0, 
   │         │                   │     current app = "Dashboard"
   │         │                   │            │                │
-  │  8. Moistello: opens Stellar app (APDU command or user instruction)
+  │  8. Deodes: opens Arc app (APDU command or user instruction)
   │         │                   │            │                │
-  │         │                   │  9. Stellar app loads on device
-  │         │                   │     User sees: "Stellar" + logo on screen
+  │         │                   │  9. Arc app loads on device
+  │         │                   │     User sees: "Arc" + logo on screen
   │         │                   │            │                │
-  │  10. Moistello: stellarApp.getPublicKey("44'/148'/0'", { display: true })
+  │  10. Deodes: arcApp.getPublicKey("44'/148'/0'", { display: true })
   │         │                   │            │                │
   │         │                   │  11. Device screen shows:
   │         │                   │      "Address"
   │         │                   │      "GABC...XYZ"
   │         │                   │      [Approve] [Reject]
   │         │                   │            │                │
-  │  12. User verifies address on device screen matches what Moistello shows
+  │  12. User verifies address on device screen matches what Deodes shows
   │      User presses both buttons to approve
   │         │                   │            │                │
   │         │                   │  13. Device returns: { publicKey: "GABC..." }
   │         │                   │      (via APDU response)
   │         │                   │            │                │
-  │         │  ←── 14. Moistello receives public key
+  │         │  ←── 14. Deodes receives public key
   │         │            │                │
   │  15. POST /v1/auth/nonce { publicKey } → Backend
   │         │            │                │
@@ -924,14 +924,14 @@ User → Browser (Moistello) → USB/BLE → Ledger Device → Secure Element
   │         │            │                │
   │         │  ←── 18. Backend returns { nonce, xdrToSign }
   │         │            │                │
-  │  19. Moistello: stellarApp.signTransaction(derivationPath, xdrToSign)
+  │  19. Deodes: arcApp.signTransaction(derivationPath, xdrToSign)
   │         │                   │            │                │
   │         │                   │  20. Device screen shows transaction details:
   │         │                   │      "Review Transaction"
   │         │                   │      Source: GABC...
-  │         │                   │      Fee: 0.00001 XLM
+  │         │                   │      Fee: 0.00001 USDC
   │         │                   │      Operation: Manage Data
-  │         │                   │      Key: Moistello Auth
+  │         │                   │      Key: Deodes Auth
   │         │                   │      Value: [nonce as hex]
   │         │                   │      [Scroll ->] [Approve] [Reject]
   │         │                   │            │                │
@@ -941,7 +941,7 @@ User → Browser (Moistello) → USB/BLE → Ledger Device → Secure Element
   │         │                   │      Private key NEVER leaves secure element
   │         │                   │      Returns: { signature }
   │         │                   │            │                │
-  │         │  ←── 23. Moistello receives signed XDR
+  │         │  ←── 23. Deodes receives signed XDR
   │         │            │                │
   │  24. POST /v1/auth/verify { publicKey, signedXdr, nonce }
   │         │            │                │
@@ -971,7 +971,7 @@ User → Browser (Moistello) → USB/BLE → Ledger Device → Secure Element
 |---|---|---|---|
 | Ed25519 private key | Ledger secure element (CC EAL5+/EAL6+ chip, ST33 series) | Permanent (until device reset) | Hardware-isolated — key never accessible via any API, stored in dedicated flash with access control by secure element OS (BOLOS) |
 | Ledger master seed (24 words) | Ledger secure element | Permanent | Hardware-isolated, never leaves chip, BIP-39 mnemonic derived at setup and stored encrypted in secure element NVM |
-| Stellar public key | JS memory (Zustand store) | Until disconnect or page refresh | In-memory only |
+| Arc public key | JS memory (Zustand store) | Until disconnect or page refresh | In-memory only |
 | JWT access token | JS memory (Zustand store) | 15 minutes | In-memory only |
 | USB transport handle | JS memory (browser-managed) | Until disconnect or page refresh | Browser sandboxed, origin-scoped |
 | BLE pairing keys | Ledger secure element + browser BLE stack | Until device unpaired | LE Secure Connections encryption, hardware-backed on Ledger side |
@@ -987,7 +987,7 @@ User → Browser (Moistello) → USB/BLE → Ledger Device → Secure Element
 | Data | Protection at Rest | Protection in Transit | Protection in Memory | Retention |
 |---|---|---|---|---|
 | Ed25519 private key | Hardware secure element (CC EAL5+), encrypted in dedicated NVM, access controlled by BOLOS OS, zero-extraction architecture | NEVER transmitted — signing happens inside chip | NEVER in memory — chip enforces isolation | Permanent (until device reset by user) |
-| Stellar public key | In-memory only (not persisted) | TLS 1.3 (to backend), plaintext over USB HID/BLE (no encryption needed — public data) | In-memory (State store), isolated per tab | Until disconnect or page refresh |
+| Arc public key | In-memory only (not persisted) | TLS 1.3 (to backend), plaintext over USB HID/BLE (no encryption needed — public data) | In-memory (State store), isolated per tab | Until disconnect or page refresh |
 | Transaction XDR | Not stored — sent to device, discarded after signing | USB HID (plaintext, point-to-point) or BLE (encrypted link layer) | In-memory during sign operation only (~2KB max) | Discarded immediately after signing |
 | Signed XDR | Not stored — sent to backend, response discarded | TLS 1.3 (to backend), USB/BLE (from device) | In-memory during verification only | Immediate (discard after POST /auth/verify or submit) |
 | Device firmware/version info | N/A (read from device) | USB HID / BLE (plaintext, non-sensitive) | In-memory during session | Until disconnect |
@@ -1008,7 +1008,7 @@ User → Browser (Moistello) → USB/BLE → Ledger Device → Secure Element
 |---|---|---|
 | `@ledgerhq/hw-transport-webusb@6.29.4` | Maintained by Ledger SAS (public company, Euronext: LEDGER). 60K+ weekly downloads. Repository: github.com/LedgerHQ/ledger-live (monorepo). 400+ contributors. | Pinned to exact version. Lock file integrity verified. Transitive deps audited: `@ledgerhq/hw-transport`, `@ledgerhq/devices`, `@ledgerhq/errors` (all from same monorepo). |
 | `@ledgerhq/hw-transport-webble@6.29.4` | Same maintainer, same monorepo. Shares release cycle with webusb package. | Pinned to exact version. Shared transitive deps with webusb. |
-| `@ledgerhq/hw-app-str@7.0.4` | Maintained by Ledger SAS with direct SDF collaboration. The official Stellar hardware wallet integration. Repository: github.com/LedgerHQ/ledger-live (same monorepo). | Pinned to exact version. Transitively depends on `@ledgerhq/hw-transport`. Follows semantic versioning. Major version bumps correspond to breaking APDU protocol changes. |
+| `@ledgerhq/hw-app-str@7.0.4` | Maintained by Ledger SAS with direct SDF collaboration. The official Arc hardware wallet integration. Repository: github.com/LedgerHQ/ledger-live (same monorepo). | Pinned to exact version. Transitively depends on `@ledgerhq/hw-transport`. Follows semantic versioning. Major version bumps correspond to breaking APDU protocol changes. |
 
 **Supply chain attack vectors specific to hardware wallet integration:**
 
@@ -1016,13 +1016,13 @@ User → Browser (Moistello) → USB/BLE → Ledger Device → Secure Element
 |---|---|---|
 | Malicious @ledgerhq package version | Attacker publishes a version that sends XDR to a remote server or modifies the XDR before sending to the device | Pinned exact versions. Lock file integrity hashes. Even if compromised: (1) private key can't leave device — secure element enforced, (2) modified XDR would show different transaction on device screen — user can detect, (3) code review catches outbound network calls in a USB/BLE communication library. |
 | Malicious Ledger firmware (supply chain) | Compromised firmware loaded onto device from factory or via update | Ledger firmware is cryptographically signed by Ledger SAS. Secure element verifies signature before boot. Root of trust in boot ROM. Altering firmware post-manufacturing requires physical access + chip-level attack (extremely expensive, requires electron microscopy / FIB). |
-| Malicious Stellar app on Ledger | Attacker publishes a fake "Stellar" app to Ledger Live Manager | Ledger Live Manager only lists apps that pass Ledger's review process. Apps are signed. The real Stellar app is developed by Ledger+SDF and its hash is known. Our adapter can verify the app hash if needed (beyond scope of Phase 4 — Phase 6 enhancement). |
-| npm registry compromise | Attacker gains control of @ledgerhq organization on npm | Ledger uses npm organization with 2FA. Registry-level compromise would affect ALL Ledger-consuming applications, not just Moistello. This is an industry-level risk mitigated by npm's security practices and lock file integrity verification in CI. |
+| Malicious Arc app on Ledger | Attacker publishes a fake "Arc" app to Ledger Live Manager | Ledger Live Manager only lists apps that pass Ledger's review process. Apps are signed. The real Arc app is developed by Ledger+SDF and its hash is known. Our adapter can verify the app hash if needed (beyond scope of Phase 4 — Phase 6 enhancement). |
+| npm registry compromise | Attacker gains control of @ledgerhq organization on npm | Ledger uses npm organization with 2FA. Registry-level compromise would affect ALL Ledger-consuming applications, not just Deodes. This is an industry-level risk mitigated by npm's security practices and lock file integrity verification in CI. |
 
 **Dependency update plan:**
 - Dependabot configured for weekly security vulnerability scans
 - `@ledgerhq/*` packages tracked as a group (they share a monorepo and should be updated together)
-- Major version bumps (e.g., v7 -> v8 of hw-app-str) trigger: APDU protocol review, Ledger Stellar app compatibility verification, integration test re-run
+- Major version bumps (e.g., v7 -> v8 of hw-app-str) trigger: APDU protocol review, Ledger Arc app compatibility verification, integration test re-run
 - Lock file committed to repository; `npm ci` enforced for reproducible builds
 - Pre-release testing of new @ledgerhq versions with physical Ledger devices (Nano S, Nano X)
 
@@ -1039,7 +1039,7 @@ Every security-critical function in Phase 4 must be tagged:
 | Firmware version check | Server-side advisory warning (this phase) | Firmware attestation verification (Phase 6) | Before mainnet launch — cryptographically verify device is genuine |
 | Device identity attestation | Not implemented (this phase) | Ledger device attestation (Phase 6) | Before mainnet launch — verify device certificate chain |
 | Session state persistence | In-memory only (this phase) | Same — no persistence is the security feature | N/A — by design, hardware wallet sessions should not persist |
-| Transaction XDR validation | Source account match + basic decode (this phase) | Full XDR semantic validation (Phase 6) | Before mainnet launch — validate all operations are valid Stellar operations |
+| Transaction XDR validation | Source account match + basic decode (this phase) | Full XDR semantic validation (Phase 6) | Before mainnet launch — validate all operations are valid Arc operations |
 | Mainnet confirmation gate | User confirmation dialog (this phase) | Multi-factor confirmation (Phase 6) | Before mainnet launch — add email notification for mainnet txns |
 
 **Rule: No security shortcut is left undocumented. Every simplification has a documented upgrade path.**
@@ -1057,8 +1057,8 @@ Cold start (first time connecting Ledger, desktop USB):
   3. USB connection establishment (exclusive claim):           ~100ms (USB HID enumeration + open)
   4. Transport creation (TransportWebUSB.create):              ~50ms
   5. Device ping (INS_GET_VERSION APDU):                       ~30ms
-  6. Open Stellar app (APDU app launch + loading):             ~300ms (app loads on device)
-  7. StellarApp initialization:                                ~20ms
+  6. Open Arc app (APDU app launch + loading):             ~300ms (app loads on device)
+  7. ArcApp initialization:                                ~20ms
   8. Read firmware + app version:                              ~50ms
   9. getPublicKey sent to device:                              ~20ms
   10. User reads address on Ledger screen:                     ~5000ms (human time — reading + verifying + finding buttons)
@@ -1079,11 +1079,11 @@ Cold start (first time connecting Ledger, desktop USB):
 ```
 
 ```
-Warm start (Ledger already plugged in, authorized in browser, Stellar app open):
+Warm start (Ledger already plugged in, authorized in browser, Arc app open):
   1. Page load:                                                ~600ms
   2. Transport enumeration (getDevices):                       ~30ms (already authorized)
   3. Transport open (re-open existing device):                 ~50ms
-  4. Stellar app detection (INS_GET_VERSION):                  ~30ms
+  4. Arc app detection (INS_GET_VERSION):                  ~30ms
   5. Ping device (verify responsive):                          ~30ms
   6. getPublicKey (NO display — already verified):             ~20ms
   7. POST /auth/me (validate JWT):                             ~200ms
@@ -1120,7 +1120,7 @@ Worst case (BLE on slow Android, device out of range, reconnect needed):
   1. Page load over slow 3G:                                   ~3500ms
   2. BLE scanning (user taps "Reconnect"):                     ~2000ms
   3. BLE connection + service discovery:                       ~1500ms
-  4. Stellar app init + version read:                          ~300ms
+  4. Arc app init + version read:                          ~300ms
   5. getPublicKey + device confirmation:                       ~8000ms (human)
   6. Auth nonce + sign + verify:                               ~3000ms
   ─────────────────────────────────────────────────────
@@ -1148,7 +1148,7 @@ Worst case (BLE on slow Android, device out of range, reconnect needed):
 |---|---|
 | Idle (Ledger code loaded, no device) | ~8 KB (adapter class + transport capability flags) |
 | Connection in progress | ~25 KB (transport object + device handle + connection state) |
-| Connected (active device, idle) | ~20 KB (transport handle + StellarApp instance + public key + firmware info) |
+| Connected (active device, idle) | ~20 KB (transport handle + ArcApp instance + public key + firmware info) |
 | Connected + signing | ~35 KB (same + XDR buffer ~2KB + signing state + temporary signature buffer) |
 
 **Network requests:**
@@ -1172,20 +1172,20 @@ The Ledger adapter itself generates ZERO network requests — all device communi
 |---|---|
 | TransportWebUSB.create() + USB config | ~20ms |
 | TransportWebBLE.create() + BLE service discovery | ~50ms |
-| StellarApp initialization | ~5ms |
+| ArcApp initialization | ~5ms |
 | getPublicKey (client-side, excluding device) | <1ms |
 | signTransaction (client-side, excluding device) | <1ms |
 | XDR build + encode | ~3ms |
 | XDR decode + validate | ~5ms |
 | Device simulator rendering (SVG) | ~8ms per frame |
-| Total Moistello CPU overhead | <100ms for entire Ledger flow |
+| Total Deodes CPU overhead | <100ms for entire Ledger flow |
 
 ### 4.3 Optimization Decisions
 
 | What was NOT optimized | Why |
 |---|---|
 | Code splitting Ledger adapter from extension/WC2 adapters | All adapters must be available in the wallet selector simultaneously. The user sees all wallet options at once. Code splitting would add loading spinners when switching wallet types. Bundle increase of ~52KB is well within budget. |
-| Pre-connecting to previously authorized Ledger device on page load | Attempting USB connection on page load without user intent would: (1) be blocked by browser (WebUSB requires user gesture), (2) consume device resources unnecessarily (USB bus contention), (3) trigger unexpected device activity (Stellar app opening when user didn't initiate). Connection is deferred to explicit user click. "Reconnect to Ledger" offered as explicit action. |
+| Pre-connecting to previously authorized Ledger device on page load | Attempting USB connection on page load without user intent would: (1) be blocked by browser (WebUSB requires user gesture), (2) consume device resources unnecessarily (USB bus contention), (3) trigger unexpected device activity (Arc app opening when user didn't initiate). Connection is deferred to explicit user click. "Reconnect to Ledger" offered as explicit action. |
 | Polling for device presence (background enumeration) | Constant USB device enumeration via `navigator.usb.getDevices()` would waste resources and could trigger unnecessary device wake-ups. Instead: use disconnect events (USB) and periodic pings (BLE, since BLE disconnect events are unreliable in browsers). |
 | Lazy loading BLE transport on desktop | Desktop users with USB won't need BLE. However, the code path to detect this requires both to be available at module evaluation time. Solution: `import()` dynamic import of `@ledgerhq/hw-transport-webble` only when BLE is actually needed (desktop without USB or mobile). Saves ~10KB initial bundle for majority desktop USB users. |
 | Device simulator animation optimization | The device screen simulator shows what the user should see on their Ledger. With reduced-motion preference, animations are disabled, replaced with static text. SVG rendering is already lightweight (<1KB DOM elements). |
@@ -1193,7 +1193,7 @@ The Ledger adapter itself generates ZERO network requests — all device communi
 
 **Where future optimization yields highest ROI:**
 - Dynamic `import()` for `@ledgerhq/hw-transport-webble` — saves 10KB for 100% of desktop users (only ~5% of connections will use BLE)
-- Tree-shake unused Ledger coin apps from `@ledgerhq/hw-app-str` (the Stellar app package is Stellar-specific, so this is already minimal)
+- Tree-shake unused Ledger coin apps from `@ledgerhq/hw-app-str` (the Arc app package is Arc-specific, so this is already minimal)
 - Pre-compute auth nonce XDR to reduce round trips (combine /auth/nonce + sign into one step)
 
 ---
@@ -1226,20 +1226,20 @@ For every file in section 1.2:
 
 | Test | What It Verifies |
 |---|---|
-| `ledger.connect() returns public key after device confirmation` | Full mock connect flow — transport created, Stellar app opened, getPublicKey returns valid G... address, adapter stores and returns publicKey correctly |
+| `ledger.connect() returns public key after device confirmation` | Full mock connect flow — transport created, Arc app opened, getPublicKey returns valid G... address, adapter stores and returns publicKey correctly |
 | `ledger.connect() with device not found` | Mock transportManager.getOrCreateTransport() returns null (no device). Adapter returns hardware_not_found error with "Is it plugged in and unlocked?" message. |
-| `ledger.connect() with Stellar app not open` | Transport works, but INS_GET_VERSION returns app "Dashboard" not "Stellar". Adapter returns stellar_app_not_open error with instructions. |
+| `ledger.connect() with Arc app not open` | Transport works, but INS_GET_VERSION returns app "Dashboard" not "Arc". Adapter returns arc_app_not_open error with instructions. |
 | `ledger.connect() with user rejection on device` | getPublicKey is called with display: true. Mock returns 0x6985 (user rejected). Adapter returns user_rejected error. |
-| `ledger.signTransaction() returns signed XDR` | Valid session, mock stellarApp.signTransaction() returns signature. Adapter merges signature into XDR and returns signed envelope. |
+| `ledger.signTransaction() returns signed XDR` | Valid session, mock arcApp.signTransaction() returns signature. Adapter merges signature into XDR and returns signed envelope. |
 | `ledger.signTransaction() with wrong source account` | Transaction XDR has source account GXXX... different from connected publicKey GYYY... Adapter returns wrong_account error with both addresses shown. |
 | `ledger.signTransaction() with device disconnect mid-sign` | Mock transport throws DisconnectedDevice error during signTransaction. Adapter returns transport_disconnected error, triggers reconnect prompt. |
-| `ledger.disconnect() clears all state` | Connected session → disconnect() called. Transport closed, stellarApp nulled, publicKey cleared, state store reset to "idle". BroadcastChannel event emitted. |
+| `ledger.disconnect() clears all state` | Connected session → disconnect() called. Transport closed, arcApp nulled, publicKey cleared, state store reset to "idle". BroadcastChannel event emitted. |
 
 ### 5.2 Integration Tests — 3 Tests
 
 | Test | System Tested | Real or Mock? |
 |---|---|---|
-| `Full Ledger connect → sign → verify flow` | Ledger adapter + transport manager + wallet store | Mocked TransportWebUSB + StellarApp (unit-level mock), real state transitions, real XDR encode/decode |
+| `Full Ledger connect → sign → verify flow` | Ledger adapter + transport manager + wallet store | Mocked TransportWebUSB + ArcApp (unit-level mock), real state transitions, real XDR encode/decode |
 | `Device disconnect mid-sign → reconnect → retry` | Ledger adapter + transport manager reconnection logic | Mocked transport disconnect event, reconnection sequence, signature verification after reconnect |
 | `Transport auto-selection: USB preferred → BLE fallback` | Transport manager detection logic | Mocked navigator.usb (available) → selects USB. Mocked navigator.usb missing → falls back to BLE. |
 
@@ -1247,7 +1247,7 @@ For every file in section 1.2:
 
 | Test | Mock or Real | Plan for Real Testing |
 |---|---|---|
-| Full connect → sign → verify flow | Mocked transport + Stellar app | Before release: test with physical Ledger Nano S (USB, firmware v2.1.0), Nano X (USB + BLE, firmware v2.2.0), and Ledger Stax (USB, firmware v2.2.0) on Chrome, Edge, and Brave. Sign a real testnet transaction and verify the signed XDR with Stellar Laboratory. |
+| Full connect → sign → verify flow | Mocked transport + Arc app | Before release: test with physical Ledger Nano S (USB, firmware v2.1.0), Nano X (USB + BLE, firmware v2.2.0), and Ledger Stax (USB, firmware v2.2.0) on Chrome, Edge, and Brave. Sign a real testnet transaction and verify the signed XDR with Arc Laboratory. |
 | Device disconnect mid-sign | Mocked transport events | Before release: physically unplug USB during signing. Verify adapter detects disconnect, shows reconnect prompt, and signing resumes after reconnect. Test on: Windows 11, macOS 14, Ubuntu 24.04. |
 | Transport auto-selection | Mocked navigator | Before release: test on Chrome Android (should select BLE), Chrome Desktop with USB (should select USB), Chrome Desktop without USB but with BLE (should select BLE). |
 
@@ -1255,8 +1255,8 @@ For every file in section 1.2:
 
 | Test | Attack Simulated | Mitigation Verified | Status |
 |---|---|---|---|
-| `ledger.fake device rejection` | Create a USB device with Ledger VID/PID (0x2c97) but no Ledger firmware. Connect to Moistello. | Adapter's INS_GET_VERSION ping fails (device doesn't respond with valid APDU). Adapter returns device_not_responding error, does NOT expose any user data. Test verifies: adapter does not trust VID/PID alone — requires valid APDU responses. | PENDING |
-| `ledger.unsigned transaction bypass attempt` | Intercept the signTransaction call and inject a pre-signed XDR instead of sending to device. Attempt to have adapter return this XDR without device confirmation. | Adapter verifies that signTransaction completes via actual device call (mocked stellarApp must have been called). Adapter verifies the returned signature corresponds to the sent XDR. Test verifies: adapter accepts only signatures that pass Ed25519 verification against the input XDR and the connected public key. | PENDING |
+| `ledger.fake device rejection` | Create a USB device with Ledger VID/PID (0x2c97) but no Ledger firmware. Connect to Deodes. | Adapter's INS_GET_VERSION ping fails (device doesn't respond with valid APDU). Adapter returns device_not_responding error, does NOT expose any user data. Test verifies: adapter does not trust VID/PID alone — requires valid APDU responses. | PENDING |
+| `ledger.unsigned transaction bypass attempt` | Intercept the signTransaction call and inject a pre-signed XDR instead of sending to device. Attempt to have adapter return this XDR without device confirmation. | Adapter verifies that signTransaction completes via actual device call (mocked arcApp must have been called). Adapter verifies the returned signature corresponds to the sent XDR. Test verifies: adapter accepts only signatures that pass Ed25519 verification against the input XDR and the connected public key. | PENDING |
 
 ### 5.4 Edge Case Tests — 10 Required
 
@@ -1267,11 +1267,11 @@ For every file in section 1.2:
 | 3 | USB cable is charge-only (no data lines) | Device appears in WebUSB (USB connection established), but APDU communication fails (no response to INS_GET_VERSION). Adapter returns device_not_responding with message: "Ledger connected but not responding. Try a different USB cable (some cables are charge-only)." | PENDING |
 | 4 | Device is in bootloader mode (firmware update) | INS_GET_VERSION returns bootloader mode instead of normal mode. Adapter returns device_in_bootloader error: "Your Ledger is in bootloader mode. Please exit bootloader by unplugging and reconnecting." | PENDING |
 | 5 | User locks Ledger (auto-lock) during active transaction signing | signTransaction APDU returns 0x6982 (security status not satisfied — device locked). Adapter returns device_locked error: "Your Ledger has auto-locked. Please unlock with your PIN and try again." Signing operation is cancelled. | PENDING |
-| 6 | User switches away from Stellar app on device mid-connection | During session, user navigates to another app on Ledger (e.g., Bitcoin). Next operation (signTransaction) sends APDU → Stellar app not active → error returned. Adapter detects app switch and returns stellar_app_not_open: "Please open the Stellar app on your Ledger." | PENDING |
+| 6 | User switches away from Arc app on device mid-connection | During session, user navigates to another app on Ledger (e.g., Bitcoin). Next operation (signTransaction) sends APDU → Arc app not active → error returned. Adapter detects app switch and returns arc_app_not_open: "Please open the Arc app on your Ledger." | PENDING |
 | 7 | BLE connection drops due to range (user walks away) | Nano X out of BLE range (~10m). Transport ping starts failing. After 3 failed pings: connectionState → "disconnected". Auto-reconnect attempts begin. If user comes back in range within 60s: reconnect succeeds. If not: session expired, manual reconnect. | PENDING |
-| 8 | Ledger Stellar app version is outdated (v3.2.0 — no transaction detail display) | Firmware check returns warning: "Stellar app v3.3.0+ required for transaction detail display. Update via Ledger Live." Adapter still works (signing functions) but UI shows warning badge. User is not blocked but is informed of reduced security. | PENDING |
-| 9 | User has Nano S with firmware v1.6 (outdated, no app auto-open) | connect() initiates, Stellar app not found. Adapter returns stellar_app_not_open. Instructions: "Manually navigate to the Stellar app on your Ledger Nano S using the buttons." Additionally: "Your firmware (v1.6) is outdated. Update to v2.0+ via Ledger Live for improved app auto-open support." | PENDING |
-| 10 | Transaction with 10 operations (complex path payment) is sent to Ledger for signing | XDR is larger (~1.5KB). Ledger Stellar app displays each operation sequentially. User must scroll through all 10 operations. 120s timeout should be sufficient. If user confirms: all operations signed. Test verifies: large XDR handled correctly, no truncation or timeout. | PENDING |
+| 8 | Ledger Arc app version is outdated (v3.2.0 — no transaction detail display) | Firmware check returns warning: "Arc app v3.3.0+ required for transaction detail display. Update via Ledger Live." Adapter still works (signing functions) but UI shows warning badge. User is not blocked but is informed of reduced security. | PENDING |
+| 9 | User has Nano S with firmware v1.6 (outdated, no app auto-open) | connect() initiates, Arc app not found. Adapter returns arc_app_not_open. Instructions: "Manually navigate to the Arc app on your Ledger Nano S using the buttons." Additionally: "Your firmware (v1.6) is outdated. Update to v2.0+ via Ledger Live for improved app auto-open support." | PENDING |
+| 10 | Transaction with 10 operations (complex path payment) is sent to Ledger for signing | XDR is larger (~1.5KB). Ledger Arc app displays each operation sequentially. User must scroll through all 10 operations. 120s timeout should be sufficient. If user confirms: all operations signed. Test verifies: large XDR handled correctly, no truncation or timeout. | PENDING |
 
 ### 5.5 Regression Tests
 
@@ -1308,7 +1308,7 @@ USER ON DESKTOP — CONNECTS WITH LEDGER VIA USB
     ├─ Sees: WalletSelector grid (Phases 1-4)
     │   ┌─────────────────────────────────────────┐
     │   │  💻 Ledger            [Hardware Wallet]  │ ← "Hardware" badge
-    │   │     Maximum security for your XLM/USDC    │
+    │   │     Maximum security for your USDC    │
     │   │     DAO treasuries and large contributions│
     │   │                       [Connect →]        │
     │   └─────────────────────────────────────────┘
@@ -1331,7 +1331,7 @@ USER ON DESKTOP — CONNECTS WITH LEDGER VIA USB
     │   │   │    ┌──────────────────┐             │
     │   │   │    │  Dashboard        │             │
     │   │   │    │  ─────────────    │             │
-    │   │   │    │  Stellar          │  ← User     │
+    │   │   │    │  Arc          │  ← User     │
     │   │   │    │  Bitcoin          │  sees this  │
     │   │   │    │  Ethereum         │  on device  │
     │   │   │    └──────────────────┘             │
@@ -1361,11 +1361,11 @@ USER ON DESKTOP — CONNECTS WITH LEDGER VIA USB
     │   │   │                                     │
     │   │   │   ┌───────────────────┐             │
     │   │   │   │ 📱 Open the       │             │
-    │   │   │   │    Stellar app    │             │
+    │   │   │   │    Arc app    │             │
     │   │   │   │                   │             │
     │   │   │   │  On your Ledger:  │             │
     │   │   │   │  Navigate to the  │             │
-    │   │   │   │  Stellar app icon │             │
+    │   │   │   │  Arc app icon │             │
     │   │   │   │  Press both       │             │
     │   │   │   │  buttons to open  │             │
     │   │   │   └───────────────────┘             │
@@ -1373,7 +1373,7 @@ USER ON DESKTOP — CONNECTS WITH LEDGER VIA USB
     │   │   │   [Device sim showing:              │
     │   │   │    ┌──────────────────┐             │
     │   │   │    │                   │             │
-    │   │   │    │    Stellar        │             │
+    │   │   │    │    Arc        │             │
     │   │   │    │  ─────────────    │             │
     │   │   │    │  Waiting for      │             │
     │   │   │    │  commands...      │             │
@@ -1384,8 +1384,8 @@ USER ON DESKTOP — CONNECTS WITH LEDGER VIA USB
     │   │   │   [Back] [Cancel]                   │
     │   │   └─────────────────────────────────────┘
     │   │
-    │   ├─ User navigates to Stellar app on Ledger, opens it
-    │   ├─ Adapter detects Stellar app active → auto-advances
+    │   ├─ User navigates to Arc app on Ledger, opens it
+    │   ├─ Adapter detects Arc app active → auto-advances
     │   │
     │   ├─ Modal advances to Step 3:
     │   │   ┌─────────────────────────────────────┐
@@ -1420,7 +1420,7 @@ USER ON DESKTOP — CONNECTS WITH LEDGER VIA USB
     │   │   │          [Cancel]                    │
     │   │   └─────────────────────────────────────┘
     │   │
-    │   ├─ User verifies address on device screen matches Moistello
+    │   ├─ User verifies address on device screen matches Deodes
     │   ├─ User presses both buttons → "Approve"
     │   ├─ Modal: ✓ "Connected! Public key verified."
     │   ├─ Public key displayed with hardware badge
@@ -1429,7 +1429,7 @@ USER ON DESKTOP — CONNECTS WITH LEDGER VIA USB
     │       ├─ "Verify your wallet" — sign auth nonce
     │       ├─ Auth XDR sent to Ledger
     │       ├─ Device shows: "Review Transaction" with operation details
-    │       ├─ User reviews: "Moistello Auth" → operation name correct
+    │       ├─ User reviews: "Deodes Auth" → operation name correct
     │       ├─ User confirms on device
     │       └─ ✓ Authenticated. Redirecting to dashboard...
     │
@@ -1439,7 +1439,7 @@ USER ON DESKTOP — CONNECTS WITH LEDGER VIA USB
 
 **Metrics from login to authenticated via Ledger:**
 - Clicks: 2 (Connect → Verify/Sign)
-- Device interactions: 4 (plug in USB, open Stellar app, confirm address, sign auth)
+- Device interactions: 4 (plug in USB, open Arc app, confirm address, sign auth)
 - Physical confirmations: 2 (both-button press for address, both-button press for sign)
 - Time (experienced user, device already plugged in + app open): ~5-7 seconds
 - Time (new user, needs to plug in, unlock, find app): ~30-45 seconds
@@ -1449,7 +1449,7 @@ USER ON DESKTOP — CONNECTS WITH LEDGER VIA USB
 ```
 USER ON MOBILE — CONNECTS LEDGER NANO X VIA BLUETOOTH
 
-  User opens moistello.io on Chrome Android
+  User opens deodes.io on Chrome Android
     │
     ├─ WalletSelector detects mobile browser
     │   ├─ Extension adapters: "Not available" (no extensions on mobile)
@@ -1503,10 +1503,10 @@ USER ON MOBILE — CONNECTS LEDGER NANO X VIA BLUETOOTH
     │   ├─ User taps [Start Pairing →]
     │   ├─ Browser shows Bluetooth device chooser
     │   ├─ User selects "Nano X XXXX"
-    │   ├─ Pairing request appears on Ledger screen: "Pair with Moistello?"
+    │   ├─ Pairing request appears on Ledger screen: "Pair with Deodes?"
     │   ├─ User confirms pairing on device
     │   │
-    │   ├─ Steps 3-4: Same as USB flow (open Stellar app, confirm address)
+    │   ├─ Steps 3-4: Same as USB flow (open Arc app, confirm address)
     │   │
     │   └─ ✓ Connected via Bluetooth
     │
@@ -1519,8 +1519,8 @@ USER ON MOBILE — CONNECTS LEDGER NANO X VIA BLUETOOTH
 |---|---|---|
 | Browser unsupported (Firefox, Safari) | "Ledger requires Chrome, Edge, or Brave browser for USB/Bluetooth connection. Please switch browsers or use WalletConnect / Passkey instead. [Connect with WalletConnect →]" | Switch browser or use alternative wallet |
 | Device not found (not plugged in) | "Ledger not detected. Please plug in your device via USB and ensure it is unlocked. On Windows, you may need to install Ledger Live for USB drivers. [Try Again]" | Plug in and unlock Ledger, then retry |
-| Stellar app not open | "Please open the Stellar app on your Ledger. Navigate to the Stellar icon using the buttons and press both to open. [I've Opened It →]" | Open Stellar app, then click retry |
-| Stellar app not installed | "The Stellar app is not installed on this Ledger. Open Ledger Live → Manager → Search 'Stellar' → Install. Then come back and try again. [Try Again]" | Install Stellar app via Ledger Live, then retry |
+| Arc app not open | "Please open the Arc app on your Ledger. Navigate to the Arc icon using the buttons and press both to open. [I've Opened It →]" | Open Arc app, then click retry |
+| Arc app not installed | "The Arc app is not installed on this Ledger. Open Ledger Live → Manager → Search 'Arc' → Install. Then come back and try again. [Try Again]" | Install Arc app via Ledger Live, then retry |
 | Device locked (PIN not entered) | "Your Ledger is locked. Enter your PIN on the device to unlock it. [Try Again]" | Enter PIN on device, then retry |
 | User rejected address on device | "Address verification cancelled. Please approve the address on your Ledger to confirm it matches. [Try Again]" | Re-initiate address display, then approve |
 | User rejected transaction on device | "Transaction cancelled. You chose not to sign the transaction on your Ledger. [Try Again] [Cancel and Go Back]" | Review transaction and retry, or cancel action |
@@ -1540,7 +1540,7 @@ USER ON MOBILE — CONNECTS LEDGER NANO X VIA BLUETOOTH
 | Searching for Ledger device (USB) | Ledger wizard Step 1: pulsing icon + "Looking for your Ledger..." with browser native device chooser |
 | Scanning for Nano X (BLE) | Ledger wizard Step 2: scanning animation + "Searching for Ledger Nano X via Bluetooth..." |
 | Establishing USB connection | "Connecting to Ledger..." + progress bar (quick: ~200ms) |
-| Opening Stellar app | "Opening Stellar app..." + spinner + device sim showing app loading screen |
+| Opening Arc app | "Opening Arc app..." + spinner + device sim showing app loading screen |
 | Waiting for address confirmation | "Waiting for confirmation on your Ledger..." + pulsing address display + device sim showing "Approve / Reject" screen |
 | Sending transaction to device | "Sending transaction to Ledger..." + spinner + device sim transitioning to review screen |
 | Waiting for transaction signing | "Review transaction on your Ledger..." + pulsing icon + device sim showing first operation |
@@ -1567,7 +1567,7 @@ USER ON MOBILE — CONNECTS LEDGER NANO X VIA BLUETOOTH
     - Wizard title: aria-labelledby="ledger-wizard-title"
     - Connection state announced via aria-live="polite" region:
       "Step 1: Plug in your Ledger via USB."
-      "Ledger detected. Opening Stellar app."
+      "Ledger detected. Opening Arc app."
       "Address displayed on device. Press both buttons to confirm."
       "Transaction sent to device. Review on your Ledger screen."
     - Device simulator: aria-hidden="true" (decorative — the real info is on the device)
@@ -1616,7 +1616,7 @@ USER ON MOBILE — CONNECTS LEDGER NANO X VIA BLUETOOTH
 
     Android Chrome: Ledger Nano X via BLE fully supported.
       Web Bluetooth API available. Tested with Nano X firmware v2.2.0.
-      Steps: enable Bluetooth → scan → pair → open Stellar app → confirm → sign.
+      Steps: enable Bluetooth → scan → pair → open Arc app → confirm → sign.
 
     iPad: Limited. iPadOS Safari does not support WebUSB. WebBLE support is unreliable.
       Ledger card shows greyed out on iPad.
@@ -1637,8 +1637,8 @@ USER ON MOBILE — CONNECTS LEDGER NANO X VIA BLUETOOTH
     Hardware wallets are NOT cross-device wallets.
     
     For cross-device Ledger usage: user can use Ledger Live with WalletConnect (Phase 2)
-    to bridge the Ledger to Moistello from a mobile device. This is the recommended
-    path for users who want to use their Ledger with Moistello on a device without USB.
+    to bridge the Ledger to Deodes from a mobile device. This is the recommended
+    path for users who want to use their Ledger with Deodes on a device without USB.
 
 [ ] Does the QR/deep link flow work for WalletConnect pairing?
     Not applicable to Phase 4 — Ledger uses direct USB/BLE, not WalletConnect.
@@ -1655,16 +1655,16 @@ Locales updated/added for Phase 4 (6 languages: en, fr, sw, es, pt, hi):
 |---|---|---|
 | `ledger.name` | "Ledger" | Proper noun — not translated |
 | `ledger.category` | "Hardware Wallet" | Category badge |
-| `ledger.description` | "Maximum security for your XLM/USDC — private key never leaves the device" | Card subtitle |
+| `ledger.description` | "Maximum security for your USDC — private key never leaves the device" | Card subtitle |
 | `ledger.connect` | "Connect Ledger" | Primary CTA |
 | `ledger.wizard_title` | "Connect Your Ledger" | Wizard modal title |
 | `ledger.step_plugin_title` | "Plug In Your Ledger" | Step 1 title (USB) |
 | `ledger.step_plugin_body` | "Connect your Ledger to your computer using the USB cable." | Step 1 body |
 | `ledger.step_ble_title` | "Enable Bluetooth" | Step 1 title (BLE) |
 | `ledger.step_ble_body` | "Turn on Bluetooth on your phone and on your Ledger Nano X." | Step 1 body |
-| `ledger.step_app_title` | "Open Stellar App" | Step 2 title |
-| `ledger.step_app_body` | "On your Ledger, navigate to the Stellar app icon and press both buttons to open it." | Step 2 body |
-| `ledger.step_app_not_found` | "Stellar app not found. Install it from Ledger Live → Manager." | App missing |
+| `ledger.step_app_title` | "Open Arc App" | Step 2 title |
+| `ledger.step_app_body` | "On your Ledger, navigate to the Arc app icon and press both buttons to open it." | Step 2 body |
+| `ledger.step_app_not_found` | "Arc app not found. Install it from Ledger Live → Manager." | App missing |
 | `ledger.step_unlock` | "Unlock your Ledger by entering your PIN on the device." | Device locked prompt |
 | `ledger.step_verify_title` | "Verify Your Address" | Step 3 title |
 | `ledger.step_verify_body` | "Confirm the address on your Ledger screen. Press both buttons to approve." | Step 3 body |
@@ -1678,13 +1678,13 @@ Locales updated/added for Phase 4 (6 languages: en, fr, sw, es, pt, hi):
 | `ledger.transport_ble` | "Connected via Bluetooth" | Transport indicator |
 | `ledger.error.unsupported_browser` | "Ledger requires Chrome, Edge, or Brave browser." | Error |
 | `ledger.error.device_not_found` | "Ledger not detected. Is it plugged in and unlocked?" | Error |
-| `ledger.error.app_not_open` | "Please open the Stellar app on your Ledger." | Error |
+| `ledger.error.app_not_open` | "Please open the Arc app on your Ledger." | Error |
 | `ledger.error.device_locked` | "Please unlock your Ledger with your PIN." | Error |
 | `ledger.error.user_rejected` | "Connection cancelled on Ledger." | Error |
 | `ledger.error.timeout` | "Confirmation timed out. Please try again." | Error |
 | `ledger.error.transport_disconnected` | "Ledger disconnected. Check your cable or Bluetooth connection." | Error |
 | `ledger.error.firmware_old` | "Firmware update recommended. Your firmware (v{version}) is outdated." | Warning |
-| `ledger.error.stellar_app_old` | "Stellar app update recommended. Your app (v{version}) is outdated." | Warning |
+| `ledger.error.arc_app_old` | "Arc app update recommended. Your app (v{version}) is outdated." | Warning |
 | `ledger.error.wrong_account` | "This transaction is for a different account. Switch to the correct account." | Error |
 | `ledger.error.mainnet_confirm` | "You are about to sign a MAINNET transaction with real funds." | Confirmation |
 | `ledger.error.mainnet_confirm_detail` | "Amount: {amount} {asset}. Destination: {address}. Proceed?" | Confirmation detail |
@@ -1696,7 +1696,7 @@ Locales updated/added for Phase 4 (6 languages: en, fr, sw, es, pt, hi):
 | `ledger.sign_mainnet` | "I Understand — Sign on Mainnet" | Mainnet confirmation CTA |
 | `ledger.device_sim.alt` | "What you should see on your Ledger screen" | Screen reader alt text for device simulator |
 
-**Wallet and product names are NOT translated (proper nouns):** "Ledger", "Nano S", "Nano X", "Stax", "Flex", "Stellar".
+**Wallet and product names are NOT translated (proper nouns):** "Ledger", "Nano S", "Nano X", "Stax", "Flex", "Arc".
 
 **RTL languages:** Wizard steps use CSS logical properties for RTL support. The device simulator is a visual reference that mirrors the physical device orientation (not affected by text direction). Step indicator numbers remain LTR (numerals).
 
@@ -1713,7 +1713,7 @@ Locales updated/added for Phase 4 (6 languages: en, fr, sw, es, pt, hi):
 | `ledger_sign_attempts_total` | Counter | `{operation: "signTransaction"\|"signMessage", outcome: "success"\|"timeout"\|"rejected"\|"disconnected"\|"error"}` | Track signing outcomes |
 | `ledger_sign_duration_ms` | Histogram | `{operation}` | Track signing round-trip time (excluding user review time) |
 | `ledger_transport_disconnects_total` | Counter | `{transport: "usb"\|"ble", cause: "user_unplug"\|"range"\|"error"}` | Track unexpected disconnects |
-| `ledger_firmware_versions` | Gauge | `{firmware: string, stellar_app: string}` | Distribution of firmware/app versions in the field |
+| `ledger_firmware_versions` | Gauge | `{firmware: string, arc_app: string}` | Distribution of firmware/app versions in the field |
 | `ledger_warnings_total` | Counter | `{type: "firmware_outdated"\|"app_outdated"}` | Track how many users are on outdated firmware |
 | `ledger_session_duration_seconds` | Histogram | (none) | Track typical Ledger session length |
 | `ledger_reconnect_attempts_total` | Counter | `{outcome: "success"\|"failure"}` | Auto-reconnect success rate |
@@ -1738,7 +1738,7 @@ NEXT_PUBLIC_FEATURE_HARDWARE_WALLET=false  → Ledger adapter never imported (tr
 NEXT_PUBLIC_FEATURE_HARDWARE_WALLET_BLE=true   → BLE transport enabled (default on)
 NEXT_PUBLIC_FEATURE_HARDWARE_WALLET_BLE=false  → BLE disabled → Nano X BLE users directed to desktop USB or WalletConnect
 
-NEXT_PUBLIC_LEDGER_DERIVATION_PATH="44'/148'/0'" → Default BIP-44 path for Stellar
+NEXT_PUBLIC_LEDGER_DERIVATION_PATH="44'/148'/0'" → Default BIP-44 path for Arc
   (never change this in production — hardcoded for security)
 
 Rollback procedure:
@@ -1760,15 +1760,15 @@ Partial rollback (BLE only):
 | Failure | User Impact | Business Impact | Recovery Time |
 |---|---|---|---|
 | WebUSB API removed from Chrome | All desktop Ledger connections break. Adapter returns unsupported_browser error. | Ledger users cannot sign in or transact. Mobile BLE users unaffected. Affects ~60% of Ledger users (desktop). | No automated recovery. Users must switch to WalletConnect with Ledger Live or use a different wallet. Monitor Chrome platform status for WebUSB changes. |
-| Ledger Stellar app has APDU protocol change | Our @ledgerhq/hw-app-str version may be incompatible if Ledger updates the Stellar app protocol. signTransaction/getPublicKey fails with protocol errors. | All Ledger connections fail. Users see "Stellar app communication error. Update your Ledger app or contact support." | Update @ledgerhq/hw-app-str to latest version → deploy. ~30 minutes if prepared. Monitor Ledger Stellar app release notes. |
+| Ledger Arc app has APDU protocol change | Our @ledgerhq/hw-app-str version may be incompatible if Ledger updates the Arc app protocol. signTransaction/getPublicKey fails with protocol errors. | All Ledger connections fail. Users see "Arc app communication error. Update your Ledger app or contact support." | Update @ledgerhq/hw-app-str to latest version → deploy. ~30 minutes if prepared. Monitor Ledger Arc app release notes. |
 | Windows USB driver prevents WebUSB access | On some Windows configurations, Ledger USB device is claimed by the HID driver and WebUSB cannot claim the interface. | Affected Windows users cannot connect Ledger via USB. BLE option if Nano X available. | User workaround: install Ledger Live (provides correct driver) or use Zadig to replace driver. Cannot fix from our side — browser-level limitation. |
 | BLE pairing fails on Android | Some Android versions/ROMs have broken Web Bluetooth implementation. Pairing never completes or drops immediately. | Cannot use Ledger on affected Android devices. User directed to desktop. | No automated recovery. User can copy the pairing link and try WalletConnect with Ledger Live mobile-to-mobile. |
-| User's Ledger firmware is bricked/corrupted | Device won't boot. Cannot connect at all. | User cannot access their funds through Moistello. All wallet options still available. | User must restore Ledger from seed phrase (24 words) via Ledger Live. Funds safe on Stellar blockchain. Once restored, reconnect. |
+| User's Ledger firmware is bricked/corrupted | Device won't boot. Cannot connect at all. | User cannot access their funds through Deodes. All wallet options still available. | User must restore Ledger from seed phrase (24 words) via Ledger Live. Funds safe on Arc blockchain. Once restored, reconnect. |
 | Device auto-locks during transaction review | User starts reviewing transaction, device locks after 10 min (configurable). signTransaction returns 0x6982. | Transaction fails. User must unlock and restart signature. Lost ~30 seconds. | Async unlock → retry. No data loss. |
 | Wrong derivation path entered by developer | If derivation path is ever made configurable and set incorrectly, getPublicKey returns a DIFFERENT address than user expects. | User sees different address than their Ledger Live / other wallets → confusion → support tickets. | Derivation path is HARDCODED ("44'/148'/0'") and never user-configurable. This failure mode is prevented by design. |
 | @ledgerhq bundle includes Node.js Buffer polyfill issues | Next.js Buffer polyfill may fail in specific edge cases (SSR, edge runtime). APDU command construction crashes. | Ledger adapter fails silently during operation. | Pre-implementation: verify Buffer polyfill works in target environments. If issues: use Uint8Array directly with @ledgerhq/hw-transport's low-level APIs. |
-| Multiple browser tabs competing for same Ledger device | Tab A and Tab B both try to communicate with Ledger. USB claim is exclusive — second tab fails. | Second tab shows "Ledger is in use by another tab. Close other Moistello tabs and try again." | User closes other tabs, retries. BroadcastChannel coordination can prevent this (Tab B knows Tab A has the device). Phase 6 enhancement. |
-| User connects Ledger but has no XLM (unfunded account) | Public key retrieved successfully. Backend checks Stellar account — unfunded. | "Ledger connected, but account GABC... has no funds. You'll need XLM to use Moistello. [How to get XLM →]" | User funds account through exchange or friendbot (testnet), then retries. |
+| Multiple browser tabs competing for same Ledger device | Tab A and Tab B both try to communicate with Ledger. USB claim is exclusive — second tab fails. | Second tab shows "Ledger is in use by another tab. Close other Deodes tabs and try again." | User closes other tabs, retries. BroadcastChannel coordination can prevent this (Tab B knows Tab A has the device). Phase 6 enhancement. |
+| User connects Ledger but has no USDC (unfunded account) | Public key retrieved successfully. Backend checks Arc account — unfunded. | "Ledger connected, but account GABC... has no funds. You'll need USDC to use Deodes. [How to get USDC →]" | User funds account through exchange or friendbot (testnet), then retries. |
 
 ---
 
@@ -1845,7 +1845,7 @@ Partial rollback (BLE only):
 
 **Hardware Wallet Coverage Summary (Phase 4 unlocks these Ledger models):**
 
-| Model | Connection | Firmware | Stellar App | Supported? |
+| Model | Connection | Firmware | Arc App | Supported? |
 |---|---|---|---|---|
 | Ledger Nano S | USB only | v2.1.0+ | v3.3.0+ | YES |
 | Ledger Nano S Plus | USB only | v2.1.0+ | v3.3.0+ | YES |

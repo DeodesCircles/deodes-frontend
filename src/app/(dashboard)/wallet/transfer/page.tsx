@@ -35,11 +35,11 @@ function WalletTransferContent() {
   const handleValidate = () => {
     setError(null)
     if (!recipient.trim()) {
-      setError("Please enter a valid Stellar recipient address.")
+      setError("Please enter a valid Arc recipient address.")
       return false
     }
     if (!recipient.startsWith("G") || recipient.length < 20) {
-      setError("Invalid Stellar public key format (must start with G).")
+      setError("Invalid Arc public key format (must start with G).")
       return false
     }
     const numAmount = parseFloat(amount)
@@ -71,7 +71,7 @@ function WalletTransferContent() {
         currency,
         memo,
       })
-      setTxnHash(res.txnHash || "tx_mock_hash_stellar")
+      setTxnHash(res.txnHash || "tx_mock_hash_arc")
       setStep("success")
       addToast({ type: "success", title: "Transfer completed successfully" })
     } catch (err: unknown) {
@@ -86,7 +86,7 @@ function WalletTransferContent() {
     <div data-testid="wallet-transfer-page" className="max-w-2xl mx-auto space-y-8 pb-12">
       <PageHeader
         title="Transfer Assets"
-        description="Send USDC or XLM instantly across the Stellar network."
+        description="Send USDC or XLM instantly across the Arc network."
         action={
           <ButtonLink href="/wallet" variant="ghost" size="sm" leftIcon={<ArrowLeft className="w-4 h-4" />}>
             Back to Wallet
@@ -107,11 +107,11 @@ function WalletTransferContent() {
             <label htmlFor="recipient-address" className="block text-sm font-medium mb-2">Recipient Address</label>
             <Input
               id="recipient-address"
-              aria-label="Recipient Stellar address"
+              aria-label="Recipient Arc address"
               data-testid="recipient-input"
               value={recipient}
               onChange={(e) => setRecipient(e.target.value)}
-              placeholder="G... (Stellar Public Key)"
+              placeholder="G... (Arc Public Key)"
             />
           </div>
 

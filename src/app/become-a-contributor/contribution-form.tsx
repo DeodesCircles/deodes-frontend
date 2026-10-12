@@ -10,7 +10,7 @@ import { getCsrfHeaders } from "@/lib/auth/csrf"
 const contributionAreas = [
   "Frontend Development (TypeScript/Next.js)",
   "Backend Development (Go/Rust)",
-  "Smart Contracts (Soroban/Rust)",
+  "Smart Contracts (Arc/Rust)",
   "Design & UI/UX",
   "Documentation & Tutorials",
   "Community Management",

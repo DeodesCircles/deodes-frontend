@@ -2,7 +2,7 @@ import { Metadata } from "next"
 import CreateCircleContent from "./content"
 
 export const metadata: Metadata = {
-  title: "Create Circle — Moistello",
+  title: "Create Circle — Deodes",
   description: "Create a new savings circle within your community.",
 }
 

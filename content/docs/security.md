@@ -5,11 +5,11 @@ order: 5
 
 # Security
 
-How Moistello keeps your funds and data secure.
+How Deodes keeps your funds and data secure.
 
 ## Authentication Security
 
-Moistello uses **passkey authentication** (WebAuthn) as the sole sign-in method:
+Deodes uses **passkey authentication** (WebAuthn) as the sole sign-in method:
 
 - **Biometric verification** — Sign in with Face ID, Touch ID, Windows Hello, or fingerprint. No passwords to leak or phish.
 - **On-device key generation** — Your private key never leaves your device.
@@ -18,17 +18,17 @@ Moistello uses **passkey authentication** (WebAuthn) as the sole sign-in method:
 
 ## Smart Contract Security
 
-All circle funds are managed by Soroban smart contracts on the Stellar blockchain:
+All circle funds are managed by Arc smart contracts on the Arc blockchain:
 
 - **Open source** — Contract code is publicly auditable on GitHub
 - **Immutable rules** — Once deployed, contract rules cannot be changed
-- **No custodial risk** — Moistello never holds your funds
+- **No custodial risk** — Deodes never holds your funds
 - **Reentrancy protection** — Contracts include guards against common attack vectors
 - **Access control** — Only the passkey-authenticated member can trigger authorized actions
 
 ## Wallet Key Encryption
 
-Stellar wallet keys are encrypted using **AES-256-GCM** before being stored in PostgreSQL:
+Arc wallet keys are encrypted using **AES-256-GCM** before being stored in PostgreSQL:
 
 - **Encrypted at rest** — Private keys are never stored in plaintext
 - **Unique nonce per key** — Each encryption uses a fresh random nonce

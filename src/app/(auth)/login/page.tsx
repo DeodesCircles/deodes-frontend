@@ -59,7 +59,7 @@ export default function LoginPage() {
   )
 
   return (
-    <AuthLayout title="Sign in to Moistello">
+    <AuthLayout title="Sign in to Deodes">
       <div className="space-y-6">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate aria-label="Email login form">
           <Input

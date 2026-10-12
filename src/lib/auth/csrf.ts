@@ -1,4 +1,4 @@
-const CSRF_COOKIE_NAMES = ["__Host-moistello_csrf", "moistello_csrf"] as const
+const CSRF_COOKIE_NAMES = ["__Host-deodes_csrf", "deodes_csrf"] as const
 
 /** Read the current double-submit token, preferring the rotated cookie over the page meta tag. */
 export function getCsrfToken(): string | undefined {

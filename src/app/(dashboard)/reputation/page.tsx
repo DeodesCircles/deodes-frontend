@@ -50,7 +50,7 @@ export default function ReputationPage() {
       <EmptyState
         icon={<Award />}
         title="No reputation yet"
-        description="Complete your first contribution to start building your MoiScore."
+        description="Complete your first contribution to start building your DeoScore."
         className="border border-dashed border-aurora-violet/30"
       />
     )

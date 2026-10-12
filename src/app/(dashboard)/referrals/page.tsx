@@ -40,7 +40,7 @@ export default function ReferralsPage() {
       <div className="space-y-8" data-testid="referrals-page">
         <PageHeader
           title="Referrals & Rewards"
-          description="Invite friends to Moistello and earn protocol rewards."
+          description="Invite friends to Deodes and earn protocol rewards."
         />
         <EmptyState
           icon={<Users />}
@@ -60,7 +60,7 @@ export default function ReferralsPage() {
     <div className="space-y-8" data-testid="referrals-page">
       <PageHeader
         title="Referrals & Rewards"
-        description="Invite friends to Moistello and earn protocol rewards."
+        description="Invite friends to Deodes and earn protocol rewards."
       />
       <div>Referrals list</div>
     </div>

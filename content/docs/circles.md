@@ -5,7 +5,7 @@ order: 3
 
 # Savings Circles
 
-A deep dive into how savings circles (ROSCAs) work on Moistello.
+A deep dive into how savings circles (ROSCAs) work on Deodes.
 
 ## Circle Lifecycle
 
@@ -22,7 +22,7 @@ Every circle goes through these stages:
 ## Circle Types
 
 ### Public
-Open to anyone meeting the minimum MoiScore requirement. Good for discovering new circles.
+Open to anyone meeting the minimum DeoScore requirement. Good for discovering new circles.
 
 ### Private
 Invite-only via link. Members must be explicitly invited. The organizer controls who joins.
@@ -46,7 +46,7 @@ Example: $100 pool. Alice bids 5%, Bob bids 8%.
 ## Contribution Rules
 
 - Members must contribute the full amount in USDC each cycle
-- Contributions are held in a Soroban smart contract escrow
+- Contributions are held in a Arc smart contract escrow
 - Late payments incur a penalty (default 5%)
 - After max strikes (default 3), a member is removed
 - **Zero platform fees** — the contract calls `apply_fee(pool, 0)`, so the full contribution pool is distributed
@@ -61,9 +61,9 @@ Example: $100 pool. Alice bids 5%, Bob bids 8%.
 
 ## Smart Contract Security
 
-All circle funds are held in Soroban smart contracts deployed on the Stellar blockchain. Key security features:
+All circle funds are held in Arc smart contracts deployed on the Arc blockchain. Key security features:
 
-- **No single point of failure** — funds are on-chain, not held by Moistello
+- **No single point of failure** — funds are on-chain, not held by Deodes
 - **Transparent rules** — anyone can verify the smart contract code
 - **Immutable execution** — payouts happen automatically when conditions are met
 - **Open source** — available under Apache 2.0 license

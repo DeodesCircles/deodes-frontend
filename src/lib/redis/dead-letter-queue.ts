@@ -7,7 +7,7 @@
 
 import { getRedisClient } from "../redis/client"
 
-const DLQ_KEY = "moistello:dlq"
+const DLQ_KEY = "deodes:dlq"
 
 export interface DeadLetterEvent {
   id: string

@@ -1,7 +1,7 @@
-# Moistello Wallet Integration - Implementation Summary
+# Deodes Wallet Integration - Implementation Summary
 
 ## Overview
-This document summarizes the complete implementation of the Moistello multi-wallet integration across all 6 phases.
+This document summarizes the complete implementation of the Deodes multi-wallet integration across all 6 phases.
 
 ## Phase 1: Wallet Abstraction Core + Browser Extension Adapters ✅
 
@@ -53,7 +53,7 @@ This document summarizes the complete implementation of the Moistello multi-wall
 
 ### Key Features
 - Zero-friction login using device biometrics
-- Deterministic Stellar key derivation from passkey
+- Deterministic Arc key derivation from passkey
 - Server-side verification endpoints
 - Cross-device sync support
 
@@ -69,7 +69,7 @@ This document summarizes the complete implementation of the Moistello multi-wall
 ### Key Features
 - WebUSB and WebBLE transport support
 - Firmware version checking and warnings
-- Stellar app detection and validation
+- Arc app detection and validation
 - Device connection state management
 
 ## Phase 5: Full UI Migration + Multi-Account Support ✅
@@ -137,7 +137,7 @@ This document summarizes the complete implementation of the Moistello multi-wall
 - `@noble/ed25519` - Ed25519 cryptography
 - `@ledgerhq/hw-transport-webusb` - Ledger WebUSB transport
 - `@ledgerhq/hw-transport-webble` - Ledger WebBLE transport
-- `@ledgerhq/hw-app-str` - Ledger Stellar app
+- `@ledgerhq/hw-app-str` - Ledger Arc app
 
 ## Architecture Decisions
 
@@ -214,7 +214,7 @@ All security headers are configured in `next.config.mjs`:
 
 ## Conclusion
 
-All 6 phases of the Moistello wallet integration have been successfully implemented. The system provides:
+All 6 phases of the Deodes wallet integration have been successfully implemented. The system provides:
 
 1. **Universal wallet support** - Browser extensions, WalletConnect, Passkey, and Ledger
 2. **Multi-account management** - Connect and switch between multiple wallets

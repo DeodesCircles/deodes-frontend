@@ -19,7 +19,7 @@ import {
 const SESSIONS_FILE = path.join(process.cwd(), "content", "sessions.json");
 
 function isAuthorized(request: NextRequest): boolean {
-  const cookie = request.cookies.get("moistello_session");
+  const cookie = request.cookies.get("deodes_session");
   if (!cookie) return false;
   if (!fs.existsSync(SESSIONS_FILE)) return false;
 

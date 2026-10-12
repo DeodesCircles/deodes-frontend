@@ -166,7 +166,7 @@ export const useUIStore = create<UIStore>()(
       },
     }),
     {
-      name: "moistello_theme",
+      name: "deodes_theme",
       partialize: (state) => ({ theme: state.theme, density: state.density, fontSize: state.fontSize }),
     }
   )

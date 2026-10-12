@@ -22,7 +22,7 @@ The existing authentication system is spread across 3 monolithic pages (login: 5
 - 100% test coverage on all auth flows (unit + integration + e2e)
 - Email verification before passkey creation
 - Wallet connection working for all adapter types (Freighter, Rabet, xBull, Albedo, WalletConnect, Ledger, Passkey)
-- Playwright e2e tests running against live https://moistello.com
+- Playwright e2e tests running against live https://deodes.com
 
 ---
 
@@ -188,7 +188,7 @@ Step 4: Verification code input appears
 Step 5: Code verified → proceed to passkey creation
     → WebAuthn navigator.credentials.create()
     → Browser prompts for biometric / PIN
-    → On success: derive Stellar keypair from passkey
+    → On success: derive Arc keypair from passkey
     → Save public key in auth-flow-store
     → Proceed to profile step
 ```
@@ -213,7 +213,7 @@ Step 5: Code verified → proceed to passkey creation
 email + deviceCredentialID → PBKDF2 → seed → Ed25519 keypair
      │                              │
      │                              ▼
-     │                      Stellar public key
+     │                      Arc public key
      │                              │
      ▼                              ▼
   Stored in                      Stored in
@@ -224,7 +224,7 @@ email + deviceCredentialID → PBKDF2 → seed → Ed25519 keypair
 Derivation algorithm:
 ```typescript
 // pseudocode
-async function deriveStellarKeypair(email: string, credentialId: string): Promise<Keypair> {
+async function deriveArcKeypair(email: string, credentialId: string): Promise<Keypair> {
   const encoder = new TextEncoder()
   const keyMaterial = await crypto.subtle.importKey(
     "raw",
@@ -256,7 +256,7 @@ async function deriveStellarKeypair(email: string, credentialId: string): Promis
 | 3 | Missing loading states | register/page.tsx | No visual feedback during nonce fetch or signing | Use auth-flow-store status for precise loading states |
 | 4 | Inconsistent error handling | Both pages | `signError` vs `submitError` vs `loginError` vs `registerError` all tracked separately | Single `auth-flow-store.error` for all auth errors |
 | 5 | No retry for WC2 timeout | Both pages | No timeout handler; QR sits forever | Add 120s QR expiry countdown with auto-retry button |
-| 6 | Hardcoded testnet Horizon URL | multi-wallet-store.ts:369 | `horizon-testnet.stellar.org` hardcoded | Read network from env or wallet adapter |
+| 6 | Hardcoded testnet Horizon URL | multi-wallet-store.ts:369 | `horizon-testnet.arc.org` hardcoded | Read network from env or wallet adapter |
 | 7 | Dead network mismatch detection | Both pages | Network mismatch creates silent failures | Add explicit network check before connection |
 
 ### 4.2 Wallet Adapter Connection Sequence (Fixed)
@@ -354,7 +354,7 @@ export default function LoginPage() {
   }, [mode, startLoginFlow])
 
   return (
-    <AuthLayout title="Moistello">
+    <AuthLayout title="Deodes">
       {status.status === "connecting" || status.status === "signing" ? (
         <LoadingOverlay message="Signing you in..." />
       ) : status.status === "connected" ? (
@@ -399,7 +399,7 @@ export default function RegisterPage() {
   }, [mode, startRegisterFlow])
 
   return (
-    <AuthLayout title="Moistello">
+    <AuthLayout title="Deodes">
       <AuthStepIndicator steps={STEPS} currentStep={step} />
       
       {step === "choose" && <ChooseWalletStep mode="register" />}
@@ -424,7 +424,7 @@ export default function RegisterPage() {
 **Props:**
 ```typescript
 interface AuthLayoutProps {
-  title: string        // Brand title (always "Moistello")
+  title: string        // Brand title (always "Deodes")
   children: ReactNode
   footerLinks?: { label: string; href: string; text: string }[]
 }
@@ -466,7 +466,7 @@ interface ChooseWalletStepProps {
 **States:**
 - Scanning: `useMultiWalletStore.isScanning` → show loader
 - Wallets detected: Show grid with detected/not_detected status
-- No wallets: Fallback message "Install a Stellar wallet like Freighter"
+- No wallets: Fallback message "Install a Arc wallet like Freighter"
 - Connecting: Overlay loader on the selected wallet card
 - WC2 active: Show QR code or deep link component
 - WC2 timeout: Show error with retry button
@@ -777,7 +777,7 @@ src/stores/__tests__/
 **Test environment:**
 - Playwright with Chromium, Firefox, WebKit
 - Headless mode for CI, headed mode for debugging
-- Run against https://moistello.com (LIVE PRODUCTION)
+- Run against https://deodes.com (LIVE PRODUCTION)
 - Mobile emulation via Playwright's device profiles (iPhone 14, Pixel 7)
 - Desktop viewport: 1440×900, 1024×768 (iPad)
 - Slow network simulation: 3G throttling for timeout tests
@@ -792,7 +792,7 @@ export default defineConfig({
   timeout: 60000,          // 60s per test (WC2 QR can be slow)
   retries: 2,
   use: {
-    baseURL: "https://moistello.com",
+    baseURL: "https://deodes.com",
     screenshot: "only-on-failure",
     video: "retain-on-failure",
     trace: "retain-on-failure",
@@ -833,8 +833,8 @@ test("login page renders wallet grid on desktop, detects QR on mobile", async ({
   await page.goto("/login")
 
   // Common: page loaded
-  await expect(page).toHaveTitle(/Moistello/)
-  await expect(page.locator("text=Moistello")).toBeVisible()
+  await expect(page).toHaveTitle(/Deodes/)
+  await expect(page.locator("text=Deodes")).toBeVisible()
 
   if (isMobile) {
     // Mobile: should see WalletConnect as primary option
@@ -880,7 +880,7 @@ test("email verification sends code, accepts code, creates passkey", async ({ pa
 
   // Phase: input
   const emailInput = page.locator('input[type="email"]')
-  await emailInput.fill("test-user@moistello-test.com")
+  await emailInput.fill("test-user@deodes-test.com")
   await page.click("text=Confirm Email")
 
   // Phase: sending (brief)
@@ -891,7 +891,7 @@ test("email verification sends code, accepts code, creates passkey", async ({ pa
   await expect(page.locator("text=Enter the 6-digit code")).toBeVisible()
 
   // Fill verification code (get from API or test DB)
-  const code = await getVerificationCodeForEmail("test-user@moistello-test.com")
+  const code = await getVerificationCodeForEmail("test-user@deodes-test.com")
   const codeInputs = page.locator('input[inputmode="numeric"]')
   for (let i = 0; i < 6; i++) {
     await codeInputs.nth(i).fill(code[i])
@@ -954,7 +954,7 @@ test("shows no-wallets message when no wallets detected", async ({ page }) => {
   await page.goto("/login")
 
   await expect(page.locator("text=No wallets available")).toBeVisible()
-  await expect(page.locator("text=Install a Stellar wallet like Freighter")).toBeVisible()
+  await expect(page.locator("text=Install a Arc wallet like Freighter")).toBeVisible()
 })
 ```
 
@@ -1012,7 +1012,7 @@ e2e/
 ├── fixtures/
 │   └── test-accounts.ts      # Test wallet addresses / emails
 ├── helpers/
-│   ├── api.ts                 # Helper to call Moistello API
+│   ├── api.ts                 # Helper to call Deodes API
 │   ├── email.ts               # Helper to read verification codes from test inbox
 │   └── wallet.ts              # Helper to mock wallet extensions
 ├── global-setup.ts            # Global beforeAll — create test accounts
@@ -1027,8 +1027,8 @@ export const TEST_ACCOUNTS = {
     secretKey: "S...",        // ONLY for test — never commit real keys
   },
   email: {
-    address: "auth-test-001@moistello-test.com",  // Catch-all test domain
-    inboxUrl: "https://api.moistello-test.com/inbox/auth-test-001",  // Test inbox API
+    address: "auth-test-001@deodes-test.com",  // Catch-all test domain
+    inboxUrl: "https://api.deodes-test.com/inbox/auth-test-001",  // Test inbox API
   },
   passkey: {
     // Passkey is device-bound, so we mock WebAuthn API
@@ -1108,7 +1108,7 @@ jobs:
 |------|:----------:|:------:|:----------:|
 | WalletConnect API changes | Low | High | Pin SDK version, integration tests catch breakage |
 | WebAuthn API not available (old browser) | Medium | Medium | Fallback to "browser not supported" message, suggest extension wallet |
-| Stellar testnet downtime during CI | Low | Medium | Retry logic in tests, fallback to mocks for CI |
+| Arc testnet downtime during CI | Low | Medium | Retry logic in tests, fallback to mocks for CI |
 | Email delivery delays during E2E | Medium | Medium | Poll with timeout (30s max), use test inbox API |
 | Passkey tests in headless browser | High | High | Mock WebAuthn API with `page.evaluate()` to inject mock credentials |
 | WC2 requires real wallet to approve | Very High | High | Cannot fully automate WC2 approval in headless. Test QR renders (visual), test deep link (structural). Pairing approval requires manual step or sidecar wallet simulator. |
@@ -1133,10 +1133,10 @@ For the flows that cannot be automated (WC2 pairing, actual passkey biometric, h
 ### Pre-QA Checklist
 - [ ] Branch deployed to staging environment
 - [ ] Backend API running on staging
-- [ ] Test Stellar accounts funded with test XLM
+- [ ] Test Arc accounts funded with test USDC
 
 ### Login Flow
-1. [ ] Open https://staging.moistello.com/login in Chrome with Freighter installed
+1. [ ] Open https://staging.deodes.com/login in Chrome with Freighter installed
 2. [ ] Verify Freighter appears in wallet grid as "detected"
 3. [ ] Verify Rabet appears as "not detected" (if not installed)
 4. [ ] Click Freighter — verify Freighter popup opens
@@ -1147,14 +1147,14 @@ For the flows that cannot be automated (WC2 pairing, actual passkey biometric, h
 9. [ ] Repeat steps 1-7 on Safari (WebKit)
 
 ### Passkey Login
-1. [ ] Open https://staging.moistello.com/login in Chrome
+1. [ ] Open https://staging.deodes.com/login in Chrome
 2. [ ] Click "Sign in with Passkey"
 3. [ ] Verify browser biometric prompt appears
 4. [ ] Authenticate via fingerprint/face
 5. [ ] Verify signed in and redirected
 
 ### Register Flow (Extension Wallet)
-1. [ ] Open https://staging.moistello.com/register in Chrome with Freighter
+1. [ ] Open https://staging.deodes.com/register in Chrome with Freighter
 2. [ ] Verify passkey is shown as "Recommended"
 3. [ ] Click Freighter — verify Freighter popup opens
 4. [ ] Approve — verify advances to Profile step
@@ -1162,11 +1162,11 @@ For the flows that cannot be automated (WC2 pairing, actual passkey biometric, h
 6. [ ] Click "Continue" — verify advances to Verify step
 7. [ ] Review profile summary
 8. [ ] Click "Create Account" — verify Freighter requests signature
-9. [ ] Sign — verify toast "Welcome to Moistello!"
+9. [ ] Sign — verify toast "Welcome to Deodes!"
 10. [ ] Verify redirected to dashboard
 
 ### Register Flow (Passkey + Email Verification)
-1. [ ] Open https://staging.moistello.com/register in Chrome
+1. [ ] Open https://staging.deodes.com/register in Chrome
 2. [ ] Click "Passkey"
 3. [ ] Enter email "test@example.com"
 4. [ ] Click "Confirm Email"
@@ -1179,30 +1179,30 @@ For the flows that cannot be automated (WC2 pairing, actual passkey biometric, h
 11. [ ] Fill profile details
 12. [ ] Click "Continue"
 13. [ ] Click "Create Account"
-14. [ ] Verify toast "Welcome to Moistello!"
+14. [ ] Verify toast "Welcome to Deodes!"
 15. [ ] Verify redirected to dashboard
 
 ### WalletConnect QR Generation
-1. [ ] Open https://staging.moistello.com/login in Chrome (desktop mode)
+1. [ ] Open https://staging.deodes.com/login in Chrome (desktop mode)
 2. [ ] Click "WalletConnect"
 3. [ ] Verify QR code renders
 4. [ ] Verify "Scan the QR code with your mobile wallet" text appears
 5. [ ] Click "Cancel" — verify returns to wallet selection
 
 ### WalletConnect Mobile Detection
-1. [ ] Open https://staging.moistello.com/login in Chrome DevTools (mobile mode: Pixel 7)
+1. [ ] Open https://staging.deodes.com/login in Chrome DevTools (mobile mode: Pixel 7)
 2. [ ] Click "WalletConnect"
 3. [ ] Verify QR code does NOT render
 4. [ ] Verify "Open your wallet app to connect" text appears
 5. [ ] Verify deep link URL is present (hidden or as link)
 
 ### Error Handling
-1. [ ] Open https://staging.moistello.com/login, click Freighter → reject in Freighter
+1. [ ] Open https://staging.deodes.com/login, click Freighter → reject in Freighter
 2. [ ] Verify error message "User rejected the request" appears
-3. [ ] Open https://staging.moistello.com/login, click WalletConnect
+3. [ ] Open https://staging.deodes.com/login, click WalletConnect
 4. [ ] Wait 2 minutes — verify "Connection expired" appears
 5. [ ] Click "Retry" — verify new QR code generates
-6. [ ] Open https://staging.moistello.com/register, click "Create Account" without filling display name
+6. [ ] Open https://staging.deodes.com/register, click "Create Account" without filling display name
 7. [ ] Verify field error "Display name is required"
 
 ### Regression Checks
@@ -1411,7 +1411,7 @@ export const useAuthFlowStore = create<AuthFlowStore>()(
       { name: "auth-flow-store" }
     ),
     {
-      name: "moistello-auth-flow",
+      name: "deodes-auth-flow",
       storage: createJSONStorage(() => sessionStorage),
       partialize: (state) => ({
         // Only persist what's needed for recovery
@@ -1761,7 +1761,7 @@ export function useOnlineStatus() {
 
 useEffect(() => {
   const handleStorage = (e: StorageEvent) => {
-    if (e.key === "moistello-auth-flow" && e.newValue) {
+    if (e.key === "deodes-auth-flow" && e.newValue) {
       // Another tab changed auth state — rehydrate
       const parsed = JSON.parse(e.newValue)
       if (parsed.state?.status?.status === "authenticated") {
@@ -2049,7 +2049,7 @@ When user clicks "Lost passkey?" on login page:
 2. Send verification code to email
 3. User enters code
 4. On verified: generate new passkey credential (WebAuthn create)
-5. Derive new Stellar keypair from new credential + same email
+5. Derive new Arc keypair from new credential + same email
 6. Call POST /auth/passkey/recover with new public key + verificationId
 7. Server verifies email ownership, updates public key, invalidates old passkey version
 8. User proceeds to sign in with new passkey
@@ -2072,8 +2072,8 @@ When user clicks "Lost passkey?" on login page:
 const handleShare = async () => {
   if (navigator.share) {
     await navigator.share({
-      title: "Connect to Moistello",
-      text: "Open this link in your Stellar wallet to connect:",
+      title: "Connect to Deodes",
+      text: "Open this link in your Arc wallet to connect:",
       url: wc2PairingUri,
     })
   } else {

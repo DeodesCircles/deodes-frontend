@@ -87,7 +87,7 @@ export const NAVIGATION_COMMANDS: readonly NavigationCommand[] = [
   { id: "page.payouts", label: "Payouts", group: "page", href: Routes.PAYOUTS, icon: PiggyBank, keywords: "winnings receive" },
   { id: "page.communities", label: "Communities", group: "page", href: Routes.COMMUNITIES, icon: Users, keywords: "groups collectives" },
   { id: "page.people", label: "People", group: "page", href: Routes.PEOPLE, icon: User, keywords: "members directory" },
-  { id: "page.reputation", label: "Reputation", group: "page", href: Routes.REPUTATION, icon: Gauge, keywords: "moiscore tier score" },
+  { id: "page.reputation", label: "Reputation", group: "page", href: Routes.REPUTATION, icon: Gauge, keywords: "deoscore tier score" },
   { id: "page.governance", label: "Governance", group: "page", href: Routes.GOVERNANCE, icon: FileText, keywords: "voting proposals" },
   { id: "page.referrals", label: "Referrals", group: "page", href: Routes.REFERRALS, icon: Users, keywords: "invite friends" },
   { id: "page.profile", label: "Profile", group: "page", href: Routes.PROFILE, icon: User, keywords: "me account", hint: "G P" },

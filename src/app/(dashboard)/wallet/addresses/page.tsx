@@ -129,7 +129,7 @@ export default function AddressesPage() {
 
   return (
     <div className="space-y-8">
-      <PageHeader title="Addresses" description="Manage your Stellar addresses." />
+      <PageHeader title="Addresses" description="Manage your Arc addresses." />
 
       {loading ? (
         <div className="space-y-3">
@@ -154,7 +154,7 @@ export default function AddressesPage() {
                   <button type="button" onClick={() => copyAddr(autoWallet.publicKey)} className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Copy primary wallet public key">
                     {copiedKey === autoWallet.publicKey ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
                   </button>
-                  <a href={`https://stellar.expert/explorer/testnet/account/${autoWallet.publicKey}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-aurora-cyan transition-colors" aria-label="Open primary wallet in Stellar Explorer">
+                  <a href={`https://stellar.expert/explorer/testnet/account/${autoWallet.publicKey}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-aurora-cyan transition-colors" aria-label="Open primary wallet in Arc Explorer">
                     <ExternalLink className="h-3.5 w-3.5" />
                   </a>
                 </div>
@@ -211,7 +211,7 @@ export default function AddressesPage() {
               <div className="mt-4 border border-white/10 rounded-xl p-5 space-y-3">
                 <h4 className="text-sm font-medium text-foreground">New Address</h4>
                 <Input label="Label" value={newLabel} onChange={(e) => setNewLabel(e.target.value)} placeholder="e.g. My Savings" />
-                <Input label="Stellar Public Key" value={newKey} onChange={(e) => setNewKey(e.target.value)} placeholder="G..." />
+                <Input label="Arc Public Key" value={newKey} onChange={(e) => setNewKey(e.target.value)} placeholder="G..." />
                 <div className="flex gap-2 justify-end">
                   <Button variant="outline" size="sm" onClick={() => setShowForm(false)}>Cancel</Button>
                   <Button variant="primary" size="sm" onClick={addAddress} disabled={!newLabel.trim() || !newKey.trim()}>Save</Button>

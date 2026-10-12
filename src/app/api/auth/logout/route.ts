@@ -8,7 +8,7 @@ export async function POST(_request: NextRequest) {
   if (blocked) return blocked;
 
   const response = NextResponse.json({ success: true });
-  response.cookies.set("moistello_session", "", {
+  response.cookies.set("deodes_session", "", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",

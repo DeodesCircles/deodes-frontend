@@ -113,6 +113,32 @@
   --depth-shadow-hover: 0 2px 4px rgba(0,0,0,0.25), 0 8px 24px rgba(0,0,0,0.2), 0 16px 56px rgba(0,0,0,0.4);
 }
 
+/* ── Hero rotating word: compositor-only (transform + opacity). ──
+   Zero layout, zero paint — safe on low-end devices. The key remounts the
+   span every 2.6s so the entry animation replays per word. */
+.grow-word {
+  display: inline-block;
+  animation: grow-in 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform, opacity;
+}
+
+@keyframes grow-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grow-word {
+    animation: none;
+  }
+}
+
 @layer base {
   * { @apply border-[rgb(var(--border))]; }
   body {

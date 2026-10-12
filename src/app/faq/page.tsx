@@ -7,12 +7,12 @@ export const metadata: Metadata = buildRouteMetadata("/faq")
 
 const faqs = [
   { q: "What is a savings circle (ROSCA)?", a: "A Rotating Savings and Credit Association is a group who contribute a fixed amount regularly. Each cycle, one member receives the total pool. Known worldwide as esusu, tontine, chit fund, tanda, and hui." },
-  { q: "How is Moistello different?", a: "Traditional circles rely on trust. Moistello uses passkey-based authentication and Soroban smart contracts to enforce rules transparently. No email, no password, no bank account needed. Sign in with your biometrics (Face ID, fingerprint) and start saving." },
-  { q: "Do I need a bank account?", a: "No. You don't even need a Stellar wallet. Moistello creates one for you automatically using your passkey (Face ID or fingerprint). Just sign in and start saving. Accessible to anyone with a smartphone." },
-  { q: "What currencies?", a: "USDC (Stellar). More stablecoins on the roadmap." },
+  { q: "How is Deodes different?", a: "Traditional circles rely on trust. Deodes uses passkey-based authentication and Arc smart contracts to enforce rules transparently. No email, no password, no bank account needed. Sign in with your biometrics (Face ID, fingerprint) and start saving." },
+  { q: "Do I need a bank account?", a: "No. You don't even need a Arc wallet. Deodes creates one for you automatically using your passkey (Face ID or fingerprint). Just sign in and start saving. Accessible to anyone with a smartphone." },
+  { q: "What currencies?", a: "USDC (Arc). More stablecoins on the roadmap." },
   { q: "What if someone doesn't pay?", a: "Late payments incur a configurable penalty. After max strikes, the member is removed from the circle." },
-  { q: "What is MoiScore?", a: "Your on-chain reputation (0-1000) built from streak, completions, volume, and recency. High scores unlock larger circles and better opportunities." },
-  { q: "Is it free?", a: "Completely free to create and join circles. Stellar network fees are less than $0.001 per transaction. Zero platform fees — period." },
+  { q: "What is DeoScore?", a: "Your on-chain reputation (0-1000) built from streak, completions, volume, and recency. High scores unlock larger circles and better opportunities." },
+  { q: "Is it free?", a: "Completely free to create and join circles. Arc network fees are less than $0.001 per transaction. Zero platform fees — period." },
 ]
 
 export default function FAQPage() {

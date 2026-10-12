@@ -89,7 +89,7 @@ export default function WalletSettingsPage() {
 
   return (
     <div className="space-y-8">
-      <PageHeader title="Wallet Settings" description="Manage your Stellar wallet." />
+      <PageHeader title="Wallet Settings" description="Manage your Arc wallet." />
 
       {/* Wallet identity — accent bar style */}
       <div className="relative">

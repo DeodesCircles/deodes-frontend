@@ -21,13 +21,13 @@ const isProduction = process.env.NODE_ENV === "production"
 
 /** Cookie holding the short-lived access token. */
 export const ACCESS_TOKEN_COOKIE = isProduction
-  ? "__Host-moistello_token"
-  : "moistello_token"
+  ? "__Host-deodes_token"
+  : "deodes_token"
 
 /** Cookie holding the long-lived refresh token. Never leaves the server. */
 export const REFRESH_TOKEN_COOKIE = isProduction
-  ? "__Host-moistello_refresh"
-  : "moistello_refresh"
+  ? "__Host-deodes_refresh"
+  : "deodes_refresh"
 
 /**
  * Cookie names written by earlier versions of the app, which were readable by
@@ -35,8 +35,8 @@ export const REFRESH_TOKEN_COOKIE = isProduction
  * does not keep a script-readable copy of a live token.
  */
 export const LEGACY_TOKEN_COOKIES = [
-  "moistello_token",
-  "moistello_refresh",
+  "deodes_token",
+  "deodes_refresh",
 ] as const
 
 export const ACCESS_TOKEN_MAX_AGE = 60 * 60 * 24 // 24 hours
@@ -44,8 +44,8 @@ export const REFRESH_TOKEN_MAX_AGE = 60 * 60 * 24 * 7 // 7 days
 
 /** Cookie holding an independent CSRF token for double-submit protection. */
 export const CSRF_TOKEN_COOKIE = isProduction
-  ? "__Host-moistello_csrf"
-  : "moistello_csrf"
+  ? "__Host-deodes_csrf"
+  : "deodes_csrf"
 
 export const CSRF_TOKEN_MAX_AGE = REFRESH_TOKEN_MAX_AGE
 

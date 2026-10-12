@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
   // Validate Stellar public key format using the canonical validator
   if (!validateStellarAddress(address)) {
     return NextResponse.json(
-      { error: "Invalid Stellar public key address" },
+      { error: "Invalid Arc public key address" },
       { status: 400 }
     );
   }

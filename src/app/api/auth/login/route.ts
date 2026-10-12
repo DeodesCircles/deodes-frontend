@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
     user: { id: user.id, username: user.username, role: user.role },
   });
 
-  response.cookies.set("moistello_session", sessionToken, {
+  response.cookies.set("deodes_session", sessionToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",

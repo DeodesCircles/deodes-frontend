@@ -1,4 +1,4 @@
-# Moistello Wallet Integration — Phase 6 Documentation
+# Deodes Wallet Integration — Phase 6 Documentation
 
 ## Phase Metadata
 
@@ -46,7 +46,7 @@ Purpose: validate, harden, certify everything built in Phases 1-5.
 
 ### 1.1 Conceptual Overview
 
-Phase 6 is the final quality gate before Moistello's multi-wallet system goes to production. It does NOT add new features, create new files, or install new packages. It verifies, hardens, and certifies the 25+ files and 6 dependencies produced across Phases 1-5.
+Phase 6 is the final quality gate before Deodes's multi-wallet system goes to production. It does NOT add new features, create new files, or install new packages. It verifies, hardens, and certifies the 25+ files and 6 dependencies produced across Phases 1-5.
 
 This phase answers the question: **"Would this convince a CTO to approve production deployment?"** Every test, audit, and certification in this document is designed to produce evidence — not estimates, not assumptions — that the wallet layer is production-ready.
 
@@ -97,13 +97,13 @@ Phase 6 audits every file from Phases 1-5. These 25+ files represent the complet
 **Phase 3 — Passkey/WebAuthn (2 files):**
 | # | File Path | Purpose | Lines |
 |---|---|---|---|
-| 17 | `src/lib/wallet/adapters/passkey.ts` | Passkey adapter — WebAuthn credential → Stellar keypair derivation | ~220 |
+| 17 | `src/lib/wallet/adapters/passkey.ts` | Passkey adapter — WebAuthn credential → Arc keypair derivation | ~220 |
 | 18 | `src/lib/wallet/passkey-derivation.ts` | Cryptographic derivation: SHA-256(credential ID) → Ed25519 seed | ~60 |
 
 **Phase 4 — Hardware Wallet (2 files):**
 | # | File Path | Purpose | Lines |
 |---|---|---|---|
-| 19 | `src/lib/wallet/adapters/ledger.ts` | Ledger adapter — USB transport + Stellar app communication | ~200 |
+| 19 | `src/lib/wallet/adapters/ledger.ts` | Ledger adapter — USB transport + Arc app communication | ~200 |
 | 20 | `src/lib/wallet/ledger-transport.ts` | WebUSB transport wrapper with reconnection logic | ~80 |
 
 **Phase 5 — UI Migration (3 files modified, 2 new):**
@@ -154,8 +154,8 @@ No new packages. The value of Phase 6 is in the verification protocol, not in ad
     - npm audit on 2026-05-14: @walletconnect/* packages — 0 known CVEs
     - npm audit on 2026-05-14: all other packages — 0 known CVEs
     - Full audit output recorded in CI pipeline artifact
-[x] @stellar/freighter-api@6.0.1: compatible with Chrome Manifest V3, actively maintained
-[x] @walletconnect/sign-client@2.23.9: compatible with Stellar namespace, 200+ wallets
+[x] @arc/freighter-api@6.0.1: compatible with Chrome Manifest V3, actively maintained
+[x] @walletconnect/sign-client@2.23.9: compatible with Arc namespace, 200+ wallets
 [x] zustand@5.0.13: stable, 0 breaking changes since Phase 1 integration
 [x] next@14.2.35: active security support, compatible with all wallet packages
 [x] vitest@4.1.6: latest major, compatible with jsdom 29, active maintenance
@@ -272,10 +272,10 @@ Phase 6 penetrates every attack surface introduced across Phases 1-5. Each surfa
 |---|---|---|---|---|
 | 1 | Browser extension `window.*` globals | Phase 1 | Malicious webpage injects fake `window.freighterApi` object to phish user credentials or sign transactions without the real extension | Extension ID verification — adapter checks for extension-specific properties (e.g., Freighter injects specific methods) that a generic `window` injection can't replicate |
 | 2 | WalletConnect session data in localStorage | Phase 2 | Attacker with physical/browser access captures WC session from localStorage → replays in new browser tab to hijack session | Encrypted session store with HMAC integrity. Session includes nonce binding to browser context. Replay in different context detected. |
-| 3 | Passkey credential derivation | Phase 3 | Attacker submits 10,000 email addresses in rapid succession to brute-force derive valid Stellar keypairs | Rate limiting on derivation endpoint. Client-side: credential creation requires user presence (biometric/security key touch). Server-side: per-IP rate limit enforced. |
+| 3 | Passkey credential derivation | Phase 3 | Attacker submits 10,000 email addresses in rapid succession to brute-force derive valid Arc keypairs | Rate limiting on derivation endpoint. Client-side: credential creation requires user presence (biometric/security key touch). Server-side: per-IP rate limit enforced. |
 | 4 | JWT token storage | Phase 5 (auth) | Attacker captures JWT from browser memory → replays in different browser/session | Short-lived JWT (15 min). Refresh token rotation. Nonce binding in JWT payload. Replay in different session context detected by backend. |
 | 5 | WalletConnect iframe (WC modal) | Phase 2 | Malicious website embeds an iframe that impersonates the WC pairing modal → captures user's wallet selection and pairing approval | CSP headers: `frame-src https://walletconnect.com https://*.walletconnect.com`. Strict origin checking on WC modal events. |
-| 6 | XDR transaction signing | Phases 1-5 | Attacker sends malformed or tampered XDR to `signTransaction()` → adapter blindly signs corrupted transaction → funds sent to wrong destination | Every adapter validates XDR structure before passing to wallet. XDR must parse as valid Stellar transaction. Account and sequence number verified before signing. |
+| 6 | XDR transaction signing | Phases 1-5 | Attacker sends malformed or tampered XDR to `signTransaction()` → adapter blindly signs corrupted transaction → funds sent to wrong destination | Every adapter validates XDR structure before passing to wallet. XDR must parse as valid Arc transaction. Account and sequence number verified before signing. |
 | 7 | WalletConnect relay transport | Phase 2 | Attacker performs MITM on WC2 relay connection → intercepts signing requests or session data | WC2 uses Noise_NK_XX end-to-end encryption per pairing. Relay sees only encrypted blobs. WSS (TLS 1.3) for transport. Certificate pinning for relay domain. |
 | 8 | EncryptedSessionStore in localStorage | Phase 1 | Attacker modifies encrypted session data in localStorage → replaces publicKey with attacker's key → user signs transactions believing they control a different account | HMAC-SHA256 integrity check on every read. Tampered data detected (HMAC mismatch) → session discarded → user must reconnect. |
 | 9 | Wallet display name rendering | Phase 5 (UI) | Attacker registers a wallet with display name `<script>alert('xss')</script>` via adapter registry → name rendered in wallet selector without escaping | React's JSX auto-escapes all string content. Wallet names rendered via `{adapter.meta.name}` — never `dangerouslySetInnerHTML`. |
@@ -324,7 +324,7 @@ Test File: src/lib/wallet/__tests__/pen-test-wc2-session-replay.test.ts
 Attack Simulation:
   1. Establish a valid WC2 session in Tab A (via mocked SignClient)
   2. Capture the session data from localStorage:
-     const captured = localStorage.getItem("moistello_wc2_session")
+     const captured = localStorage.getItem("deodes_wc2_session")
   3. Create new jsdom instance (simulates "new browser tab")
   4. Inject captured session data into new instance's localStorage
   5. Call wc2SessionStore.getSession() → should detect replay
@@ -364,7 +364,7 @@ Expected Result:
   - Total successful creations: ≤ 5 (per time window)
   - Error returned: { code: "internal", cause: "rate_limit_exceeded",
     message: "Too many account creation attempts. Please wait and try again." }
-  - No Stellar accounts are created beyond the rate limit
+  - No Arc accounts are created beyond the rate limit
 
 Mitigation Verified:
   Rate limiter (token bucket or sliding window) prevents mass account
@@ -413,12 +413,12 @@ Attack Simulation:
   5. Verify: session is rejected by our CSP or session validation
 
 Expected Result:
-  - CSP header frame-ancestors 'self' prevents Moistello from being
-    embedded in malicious iframe (if the attack loads Moistello instead)
+  - CSP header frame-ancestors 'self' prevents Deodes from being
+    embedded in malicious iframe (if the attack loads Deodes instead)
   - CSP frame-src restricts WC modal to https://*.walletconnect.com only
   - If malicious iframe creates its own WC session with our project ID:
     Our backend validates the WC session's origin — session created from
-    evil-phishing.com is rejected when used against moistello.io API
+    evil-phishing.com is rejected when used against deodes.io API
 
 Mitigation Verified:
   CSP headers restrict frame sources. WC project ID alone is not sufficient
@@ -445,7 +445,7 @@ Attack Simulation:
 Expected Result:
   - Every adapter performs pre-sign validation:
     - XDR string must be non-empty, valid base64
-    - XDR must parse as a valid Stellar TransactionEnvelope
+    - XDR must parse as a valid Arc TransactionEnvelope
     - Sequence number must be ≥ current account sequence + 1
     - If opts.accountToSign provided, must match transaction source account
   - Invalid XDR: adapter returns { code: "internal", cause: "invalid_xdr" }
@@ -455,7 +455,7 @@ Expected Result:
 Mitigation Verified:
   Pre-sign XDR validation in every adapter. Wallet never sees malformed
   or cross-account transaction data. Adapter is the gatekeeper between
-  Moistello UI and the wallet signing API.
+  Deodes UI and the wallet signing API.
 
 Status: PENDING
 ```
@@ -556,7 +556,7 @@ Status: PENDING
 Test File: src/lib/wallet/__tests__/pen-test-csrf-auth.test.ts
 
 Attack Simulation:
-  1. Victim is authenticated with Moistello (valid JWT in memory)
+  1. Victim is authenticated with Deodes (valid JWT in memory)
   2. Attacker crafts a POST request to /api/auth/verify:
      - From a different origin (https://evil-phishing.com)
      - With a captured signedXdr (replay attack)
@@ -584,7 +584,7 @@ Status: PENDING
 |---|---|---|---|---|---|---|
 | Wallet session (publicKey, network, walletId) | Phase 1 | localStorage with HMAC integrity | TLS 1.3 (sync endpoints) | Zustand store (per-tab) | Until disconnect or 7d inactivity | PEN-008: tamper detection |
 | WC2 Noise keypair | Phase 2 | IndexedDB (WC2 core KeyChain) | Noise_NK_XX over WSS | WC2 core manages | Until session deleted | PEN-007: relay MITM resistance |
-| Passkey credential ID → Stellar keypair mapping | Phase 3 | localStorage (encrypted in Phase 3 upgrade) | TLS 1.3 (auth endpoints) | In-memory during derivation | Until account exists | PEN-003: brute force protection |
+| Passkey credential ID → Arc keypair mapping | Phase 3 | localStorage (encrypted in Phase 3 upgrade) | TLS 1.3 (auth endpoints) | In-memory during derivation | Until account exists | PEN-003: brute force protection |
 | Signed XDR | All phases | NOT stored | TLS 1.3 (auth endpoints) | In-memory during verification | Immediate (discard after use) | PEN-006: pre-sign validation |
 | JWT access token | Phase 5 | NOT stored (in-memory only) | TLS 1.3 | Zustand store (per-tab) | 15 minutes | PEN-004: replay prevention |
 | User wallet address | Phases 1-5 | localStorage (encrypted) | TLS 1.3 | Zustand store (per-tab) | Until disconnect | Standard (public key is public info) |
@@ -1003,14 +1003,14 @@ Scenario:
 
 Steps:
   1. Connect freighter on testnet (wallet reports network: "testnet")
-  2. Configure app for mainnet (NEXT_PUBLIC_STELLAR_NETWORK=mainnet)
+  2. Configure app for mainnet (NEXT_PUBLIC_ARC_NETWORK=mainnet)
   3. Sign transaction with freighter:
      walletStore.signMessage("test")
      - Adapter detects: wallet.network !== app.network
      - Returns error: { code: "network_mismatch", expected: "mainnet", actual: "testnet" }
-     - UI renders: "Your wallet is on Testnet. Moistello is on Mainnet.
+     - UI renders: "Your wallet is on Testnet. Deodes is on Mainnet.
                     Switch your wallet network to continue."
-  4. Connect walletconnect on mainnet (WC2 reports "stellar:pubnet")
+  4. Connect walletconnect on mainnet (WC2 reports "arc:pubnet")
   5. Configure app for testnet
   6. Sign transaction:
      - Returns: { code: "network_mismatch", expected: "testnet", actual: "mainnet" }
@@ -1065,7 +1065,7 @@ Phase 1 defined 10 edge cases. Phase 6 re-verifies those 10 AND adds 10 new prod
 
 | # | Scenario | Expected Behavior | Phase 1 Status | Phase 6 Re-Verify |
 |---|---|---|---|---|
-| E-01 | Zero-balance wallet connected | Wallet connects normally. Balance displayed as "0 XLM". No error thrown. User can still sign auth transactions (non-payment). | PENDING | PENDING |
+| E-01 | Zero-balance wallet connected | Wallet connects normally. Balance displayed as "0 USDC". No error thrown. User can still sign auth transactions (non-payment). | PENDING | PENDING |
 | E-02 | Wallet rejects connection (user closes prompt) | Error `{ code: "user_rejected" }`. Retry button shown. No crash, no stale state. | PENDING | PENDING |
 | E-03 | Expired session (<7d but stale on server) | SessionManager detects ping failure → discards session → prompts reconnect. | PENDING | PENDING |
 | E-04 | Network switch during active sign request | Adapter detects network change event → cancels in-flight sign → returns `network_mismatch` error. | PENDING | PENDING |
@@ -1089,7 +1089,7 @@ Phase 1 defined 10 edge cases. Phase 6 re-verifies those 10 AND adds 10 new prod
 | E-17 | **localStorage full (quota exceeded during session save)** | SessionManager.save() catches QuotaExceededError. Session works for current tab only (in-memory). Warning logged: "Session not persisted — localStorage full." On next page load, session must be re-established. No crash. | PENDING |
 | E-18 | **Incognito / Private Browsing strict mode** | localStorage available but cleared on window close. Session works for browsing session but not persisted. On browser restart, user must reconnect. This is expected and documented, not a bug. No error message needed — user chose incognito. | PENDING |
 | E-19 | **Browser without WebAuthn support (e.g., old browser, some embedded WebViews)** | Passkey adapter's `isAvailable()` returns `false` when `navigator.credentials` is undefined. WalletSelector does NOT show passkey option. Other wallets (extension, WC2) still available. No crash. No error shown to user — they simply don't see passkey as an option. | PENDING |
-| E-20 | **Cross-adapter permission conflict: extension wallet and WC2 both requesting the same Stellar account** | User connects Freighter (account GABC...). User also connects Lobstr via WC2 (same account GABC...). Multi-wallet store detects duplicate publicKey. Shows warning: "This account is already connected via Freighter. Connecting via WalletConnect will create a duplicate entry." User can proceed — both entries tracked separately with clear labeling (Freighter: GABC... and Lobstr: GABC...). Balance fetches are deduplicated (same account queried once). Signing uses the active wallet's adapter, not the duplicate. | PENDING |
+| E-20 | **Cross-adapter permission conflict: extension wallet and WC2 both requesting the same Arc account** | User connects Freighter (account GABC...). User also connects Lobstr via WC2 (same account GABC...). Multi-wallet store detects duplicate publicKey. Shows warning: "This account is already connected via Freighter. Connecting via WalletConnect will create a duplicate entry." User can proceed — both entries tracked separately with clear labeling (Freighter: GABC... and Lobstr: GABC...). Balance fetches are deduplicated (same account queried once). Signing uses the active wallet's adapter, not the duplicate. | PENDING |
 
 **Edge case regression check:**
 ```
@@ -1140,7 +1140,7 @@ Phase 1 defined 10 edge cases. Phase 6 re-verifies those 10 AND adds 10 new prod
 Phase 6 does not introduce new flows; it audits the flows built in Phases 1-5 for completeness and correctness.
 
 ```
-USER LANDS ON MOISTELLO LOGIN PAGE — MULTI-WALLET EXPERIENCE
+USER LANDS ON DEODES LOGIN PAGE — MULTI-WALLET EXPERIENCE
 
   User lands on /login
     │
@@ -1193,7 +1193,7 @@ Phase 6 audits every error path for user-facing message quality:
 |---|---|---|---|---|
 | `not_installed` | "{wallet} is not installed. [Install {wallet} →]" | YES — direct link to extension store / app store | Select different wallet | Install wallet or choose alternative |
 | `user_rejected` | "Connection cancelled. [Try Again]" | YES — retry button present | Select different wallet | Retry or choose alternative |
-| `network_mismatch` | "Your wallet is on {actual}. Moistello is on {expected}. [Switch network in wallet]" | YES — explicit instruction + network names | Select different wallet | Switch wallet network |
+| `network_mismatch` | "Your wallet is on {actual}. Deodes is on {expected}. [Switch network in wallet]" | YES — explicit instruction + network names | Select different wallet | Switch wallet network |
 | `timeout` | "Request timed out. Check your wallet app and [Try Again]." | YES — suggests checking wallet app | Select different wallet | Retry or troubleshoot |
 | `internal` | "Something went wrong. Please try again or [Contact Support]." | YES — contact support link | Refresh page, try different wallet | Report if persists |
 | `relay_down` (WC2 specific) | "WalletConnect is temporarily unavailable. Extension wallets still work. [Try Freighter →] [Try xBull →]" | YES — alternative wallets suggested | Use extension wallet | Wait for relay recovery or use extension |
@@ -1384,7 +1384,7 @@ Phase 6 performs a comprehensive accessibility audit of the entire wallet layer.
     - Account switcher dropdown: account names and balances align correctly in RTL
 
 [ ] Number formatting:
-    - Balance display uses locale-aware formatting (XLM amount with locale decimal separator)
+    - Balance display uses locale-aware formatting (USDC amount with locale decimal separator)
     - Wallet count text: "{n} wallets connected" with pluralization per locale
 ```
 
@@ -1468,7 +1468,7 @@ All feature flags from Phases 1-5 documented with current default, behavior on/o
 | 4 | `NEXT_PUBLIC_FEATURE_PASSKEY` | Phase 3 | `true` | Passkey adapter registered. Email/passkey card shown in wallet selector. | Passkey adapter not loaded. Passkey card hidden. | <2 min (env var) |
 | 5 | `NEXT_PUBLIC_FEATURE_LEDGER` | Phase 4 | `true` | Ledger adapter registered. Ledger card shown in wallet selector. | Ledger adapter not loaded. Ledger card hidden. | <2 min (env var) |
 | 6 | `NEXT_PUBLIC_FEATURE_MULTI_ACCOUNT` | Phase 5 | `true` | Account switcher shown in navbar. Multiple wallets connectable simultaneously. | Single wallet mode. Account switcher hidden. Connecting new wallet disconnects current. | <2 min (env var) |
-| 7 | `NEXT_PUBLIC_STELLAR_NETWORK` | All | `testnet` | App targets testnet Horizon. Testnet contract addresses used. | N/A (network switch is a separate flag) | N/A |
+| 7 | `NEXT_PUBLIC_ARC_NETWORK` | All | `testnet` | App targets testnet Horizon. Testnet contract addresses used. | N/A (network switch is a separate flag) | N/A |
 | 8 | `NEXT_PUBLIC_WC2_PROJECT_ID` | Phase 2 | `[REDACTED]` | WC2 project ID for relay authentication. | WC2 disabled (no project ID = no relay access). | Requires redeploy |
 
 **Rollback Procedure (Standardized):**
@@ -1501,8 +1501,8 @@ Content-Security-Policy:
   style-src 'self' 'unsafe-inline';
   img-src 'self' data: https://*.walletconnect.com;
   connect-src 'self'
-    https://horizon-testnet.stellar.org
-    https://horizon.stellar.org
+    https://horizon-testnet.arc.org
+    https://horizon.arc.org
     wss://relay.walletconnect.com
     https://relay.walletconnect.com;
   frame-src
@@ -1514,9 +1514,9 @@ Content-Security-Policy:
   object-src 'none';
 
 Origin validation: Backend validates Origin header against allowed list:
-  - https://moistello.io
-  - https://*.moistello.io
-  - https://moistello.vercel.app (preview deployments)
+  - https://deodes.io
+  - https://*.deodes.io
+  - https://deodes.vercel.app (preview deployments)
   - http://localhost:1110 (development)
 ```
 
@@ -1617,7 +1617,7 @@ Mitigation:
     - Consider in-app banner to all users: "WalletConnect is experiencing
       issues. Try Freighter or xBull for immediate access."
     - Social media post: "We're aware WalletConnect is down. Use Freighter
-      or xBull browser extensions to access Moistello."
+      or xBull browser extensions to access Deodes."
   - If outage exceeds 1 hour:
     - Consider rolling back WC2 feature flag (extreme measure)
 
@@ -1839,7 +1839,7 @@ Gate Criteria for PRODUCTION LAUNCH:
 
 **Phase 6 Certification Summary:**
 
-Phase 6 is the final quality gate. It produces no code — it produces **evidence**. Every checkbox in this document represents a verification activity that must be executed, measured, and recorded before Moistello's multi-wallet system can be considered production-ready.
+Phase 6 is the final quality gate. It produces no code — it produces **evidence**. Every checkbox in this document represents a verification activity that must be executed, measured, and recorded before Deodes's multi-wallet system can be considered production-ready.
 
 The phase covers:
 - **40+ regression tests** from Phases 1-5 (must all pass)

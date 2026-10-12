@@ -1,4 +1,4 @@
-# Moistello Wallet Integration — Phase 2 Documentation
+# Deodes Wallet Integration — Phase 2 Documentation
 
 ## Phase Metadata
 
@@ -36,23 +36,23 @@ DO NOT PROCEED to implementation until ALL gates are checked.
 
 ### 1.1 Conceptual Overview
 
-Phase 2 delivers the **WalletConnect v2 Adapter** — a full implementation of the `WalletAdapter` interface from Phase 1 that connects Moistello to **any wallet supporting the WC2 protocol**. This is the single highest-leverage integration in the entire wallet phase roadmap. A single adapter unlocks 200+ wallets, including the three most popular wallets in Stellar's key markets: Lobstr (500K+ users, dominant in Africa/LATAM), Coinbase Wallet (100M+ users), and Trust Wallet (80M+ users).
+Phase 2 delivers the **WalletConnect v2 Adapter** — a full implementation of the `WalletAdapter` interface from Phase 1 that connects Deodes to **any wallet supporting the WC2 protocol**. This is the single highest-leverage integration in the entire wallet phase roadmap. A single adapter unlocks 200+ wallets, including the three most popular wallets in Arc's key markets: Lobstr (500K+ users, dominant in Africa/LATAM), Coinbase Wallet (100M+ users), and Trust Wallet (80M+ users).
 
-Without Phase 2, Moistello is locked to desktop browser extensions. With Phase 2, a user in Lagos opens Moistello on their Android phone, taps "Connect with WalletConnect," scans a QR code with Lobstr, and is authenticated in under 5 seconds. This phase transforms Moistello from a desktop-only dApp into a mobile-first dApp — the direction Stellar's user base is already moving.
+Without Phase 2, Deodes is locked to desktop browser extensions. With Phase 2, a user in Lagos opens Deodes on their Android phone, taps "Connect with WalletConnect," scans a QR code with Lobstr, and is authenticated in under 5 seconds. This phase transforms Deodes from a desktop-only dApp into a mobile-first dApp — the direction Arc's user base is already moving.
 
 The WalletConnect adapter implements every method of the `WalletAdapter` interface from Phase 1 (`connect`, `disconnect`, `isConnected`, `signMessage`, `signTransaction`, `getPublicKey`, `getNetwork`), wrapping WC2's Sign API protocol. It handles:
 - **Pairing via QR code** — desktop browser renders a QR, user scans with mobile wallet
 - **Pairing via deep link** — mobile browser opens a `wc:` URI, wallet app handles it
 - **Session persistence** — WC2 sessions survive page refresh and browser restart (WC2 stores pairing in its own persistent storage)
-- **SEP-0007 method mapping** — WC2 Stellar namespace methods (`stellar_signXDR`, `stellar_signAndSubmitXDR`, `stellar_getPublicKey`) map to our adapter interface
-- **Network detection** — adapter reads the Stellar network from the WC2 session namespace config
+- **SEP-0007 method mapping** — WC2 Arc namespace methods (`arc_signXDR`, `arc_signAndSubmitXDR`, `arc_getPublicKey`) map to our adapter interface
+- **Network detection** — adapter reads the Arc network from the WC2 session namespace config
 - **Graceful degradation** — when WC2 relay is unreachable, adapter returns typed errors (not crashes)
 
 ### 1.2 New Files Created
 
 | # | File Path | Purpose | Estimated Lines | Enterprise Pattern |
 |---|---|---|---|---|
-| 1 | `src/lib/wallet/adapters/walletconnect.ts` | WC2 adapter — implements `WalletAdapter`, manages WC2 SignClient, pairing, session lifecycle, Stellar namespace methods | 280 | Adapter Pattern — wraps WC2 protocol in uniform WalletAdapter interface |
+| 1 | `src/lib/wallet/adapters/walletconnect.ts` | WC2 adapter — implements `WalletAdapter`, manages WC2 SignClient, pairing, session lifecycle, Arc namespace methods | 280 | Adapter Pattern — wraps WC2 protocol in uniform WalletAdapter interface |
 | 2 | `src/lib/wallet/wc2-relay.ts` | WC2 relay health monitor — relay status check, retry logic, degraded mode flag | 80 | Circuit Breaker — detects relay outage, prevents cascading failures |
 | 3 | `src/components/wallet/walletconnect-qr.tsx` | QR code renderer — displays WC2 pairing URI as QR, polling for session approval | 120 | Presentation Component — renders WC2 URI as QR via `qrcode` library, shows pairing state |
 | 4 | `src/components/wallet/walletconnect-deeplink.tsx` | Deep link handler for mobile — detects mobile browser, generates `wc:` URI, opens wallet app | 80 | Mobile-First Component — bypasses QR on mobile, uses OS URI handler |
@@ -93,7 +93,7 @@ The WalletConnect adapter implements every method of the `WalletAdapter` interfa
 | `@walletconnect/sign-client` | 2.19.2 | Lobstr WC2 v2.0+ | YES |
 | `@walletconnect/sign-client` | 2.19.2 | Coinbase Wallet WC2 v2.1+ | YES |
 | `@walletconnect/sign-client` | 2.19.2 | Trust Wallet WC2 v2.0+ | YES |
-| `@walletconnect/sign-client` | 2.19.2 | MetaMask Stellar Snap WC2 v2.1+ | YES |
+| `@walletconnect/sign-client` | 2.19.2 | MetaMask Arc Snap WC2 v2.1+ | YES |
 | `@walletconnect/sign-client` | 2.19.2 | xBull Mobile WC2 v2.0+ | YES |
 | `@walletconnect/sign-client` | 2.19.2 | Ledger Live WC2 v2.0+ | YES |
 | `@walletconnect/sign-client` | 2.19.2 | SafePal WC2 v2.0+ | YES |
@@ -111,10 +111,10 @@ Before `npm install` or `cargo add`:
 
 [x] Is this version compatible with the EXISTING dependency tree? (check peer deps)
     WC2 packages require react@>=17, @walletconnect/sign-client requires @walletconnect/core@^2.19.0.
-    Moistello uses react@19. Compatible. No peer dependency conflicts found.
+    Deodes uses react@19. Compatible. No peer dependency conflicts found.
 
-[x] For blockchain/Stellar packages: does the SDK version match the deployed contract SDK version?
-    Stellar Soroban SDK v22.0.0. WC2 Stellar namespace is SDK-agnostic (uses raw XDR strings).
+[x] For blockchain/Arc packages: does the SDK version match the deployed contract SDK version?
+    Arc Arc SDK v22.0.0. WC2 Arc namespace is SDK-agnostic (uses raw XDR strings).
     No SDK version coupling.
 
 [x] For wallet packages: does the package version match the wallet extension's current API version?
@@ -152,7 +152,7 @@ export class WalletConnectAdapter implements WalletAdapter {
     name: "WalletConnect",
     category: "mobile",
     icon: "/icons/walletconnect.svg",
-    installUrl: "https://walletconnect.com/explorer?chains=stellar",
+    installUrl: "https://walletconnect.com/explorer?chains=arc",
     description: "Connect 200+ mobile wallets including Lobstr, Coinbase Wallet, Trust Wallet",
     priority: 10,
     isAvailable: () => typeof window !== "undefined",
@@ -208,16 +208,16 @@ Pseudocode:
 3. Lazily initialize SignClient if null:
    a. SignClient.init({
         projectId: NEXT_PUBLIC_WC2_PROJECT_ID,
-        metadata: { name: "Moistello", url: "https://moistello.io", icons: [...], description: "..." },
+        metadata: { name: "Deodes", url: "https://deodes.io", icons: [...], description: "..." },
         relayUrl: "wss://relay.walletconnect.com"
       })
    b. signClient = result
 4. Generate pairing URI:
    a. { uri, approval } = await signClient.connect({
         requiredNamespaces: {
-          stellar: {
-            methods: ["stellar_signXDR", "stellar_signAndSubmitXDR", "stellar_getPublicKey"],
-            chains: ["stellar:testnet", "stellar:mainnet"],
+          arc: {
+            methods: ["arc_signXDR", "arc_signAndSubmitXDR", "arc_getPublicKey"],
+            chains: ["arc:testnet", "arc:mainnet"],
             events: ["chainChanged", "accountsChanged"]
           }
         }
@@ -229,11 +229,11 @@ Pseudocode:
 7. IF timeout: return timeout error
 8. IF user rejected: return user_rejected error
 9. Extract public key from session:
-   a. publicKey = session.namespaces.stellar.accounts[0].split(":")[2]
+   a. publicKey = session.namespaces.arc.accounts[0].split(":")[2]
    b. Validate: must be G... 56 chars
 10. Extract network from session:
-    a. chainId = session.namespaces.stellar.chains[0]
-    b. network = chainId === "stellar:mainnet" ? "mainnet" : "testnet"
+    a. chainId = session.namespaces.arc.chains[0]
+    b. network = chainId === "arc:mainnet" ? "mainnet" : "testnet"
 11. Persist session to wc2SessionStore:
     a. Encrypt: { pairingTopic, publicKey, network, expiresAt }
     b. Write to localStorage
@@ -248,14 +248,14 @@ Security properties:
 
 Failure modes:
   - Relay unreachable: circuit breaker returns error before pairing starts
-  - Wallet doesn't support Stellar namespace: WC2 approval step will reject
+  - Wallet doesn't support Arc namespace: WC2 approval step will reject
   - User closes QR modal before pairing: abort error propagated
   - Wallet returns invalid public key format: validation step catches, returns internal error
   - Pairing QR scanned by attacker: attacker can't approve without wallet confirmation
 
 Tested inputs:
   - Valid: standard pairing flow → { uri, session }
-  - Invalid: no Stellar namespace → rejection with "unsupported namespace"
+  - Invalid: no Arc namespace → rejection with "unsupported namespace"
   - Boundary: 120s timeout → timeout error
   - Boundary: QR scanned but user rejects → user_rejected error
   - Boundary: Wallet disconnects mid-pairing → aborted session, reconnect flow
@@ -291,7 +291,7 @@ Pseudocode:
    b. OR: use intent:// URI on Android for direct app opening
 5. Wait for wallet app to handle URI and approve session:
    a. Same as QR steps 6-13
-6. User returns to Moistello browser tab
+6. User returns to Deodes browser tab
 7. Same extraction + persistence + broadcast as QR flow
 
 Security properties:
@@ -301,7 +301,7 @@ Security properties:
 
 Failure modes:
   - No wallet app handles wc: protocol: browser shows "No app can handle this link"
-  - User doesn't return to Moistello after approving: session persists, restore on next visit
+  - User doesn't return to Deodes after approving: session persists, restore on next visit
   - Deep link intercepted by malicious app: Android Intent filter verification needed
 
 Time complexity: O(1) + O(user_interaction_time)
@@ -335,7 +335,7 @@ Pseudocode:
    b. Timeout: 5 seconds
    c. IF ping fails: mark session as stale, return { null, null }
 8. Verify accounts haven't changed:
-   a. currentAccounts = session.namespaces.stellar.accounts
+   a. currentAccounts = session.namespaces.arc.accounts
    b. storedPublicKey = extracted from stored metadata
    c. IF storedPublicKey not in currentAccounts: session stale, reconnect needed
 9. Update session metadata:
@@ -364,7 +364,7 @@ Memory complexity: O(1)
 ```
 Algorithm: WalletConnectAdapter.signTransaction(xdr, opts?)
 
-Input: xdr: string (base64 Stellar XDR), opts?: { network?: NetworkType, accountToSign?: string }
+Input: xdr: string (base64 Arc XDR), opts?: { network?: NetworkType, accountToSign?: string }
 Output: { signedXdr: string } | WalletError
 
 Pseudocode:
@@ -378,9 +378,9 @@ Pseudocode:
 4. Construct WC2 request:
    a. request = {
         topic: session.topic,
-        chainId: network === "testnet" ? "stellar:testnet" : "stellar:mainnet",
+        chainId: network === "testnet" ? "arc:testnet" : "arc:mainnet",
         request: {
-          method: "stellar_signXDR",
+          method: "arc_signXDR",
           params: {
             xdr: xdr,
             network: opts?.network || "testnet"
@@ -418,8 +418,8 @@ Time complexity: O(1) + O(user_confirmation_time)
 Memory complexity: O(1)
 
 Cryptographic citations:
-  - Stellar transaction signing: Ed25519 (RFC 8032) — performed by wallet, not our code
-  - XDR encoding: Stellar XDR specification (SEP-0005)
+  - Arc transaction signing: Ed25519 (RFC 8032) — performed by wallet, not our code
+  - XDR encoding: Arc XDR specification (SEP-0005)
   - WC2 relay transport: Noise_NK_XX over WSS (WalletConnect 2.0 protocol spec)
 ```
 
@@ -511,7 +511,7 @@ State survives:
 | Error Code | Trigger | User Sees | Logged | Retryable? |
 |---|---|---|---|---|
 | `wc2_relay_down` | Circuit breaker tripped — WC2 relay unreachable | "WalletConnect is currently unavailable. Extension wallets are unaffected. Try again or use Freighter/xBull." | Relay latency + failure rate for last 10 interactions | YES — auto-retries when relay recovers |
-| `wc2_unsupported_namespace` | Wallet doesn't support Stellar namespace | "This wallet doesn't support Stellar. Choose a wallet from the list." | Wallet name, WC2 metadata returned | NO — user must pick different wallet |
+| `wc2_unsupported_namespace` | Wallet doesn't support Arc namespace | "This wallet doesn't support Arc. Choose a wallet from the list." | Wallet name, WC2 metadata returned | NO — user must pick different wallet |
 | `wc2_pairing_timeout` | 120s elapsed without wallet approval | "Connection timed out. Open your wallet app and scan again. [Retry]" | Elapsed time, relay status during pairing | YES — regenerate QR and retry |
 | `wc2_session_expired` | Stored session >7 days old | "Your session expired. Reconnect your wallet." | Session age at expiry | YES — triggers reconnect flow |
 | `wc2_sign_timeout` | 60s elapsed during sign request | "Signature timed out. Check your wallet app and try again. [Retry]" | Elapsed time, request method | YES — resend sign request |
@@ -613,21 +613,21 @@ Rule: Every file that touches browser APIs MUST start execution with `if (typeof
 | WC2 relay infrastructure | Attacker compromises WalletConnect relay server to intercept/signature-replay messages | WC2 protocol uses end-to-end Noise encryption per pairing. Relay sees encrypted blobs only. Metadata (project ID, peer IDs) is visible to relay but contains no sensitive data. |
 | QR code swapping | Attacker replaces QR code on DOM with their own WC2 URI to hijack pairing | QR code rendered from `wc2PairingUri` state, which is set only by our adapter.connect(). URI validated for WalletConnect format before rendering. DOM mutations monitored in development. |
 | Deep link interception | Malicious app registers as handler for `wc:` scheme, intercepts pairing | Mobile OS Intent/Universal Link verification. WalletConnect modal validates connected wallet metadata against known-good registry. User sees wallet name before approving. |
-| Session replay attack | Attacker captures a valid signed XDR and replays it | XDR includes sequence number, source account, and transaction hash. Stellar network rejects duplicate transactions (ledger deduplication). Each transaction has a unique sequence number — replay is inherently prevented by the Stellar protocol. |
-| Malicious dApp injection | Attacker registers as a WC2 dApp with Moistello's project ID, tricks users into connecting | WC2 project ID is public (frontend). The real defense is that the **wallet** receives the dApp's metadata (name, URL, icon) and the **user** must verify "Moistello (moistello.io)" before approving. The trust anchor is the wallet UI, not WC2. |
-| Cross-dApp session confusion | User's WC2 session with Moistello is used by a malicious dApp | WC2 sessions are scoped to project ID. Each dApp has unique project ID. Wallet enforces scope. Session cannot cross project boundaries. |
-| Public key exposure via QR | QR code contains WC2 pairing URI with ephemeral public key | The WC2 pairing URI contains a Noise ephemeral public key — designed to be public. It is not the Stellar public key. Private key is never in the pairing URI. QR being photographed by a camera is within WC2's threat model — the protocol accounts for public visibility of pairing URIs. |
+| Session replay attack | Attacker captures a valid signed XDR and replays it | XDR includes sequence number, source account, and transaction hash. Arc network rejects duplicate transactions (ledger deduplication). Each transaction has a unique sequence number — replay is inherently prevented by the Arc protocol. |
+| Malicious dApp injection | Attacker registers as a WC2 dApp with Deodes's project ID, tricks users into connecting | WC2 project ID is public (frontend). The real defense is that the **wallet** receives the dApp's metadata (name, URL, icon) and the **user** must verify "Deodes (deodes.io)" before approving. The trust anchor is the wallet UI, not WC2. |
+| Cross-dApp session confusion | User's WC2 session with Deodes is used by a malicious dApp | WC2 sessions are scoped to project ID. Each dApp has unique project ID. Wallet enforces scope. Session cannot cross project boundaries. |
+| Public key exposure via QR | QR code contains WC2 pairing URI with ephemeral public key | The WC2 pairing URI contains a Noise ephemeral public key — designed to be public. It is not the Arc public key. Private key is never in the pairing URI. QR being photographed by a camera is within WC2's threat model — the protocol accounts for public visibility of pairing URIs. |
 
 ### 3.2 Authentication & Authorization
 
 ```
-User → Moistello → WC2 Relay → Mobile Wallet
+User → Deodes → WC2 Relay → Mobile Wallet
   │         │            │              │
   │  1. User taps "Connect with WalletConnect"
   │         │            │              │
-  │  2. Moistello: SignClient.init() — establishes relay connection
+  │  2. Deodes: SignClient.init() — establishes relay connection
   │         │            │              │
-  │  3. Moistello: Generates pairing URI
+  │  3. Deodes: Generates pairing URI
   │         │   Noise ephemeral keypair generated by WC2 core
   │         │            │              │
   │  4. QR code displayed / deep link opened
@@ -637,15 +637,15 @@ User → Moistello → WC2 Relay → Mobile Wallet
   │         │       6. Lobstr reads pairing URI
   │         │       7. Lobstr: Noise handshake over relay
   │         │            │              │
-  │         │       8. Lobstr shows: "Moistello (moistello.io) wants to connect"
+  │         │       8. Lobstr shows: "Deodes (deodes.io) wants to connect"
   │         │       9. User sees: Requested permissions (view public key, sign XDR)
   │         │      10. User taps "Approve"
   │         │            │              │
   │         │      11. Pairing complete — encrypted session established
   │         │            │              │
-  │  12. Moistello receives session object via relay
+  │  12. Deodes receives session object via relay
   │         │            │              │
-  │  13. Extract public key from session.namespaces.stellar.accounts
+  │  13. Extract public key from session.namespaces.arc.accounts
   │         │            │              │
   │  14. POST /v1/auth/nonce { publicKey } → Backend
   │         │            │              │
@@ -654,7 +654,7 @@ User → Moistello → WC2 Relay → Mobile Wallet
   │         │            │              │
   │         │   ←── 17. Backend returns { nonce }
   │         │            │              │
-  │  18. signClient.request({ method: "stellar_signXDR", params: { xdr: feeBumpXdr(nonce) } })
+  │  18. signClient.request({ method: "arc_signXDR", params: { xdr: feeBumpXdr(nonce) } })
   │         │            │              │
   │         │      19. Lobstr shows: "Sign this transaction?"
   │         │      20. Transaction details displayed in wallet UI
@@ -685,8 +685,8 @@ User → Moistello → WC2 Relay → Mobile Wallet
 |---|---|---|---|
 | WC2 Noise session keypair | WC2 core KeyChain (IndexedDB) | Until session deleted or expired (max 7 days) | Encrypted by WC2 core at rest in IndexedDB |
 | JWT access token | JavaScript memory (Zustand store) | 15 minutes | In-memory only |
-| Stellar public key | JavaScript memory + wc2SessionStore (localStorage) | Until disconnect | HMAC integrity (Phase 2), AES-256-GCM (Phase 3) |
-| Stellar private key | NEVER in Moistello — stays in wallet app | N/A | Hardware-backed per mobile wallet |
+| Arc public key | JavaScript memory + wc2SessionStore (localStorage) | Until disconnect | HMAC integrity (Phase 2), AES-256-GCM (Phase 3) |
+| Arc private key | NEVER in Deodes — stays in wallet app | N/A | Hardware-backed per mobile wallet |
 | WC2 project ID | JavaScript (public constant) | Application lifetime | Not a secret |
 
 ### 3.3 Data Protection
@@ -744,7 +744,7 @@ Cold start (first ever WC2 connection, desktop + mobile wallet):
   4. QR code render (qrcode.toCanvas):                         ~15ms
   5. User opens Lobstr, finds QR scanner, scans QR:            ~8000ms (human time)
   6. Wallet app reads URI, Noise handshake with relay:         ~400ms
-  7. User sees "Moistello wants to connect", reviews perms:    ~3000ms (human time)
+  7. User sees "Deodes wants to connect", reviews perms:    ~3000ms (human time)
   8. User taps "Approve": relay → session approved:            ~200ms
   9. Extract publicKey from session:                           ~1ms
   10. POST /auth/nonce → backend:                              ~200ms
@@ -834,7 +834,7 @@ Worst case (slow 3G mobile, wallet app cold start, relay degraded):
 | Session extraction from WC2 response | <1ms |
 | wc2SessionStore encrypt + persist | ~3ms |
 | Relay message encode/decode | <1ms per message |
-| Total Moistello CPU overhead | <65ms for entire WC2 flow |
+| Total Deodes CPU overhead | <65ms for entire WC2 flow |
 
 ### 4.3 Optimization Decisions
 
@@ -849,7 +849,7 @@ Worst case (slow 3G mobile, wallet app cold start, relay degraded):
 
 **Where future optimization yields highest ROI:**
 - Lazy-load `@walletconnect/modal` (Phase 2 optimization, saves 35KB initial load)
-- Tree-shake unused WC2 namespaces (we only use `stellar` namespace; WC2 ships code for all chains)
+- Tree-shake unused WC2 namespaces (we only use `arc` namespace; WC2 ships code for all chains)
 - Cache relay connection across navigations (if WC2 modal used repeatedly in session)
 
 ---
@@ -885,7 +885,7 @@ For every file in section 1.2:
 
 | Test | What It Verifies |
 |---|---|
-| `wc2.connect() returns public key after pairing` | Full mock pairing flow — SignClient mocked, session returned with stellar:testnet namespace, publicKey extracted correctly |
+| `wc2.connect() returns public key after pairing` | Full mock pairing flow — SignClient mocked, session returned with arc:testnet namespace, publicKey extracted correctly |
 | `wc2.connect() returns user_rejected error` | Mock SignClient: approval rejects with user rejected error code. Adapter returns typed WalletError. |
 | `wc2.disconnect() clears session` | Connected WC2 session — disconnect() calls signClient.disconnect(), clears local session store, broadcasts disconnect |
 | `wc2.reconnect() restores from stored session` | Simulated page refresh — stored session in localStorage, SignClient.session.get() returns valid session, ping succeeds, adapter reports connected |
@@ -924,7 +924,7 @@ For every file in section 1.2:
 
 | Test | Mock or Real | Plan for Real Testing |
 |---|---|---|
-| QR pairing | Mocked SignClient | Before release: test with Lobstr (Android), Coinbase Wallet (iOS), Trust Wallet (Android), MetaMask Stellar Snap (iOS) on testnet |
+| QR pairing | Mocked SignClient | Before release: test with Lobstr (Android), Coinbase Wallet (iOS), Trust Wallet (Android), MetaMask Arc Snap (iOS) on testnet |
 | Session restore | Real localStorage + mocked WC2 | Before release: test restore flow with actual WC2 sessions from above wallets |
 | Cross-tab sync | Real BroadcastChannel | Real behavior is browser-standard — mock is sufficient. Real test on Chrome + Firefox before release. |
 | Deep link | Mocked navigator | Before release: test deep link on Android (Chrome → Lobstr) and iOS (Safari → Coinbase Wallet) |
@@ -933,9 +933,9 @@ For every file in section 1.2:
 
 | Test | Attack Simulated | Mitigation Verified | Status |
 |---|---|---|---|
-| `wc2.uri interception does not expose keys` | Intercept pairing URI from QR code → attempt to impersonate | URI contains Noise ephemeral public key only (public info). No Stellar keys derivable from it. Test verifies URI content is benign. | PENDING |
-| `wc2.session replay attack prevented` | Capture signed XDR from successful sign → attempt to reuse | Stellar XDR includes unique sequence number. Duplicate transaction rejected by network. Test verifies XDR uniqueness properties. | PENDING |
-| `wc2.malicious dApp injection rejected` | Attacker registers different WC2 project, tricks user into connecting → attempts to access Moistello session | WC2 sessions scoped to project ID. Test verifies session isolation. | PENDING |
+| `wc2.uri interception does not expose keys` | Intercept pairing URI from QR code → attempt to impersonate | URI contains Noise ephemeral public key only (public info). No Arc keys derivable from it. Test verifies URI content is benign. | PENDING |
+| `wc2.session replay attack prevented` | Capture signed XDR from successful sign → attempt to reuse | Arc XDR includes unique sequence number. Duplicate transaction rejected by network. Test verifies XDR uniqueness properties. | PENDING |
+| `wc2.malicious dApp injection rejected` | Attacker registers different WC2 project, tricks user into connecting → attempts to access Deodes session | WC2 sessions scoped to project ID. Test verifies session isolation. | PENDING |
 
 ### 5.4 Edge Case Tests — 10 Required
 
@@ -1015,9 +1015,9 @@ USER ON DESKTOP — CONNECTS WITH MOBILE WALLET
     │   ├─ User taps QR scanner in Lobstr
     │   ├─ User scans QR code on desktop screen
     │   │
-    │   ├─ Lobstr shows: "Moistello (moistello.io) wants to connect"
+    │   ├─ Lobstr shows: "Deodes (deodes.io) wants to connect"
     │   │   ├─ Requested: View your public key
-    │   │   ├─ Requested: Sign Stellar transactions
+    │   │   ├─ Requested: Sign Arc transactions
     │   │   └─ [Reject] [Approve]
     │   │
     │   ├─ User taps [Approve]
@@ -1046,7 +1046,7 @@ USER ON DESKTOP — CONNECTS WITH MOBILE WALLET
 ```
 USER ON MOBILE — CONNECTS WITH MOBILE WALLET (SAME DEVICE)
 
-  User opens moistello.io on Android Chrome
+  User opens deodes.io on Android Chrome
     │
     ├─ WalletSelector detects mobile browser
     │   ├─ Extension adapters: all "Not available" (no extensions on mobile)
@@ -1074,10 +1074,10 @@ USER ON MOBILE — CONNECTS WITH MOBILE WALLET (SAME DEVICE)
     │   │
     │   ├─ User taps [Open Wallet App →]
     │   ├─ Android Intent system opens Lobstr
-    │   ├─ Lobstr detects WC2 URI, shows: "Moistello wants to connect"
+    │   ├─ Lobstr detects WC2 URI, shows: "Deodes wants to connect"
     │   ├─ User taps [Approve]
     │   ├─ User returns to Chrome (back button or app switch)
-    │   ├─ Moistello detects session approved (WC2 event)
+    │   ├─ Deodes detects session approved (WC2 event)
     │   └─ ✓ Connected! Same auth flow as desktop.
     │
     └─ Land on dashboard. Wallet connected.
@@ -1091,11 +1091,11 @@ USER ON MOBILE — CONNECTS WITH MOBILE WALLET (SAME DEVICE)
 | WalletConnect modal fails to load | "Could not load WalletConnect. Please refresh the page. [Refresh]" | Refresh |
 | QR scan timeout (120s) | "Connection timed out. Open your wallet app and try again. [Show QR Again]" | Regenerate QR, retry |
 | User rejects in wallet | "You cancelled the connection. [Try Again]" | Retry |
-| Wallet doesn't support Stellar | "This wallet doesn't support Stellar. Please use Lobstr, xBull, Coinbase Wallet, or Trust Wallet. [See Supported Wallets]" | Pick different wallet |
+| Wallet doesn't support Arc | "This wallet doesn't support Arc. Please use Lobstr, xBull, Coinbase Wallet, or Trust Wallet. [See Supported Wallets]" | Pick different wallet |
 | Session expired (>7 days) | WC2 card shows "Reconnect" instead of "Connected" | Click, re-pair |
-| Deep link fails (no wallet app installed) | "No wallet app detected. Install Lobstr (most popular Stellar wallet) from the app store. [Install Lobstr →]" | Install wallet |
+| Deep link fails (no wallet app installed) | "No wallet app detected. Install Lobstr (most popular Arc wallet) from the app store. [Install Lobstr →]" | Install wallet |
 | Signature rejected in wallet | "You cancelled the signature. Please sign to verify your identity. [Try Again]" | Retry |
-| Network mismatch | "Your wallet is on {Mainnet/Testnet}. Moistello is currently on {Testnet/Mainnet}. [Switch network in wallet]" | Switch network in wallet app |
+| Network mismatch | "Your wallet is on {Mainnet/Testnet}. Deodes is currently on {Testnet/Mainnet}. [Switch network in wallet]" | Switch network in wallet app |
 | Session lost (stale pairing) | "Session lost. Please reconnect your wallet. [Reconnect →]" | Click, re-pair |
 
 ### 6.3 Loading States
@@ -1195,7 +1195,7 @@ Locales updated/added for Phase 2 (6 languages: en, fr, sw, es, pt, hi):
 | `walletconnect.timeout` | "Connection timed out. Please try again." | Error state |
 | `walletconnect.relay_down` | "WalletConnect is temporarily unavailable" | Error state |
 | `walletconnect.relay_degraded` | "WalletConnect is running slowly" | Warning state |
-| `walletconnect.no_wallet_app` | "No wallet app detected. Install a Stellar wallet to continue." | Error state (mobile) |
+| `walletconnect.no_wallet_app` | "No wallet app detected. Install a Arc wallet to continue." | Error state (mobile) |
 | `walletconnect.retry` | "Try Again" | Retry CTA |
 | `walletconnect.reconnect` | "Reconnect" | Session expired CTA |
 | `walletconnect.supported_wallets` | "Supported Wallets" | Link label |
@@ -1265,7 +1265,7 @@ Time to rollback: <2 minutes (env var change + CDN cache purge)
 | Wallet app crashes during pairing | Pairing hangs at "awaiting approval". After 120s timeout: error. | User must retry with fresh QR. | ~2 minutes (restart wallet + retry). |
 | relay.walletconnect.com blocked by corporate firewall | WC2 connections fail. Circuit breaker detects. | Users on restricted networks cannot use WC2. Extension wallets (local IPC) still work. | No automated recovery. User must use extension wallet or different network. |
 | localStorage full (WC2 session persist fails) | Session persists for this tab only. Lost on refresh. | Minor: user must re-pair on next visit if they refresh. | Per-tab only. Most users won't notice. |
-| User revokes wallet connection from wallet app | Session becomes stale. Next operation: ping fails → session discarded → reconnect prompt. | User unaware until next Moistello action. One-click reconnect. | ~3 seconds: user reconnects. |
+| User revokes wallet connection from wallet app | Session becomes stale. Next operation: ping fails → session discarded → reconnect prompt. | User unaware until next Deodes action. One-click reconnect. | ~3 seconds: user reconnects. |
 | WC2 modal blocked by ad blocker | `@walletconnect/modal` fails to load. Adapter detects → falls back to inline QR component (our custom component, no modal dep). | Graceful: inline QR shown instead of modal. User flow identical, just without WC2 branding. | Automatic fallback. |
 | Multiple WC2 connect attempts from same browser | First session disconnected before second pairing. | User sees "Connecting..." → briefly "Disconnected" → "Connected" with new pairing. Smooth transition. | <1 second for disconnect+reconnect. |
 
@@ -1337,7 +1337,7 @@ Time to rollback: <2 minutes (env var change + CDN cache purge)
 - [ ] Actual code implementation per section 1.2 file list
 - [ ] Test execution per sections 5.1-5.4
 - [ ] Performance measurements (live build) for bundle size validation
-- [ ] Real wallet testing: Lobstr (Android), Coinbase Wallet (iOS), Trust Wallet (Android), MetaMask Stellar Snap
+- [ ] Real wallet testing: Lobstr (Android), Coinbase Wallet (iOS), Trust Wallet (Android), MetaMask Arc Snap
 - [ ] Completion gate verification per section 8
 
 ---
@@ -1349,7 +1349,7 @@ Time to rollback: <2 minutes (env var change + CDN cache purge)
 | Lobstr | 500K+ | Android/iOS | WC2 v2.0+ |
 | Coinbase Wallet | 100M+ | Android/iOS/Extension | WC2 v2.1+ |
 | Trust Wallet | 80M+ | Android/iOS | WC2 v2.0+ |
-| MetaMask (Stellar Snap) | 30M+ | Android/iOS/Extension | WC2 v2.1+ |
+| MetaMask (Arc Snap) | 30M+ | Android/iOS/Extension | WC2 v2.1+ |
 | xBull Mobile | 100K+ | Android/iOS | WC2 v2.0+ |
 | Ledger Live | 5M+ | Android/iOS/Desktop | WC2 v2.0+ |
 | SafePal | 10M+ | Android/iOS | WC2 v2.0+ |

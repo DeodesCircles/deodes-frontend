@@ -73,7 +73,7 @@ export default function DepositPage() {
         depositId: String(data.depositId ?? data.id ?? ""),
         bankName: String(data.bankName ?? "Access Bank"),
         accountNumber: String(data.accountNumber ?? ""),
-        accountName: String(data.accountName ?? "Moistello Payments"),
+        accountName: String(data.accountName ?? "Deodes Payments"),
         amountNgn: amt,
         reference: String(data.reference ?? `MOIST-${Date.now()}`),
         quote: qi,

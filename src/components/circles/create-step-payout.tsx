@@ -90,7 +90,7 @@ export function CreateStepPayout({ formData, setFormData }: CreateStepPayoutProp
           hint="Percentage of contribution required as collateral"
         />
         <Input
-          label="Min MoiScore (optional)"
+          label="Min DeoScore (optional)"
           type="number"
           min={0}
           max={1000}

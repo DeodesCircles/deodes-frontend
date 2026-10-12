@@ -27,7 +27,7 @@ export async function getServerSession(request: NextRequest): Promise<{ user: { 
   }
   const cookie =
     request.cookies.get(ACCESS_TOKEN_COOKIE)?.value ||
-    request.cookies.get("moistello_session")?.value ||
+    request.cookies.get("deodes_session")?.value ||
     request.cookies.get("user_id")?.value;
   if (cookie) {
     return { user: { id: cookie } };

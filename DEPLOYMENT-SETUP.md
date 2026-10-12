@@ -1,15 +1,15 @@
-# Moistello — Deployment Setup
+# Deodes — Deployment Setup
 
 ## Purpose
 
-This document defines the **complete end state** of a Moistello production deployment at `moistello.com`. Each section is tagged:
+This document defines the **complete end state** of a Deodes production deployment at `deodes.com`. Each section is tagged:
 
 | Tag | Meaning |
 |-----|---------|
 | ✋ **MANUAL** | You must do this by hand. Cannot be scripted. |
 | 📜 **SCRIPT** | Handled automatically by `deploy.sh`. Shown here so you know the end state. |
 
-**Domain**: `moistello.com`  
+**Domain**: `deodes.com`  
 **Target**: Single VPS (Ubuntu 24.04 LTS)  
 **Script**: `deploy.sh` (one command → live site)
 
@@ -23,7 +23,7 @@ These steps happen ONCE, outside any server. Do them before SSH-ing.
 
 | Action | Where | Cost |
 |--------|-------|------|
-| Register `moistello.com` | Namecheap / Cloudflare / Porkbun | ~$10–15/year |
+| Register `deodes.com` | Namecheap / Cloudflare / Porkbun | ~$10–15/year |
 
 **Why manual**: Registrar APIs exist but vary. Easier to use their web UI once than automate for one domain.
 
@@ -45,8 +45,8 @@ These steps happen ONCE, outside any server. Do them before SSH-ing.
 
 | Type | Name | Value | TTL |
 |------|------|-------|-----|
-| A | `moistello.com` | `<VPS-IP>` | 300 |
-| A | `www.moistello.com` | `<VPS-IP>` | 300 |
+| A | `deodes.com` | `<VPS-IP>` | 300 |
+| A | `www.deodes.com` | `<VPS-IP>` | 300 |
 
 Log into your registrar's DNS panel and add these two A records.
 
@@ -66,30 +66,30 @@ ssh root@<VPS-IP>
 
 These happen ONCE, after `deploy.sh` finishes.
 
-### 5. Fund the Stellar testnet account
+### 5. Fund the Arc testnet account
 
-The script generates a Stellar keypair and prints the public key. Fund it:
+The script generates a Arc keypair and prints the public key. Fund it:
 
 | Action | URL |
 |--------|-----|
-| Get 10,000 testnet XLM | https://laboratory.stellar.org/#account-creator |
+| Get 10,000 testnet USDC | https://laboratory.arc.org/#account-creator |
 | Paste the public key | The script prints it at the end |
 
-**Why manual**: The Stellar testnet faucet requires a CAPTCHA. Cannot be automated.
+**Why manual**: The Arc testnet faucet requires a CAPTCHA. Cannot be automated.
 
 ### 6. Verify the deployment
 
 ```bash
 # Health check
-curl -s https://moistello.com/health
+curl -s https://deodes.com/health
 # → {"status":"ok"}
 
 # Frontend loads
-curl -sI https://moistello.com | head -3
+curl -sI https://deodes.com | head -3
 # → HTTP/2 200
 
 # API responds
-curl -s https://moistello.com/v1/circles
+curl -s https://deodes.com/v1/circles
 # → [] or [{"id":...}]
 ```
 
@@ -127,19 +127,19 @@ Auto-updates:  Security patches only
 - Creates user `deploy` (if not exists)
 - Adds to `docker` group
 - Grants passwordless sudo for `systemctl`, `journalctl`, `nginx`
-- Creates all directories under `/opt/moistello/` owned by `deploy`
+- Creates all directories under `/opt/deodes/` owned by `deploy`
 
 **End state:**
 ```
-/opt/moistello/
-├── bin/           # moistello-api binary
+/opt/deodes/
+├── bin/           # deodes-api binary
 ├── scripts/       # backup.sh, health-check.sh
 ├── secrets/       # .env (generated credentials, chmod 600)
 ├── backups/       # PostgreSQL dump files (rotated 30 days)
 ├── backend/       # git clone, .env symlink to secrets/
 └── frontend/      # git clone, .env.local, .next/
 
-/var/log/moistello/    # All service + cron logs
+/var/log/deodes/    # All service + cron logs
 
 User: deploy  Groups: deploy, docker, sudo (restricted)
 No services run as root.
@@ -151,10 +151,10 @@ No services run as root.
 - `POSTGRES_PW` — 32 random bytes, base64 encoded
 - `REDIS_PW` — 32 random bytes, base64 encoded
 - `RABBITMQ_PW` — 32 random bytes, base64 encoded
-- Stellar testnet keypair — via `stellar keys generate` (ed25519)
+- Arc testnet keypair — via `arc keys generate` (ed25519)
 - JWT private/public keys — RSA 2048 PEM (`openssl genpkey`)
-- Writes everything to `/opt/moistello/secrets/.env` (chmod 600)
-- Symlinks to `/opt/moistello/backend/.env`
+- Writes everything to `/opt/deodes/secrets/.env` (chmod 600)
+- Symlinks to `/opt/deodes/backend/.env`
 
 **End state:** One file with all credentials. Nothing hardcoded. Nothing shared.
 
@@ -173,9 +173,9 @@ No services run as root.
 
 **End state:**
 ```
-Container:   moistello-postgres (healthy)
-Database:    moistello
-User:        moistello
+Container:   deodes-postgres (healthy)
+Database:    deodes
+User:        deodes
 Access:      127.0.0.1:5432 ONLY
 Logging:     json-file, max 10MB × 3
 Restart:     unless-stopped
@@ -191,7 +191,7 @@ Restart:     unless-stopped
 
 **End state:**
 ```
-Container:   moistello-redis (healthy)
+Container:   deodes-redis (healthy)
 Password:    required (allkeys-lru eviction)
 Access:      127.0.0.1:6379 ONLY
 ```
@@ -200,13 +200,13 @@ Access:      127.0.0.1:6379 ONLY
 
 **What `deploy.sh` does:**
 - Pulls `rabbitmq:3-management-alpine`
-- Custom user `moistello` with generated password
+- Custom user `deodes` with generated password
 - Binds to `127.0.0.1:5672` and `127.0.0.1:15672` (management UI internal only)
 
 **End state:**
 ```
-Container:   moistello-rabbitmq (healthy)
-User:        moistello
+Container:   deodes-rabbitmq (healthy)
+User:        deodes
 Access:      127.0.0.1:5672, 127.0.0.1:15672 ONLY
 ```
 
@@ -218,18 +218,18 @@ Access:      127.0.0.1:5672, 127.0.0.1:15672 ONLY
 
 **What `deploy.sh` does:**
 - Builds: `CGO_ENABLED=0 go build -ldflags="-s -w"` → static stripped binary
-- Output: `/opt/moistello/bin/moistello-api`
-- Creates systemd unit at `/etc/systemd/system/moistello-api.service`
+- Output: `/opt/deodes/bin/deodes-api`
+- Creates systemd unit at `/etc/systemd/system/deodes-api.service`
 - Enables + starts service
 - Verifies: `curl http://127.0.0.1:1100/health`
 
 **End state:**
 ```
-Binary:       /opt/moistello/bin/moistello-api (stripped, static)
+Binary:       /opt/deodes/bin/deodes-api (stripped, static)
 Port:         1100 (localhost only)
 User:         deploy
 Auto-restart: yes (RestartSec=5)
-Logs:         /var/log/moistello/api.log, api-error.log
+Logs:         /var/log/deodes/api.log, api-error.log
 Health:       GET /health → {"status":"ok"}
 Metrics:      GET /metrics (127.0.0.1 only)
 ```
@@ -237,9 +237,9 @@ Metrics:      GET /metrics (127.0.0.1 only)
 ### 14. Frontend (Next.js)
 
 **What `deploy.sh` does:**
-- Writes `/opt/moistello/frontend/.env.local` with all feature flags = true
+- Writes `/opt/deodes/frontend/.env.local` with all feature flags = true
 - Runs `npm ci --omit=dev` → `npm run build`
-- Creates systemd unit at `/etc/systemd/system/moistello-frontend.service`
+- Creates systemd unit at `/etc/systemd/system/deodes-frontend.service`
 - Enables + starts service
 
 **End state:**
@@ -247,11 +247,11 @@ Metrics:      GET /metrics (127.0.0.1 only)
 Runtime:      Node.js 20 LTS
 Port:         1110 (localhost only)
 User:         deploy
-Output:       /opt/moistello/frontend/.next/
+Output:       /opt/deodes/frontend/.next/
 Built with:   NODE_ENV=production
 All flags:    true (governance, reputation tiers, multi-wallet, passkey, hardware wallet)
 Auto-restart: yes
-Logs:         /var/log/moistello/frontend.log, frontend-error.log
+Logs:         /var/log/deodes/frontend.log, frontend-error.log
 ```
 
 ---
@@ -261,7 +261,7 @@ Logs:         /var/log/moistello/frontend.log, frontend-error.log
 ### 15. Reverse Proxy & SSL
 
 **What `deploy.sh` does:**
-- Writes full Nginx config to `/etc/nginx/sites-available/moistello`
+- Writes full Nginx config to `/etc/nginx/sites-available/deodes`
 - Enables site, removes default
 - Configures rate limiting zones
 - Validates config with `nginx -t` before reloading
@@ -270,11 +270,11 @@ Logs:         /var/log/moistello/frontend.log, frontend-error.log
 
 **End state:**
 ```
-https://moistello.com/       → 127.0.0.1:1110  (Frontend)
-https://moistello.com/v1/*   → 127.0.0.1:1100  (Backend API)
-https://moistello.com/ws      → 127.0.0.1:1100  (WebSocket upgrade)
-https://moistello.com/health  → 127.0.0.1:1100  (No rate limit)
-http://moistello.com/*        → 301 → https://
+https://deodes.com/       → 127.0.0.1:1110  (Frontend)
+https://deodes.com/v1/*   → 127.0.0.1:1100  (Backend API)
+https://deodes.com/ws      → 127.0.0.1:1100  (WebSocket upgrade)
+https://deodes.com/health  → 127.0.0.1:1100  (No rate limit)
+http://deodes.com/*        → 301 → https://
 
 SSL:          Let's Encrypt (auto-renew via certbot.timer)
 TLS:          1.2 minimum
@@ -291,7 +291,7 @@ Gzip:         text/plain, css, json, js, xml, svg
 ### 16. Backups
 
 **What `deploy.sh` does:**
-- Creates `/opt/moistello/scripts/backup.sh`
+- Creates `/opt/deodes/scripts/backup.sh`
 - Schedules via deploy user crontab: every 6 hours
 - Runs first backup immediately after deploy
 - Rotates: deletes files older than 30 days
@@ -299,25 +299,25 @@ Gzip:         text/plain, css, json, js, xml, svg
 **End state:**
 ```
 Schedule:     Every 6 hours (0 */6 * * *)
-Command:      docker exec moistello-postgres pg_dump -U moistello moistello | gzip
-Location:     /opt/moistello/backups/postgres-YYYYMMDD-HHMMSS.sql.gz
+Command:      docker exec deodes-postgres pg_dump -U deodes deodes | gzip
+Location:     /opt/deodes/backups/postgres-YYYYMMDD-HHMMSS.sql.gz
 Retention:    30 days
-Log:          /var/log/moistello/backup.log
+Log:          /var/log/deodes/backup.log
 ```
 
 ### 17. Health Monitoring
 
 **What `deploy.sh` does:**
-- Creates `/opt/moistello/scripts/health-check.sh`
+- Creates `/opt/deodes/scripts/health-check.sh`
 - Schedules via deploy user crontab: every 15 minutes
 - Checks: disk usage, memory, load, systemd service status, Docker container status
 
 **End state:**
 ```
 Schedule:     Every 15 minutes (*/15 * * * *)
-Checks:       disk, mem, load, moistello-api, moistello-frontend,
+Checks:       disk, mem, load, deodes-api, deodes-frontend,
               postgres, redis, rabbitmq
-Log:          /var/log/moistello/health.log
+Log:          /var/log/deodes/health.log
 ```
 
 ---
@@ -344,18 +344,18 @@ SSH_PRIVATE_KEY → <your deploy user's SSH private key>
 
 ```
 # Backend: swap binary + restart
-cp moistello-api moistello-api.broken
-cp moistello-api.previous moistello-api
-systemctl restart moistello-api
+cp deodes-api deodes-api.broken
+cp deodes-api.previous deodes-api
+systemctl restart deodes-api
 
 # Frontend: git checkout + rebuild
-cd /opt/moistello/frontend
+cd /opt/deodes/frontend
 git checkout HEAD~1 && npm ci --omit=dev && npm run build
-systemctl restart moistello-frontend
+systemctl restart deodes-frontend
 
 # Feature flag: flip, rebuild, restart (< 5 minutes)
 echo "NEXT_PUBLIC_FEATURE_GOVERNANCE=false" >> .env.local
-npm run build && systemctl restart moistello-frontend
+npm run build && systemctl restart deodes-frontend
 ```
 
 **Why manual**: You decide when and what to roll back. The script sets up the structure; you execute the rollback.
@@ -371,7 +371,7 @@ npm run build && systemctl restart moistello-frontend
 | 3 | DNS A records | ✋ You | 2 min |
 | 4 | SSH into VPS | ✋ You | 10 sec |
 | **5** | **Run `bash deploy.sh`** | **📜 Script** | **~15 min** |
-| 6 | Fund Stellar testnet | ✋ You | 2 min |
+| 6 | Fund Arc testnet | ✋ You | 2 min |
 | 7 | Verify site is live | ✋ You | 1 min |
 | 8 | CI/CD secrets (optional) | ✋ You | 5 min |
 

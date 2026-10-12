@@ -1,4 +1,4 @@
-# Moistello — Enterprise Build Plan
+# Deodes — Enterprise Build Plan
 
 ---
 
@@ -6,13 +6,13 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                           STELLAR BLOCKCHAIN                             │
+│                           ARC BLOCKCHAIN                             │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────────────┐        │
 │  │ Circle   │  │ Reputation│  │Governance│  │  Treasury/Escrow │        │
 │  │ Factory  │  │ Registry  │  │  Token   │  │                  │        │
 │  └──────────┘  └──────────┘  └──────────┘  └──────────────────┘        │
 │                                                                          │
-│  Stellar Horizon API ◄──── Stellar RPC ────► Soroban Contracts           │
+│  Arc Horizon API ◄──── Arc RPC ────► Arc Contracts           │
 └──────────────────────────┬──────────────────────────────────────────────┘
                            │
                     Indexer/Event Stream
@@ -72,7 +72,7 @@
 
 ## Phase 0: Foundation (Week 1-2)
 
-### Smart Contracts (Rust / Soroban SDK)
+### Smart Contracts (Rust / Arc SDK)
 
 ```
 contracts/
@@ -101,7 +101,7 @@ contracts/
 │   │       ├── errors.rs
 │   │       ├── events.rs
 │   │       └── tests/
-│   ├── reputation-registry/      # MoiScore tracking
+│   ├── reputation-registry/      # DeoScore tracking
 │   │   ├── Cargo.toml
 │   │   └── src/
 │   │       ├── lib.rs
@@ -259,14 +259,14 @@ backend/
 │   │       ├── service.go
 │   │       └── jwt.go
 │   ├── indexer/
-│   │   ├── stellar_client.go     # Horizon + RPC client
+│   │   ├── arc_client.go     # Horizon + RPC client
 │   │   ├── event_processor.go    # Map on-chain events → DB records
 │   │   ├── cursor.go             # Track last processed ledger
 │   │   └── reconciler.go         # Repair missing events
 │   ├── pkg/
-│   │   ├── stellar/              # Stellar utilities
+│   │   ├── arc/              # Arc utilities
 │   │   │   ├── client.go         # Horizon API wrapper
-│   │   │   ├── soroban.go        # Soroban RPC wrapper
+│   │   │   ├── arc.go        # Arc RPC wrapper
 │   │   │   └── keypair.go        # Key management
 │   │   ├── ipfs/
 │   │   │   └── client.go         # IPFS pinning service
@@ -317,7 +317,7 @@ backend/
 -- Users table
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    wallet_address VARCHAR(56) UNIQUE NOT NULL,   -- Stellar public key
+    wallet_address VARCHAR(56) UNIQUE NOT NULL,   -- Arc public key
     email VARCHAR(255) UNIQUE,
     phone VARCHAR(20) UNIQUE,
     display_name VARCHAR(100),
@@ -334,12 +334,12 @@ CREATE TABLE users (
 -- Circles table
 CREATE TABLE circles (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    contract_id VARCHAR(64) UNIQUE NOT NULL,      -- Soroban contract address
+    contract_id VARCHAR(64) UNIQUE NOT NULL,      -- Arc contract address
     name VARCHAR(200) NOT NULL,
     description TEXT,
     circle_type circle_type_enum NOT NULL,         -- public, private, org, community, premium
     payout_type payout_type_enum NOT NULL,          -- random, fixed, auction, vote
-    contribution_amount NUMERIC(18,7) NOT NULL,    -- In stroops (1 XLM = 10^7 stroops)
+    contribution_amount NUMERIC(18,7) NOT NULL,    -- In stroops (1 USDC = 10^7 stroops)
     currency currency_enum NOT NULL DEFAULT 'USDC',
     frequency frequency_enum NOT NULL,              -- daily, weekly, biweekly, monthly
     max_members INTEGER NOT NULL,
@@ -377,7 +377,7 @@ CREATE TABLE contributions (
     user_id UUID REFERENCES users(id),
     round_number INTEGER NOT NULL,
     amount NUMERIC(18,7) NOT NULL,
-    txn_hash VARCHAR(64) NOT NULL,                 -- Stellar transaction hash
+    txn_hash VARCHAR(64) NOT NULL,                 -- Arc transaction hash
     status contribution_status_enum DEFAULT 'pending',
     on_time BOOLEAN DEFAULT TRUE,
     submitted_at TIMESTAMPTZ DEFAULT NOW(),
@@ -468,7 +468,7 @@ CREATE TABLE api_keys (
 **API Design (RESTful, versioned):**
 
 ```
-Base URL: https://api.moistello.io/v1
+Base URL: https://api.deodes.io/v1
 
 Auth:
   POST   /auth/nonce                  # Get nonce for wallet signature
@@ -481,7 +481,7 @@ Users:
   GET    /users/me                    # Current user profile
   PATCH  /users/me                    # Update profile
   GET    /users/:id                   # Public user profile
-  GET    /users/:id/reputation        # MoiScore + history
+  GET    /users/:id/reputation        # DeoScore + history
   POST   /users/me/kyc               # Initiate KYC verification
   GET    /users/me/kyc/status         # Check KYC status
   GET    /users/me/circles            # My active circles
@@ -511,7 +511,7 @@ Invites:
 
 Payments:
   GET    /payments                    # User payment history
-  GET    /payments/:id                # Payment details + Stellar txn link
+  GET    /payments/:id                # Payment details + Arc txn link
   POST   /payments/estimate           # Estimate fees for contribution
 
 Notifications:
@@ -541,7 +541,7 @@ Webhooks:
 
 Health:
   GET    /health                      # Liveness probe
-  GET    /health/ready                # Readiness probe (DB + Stellar connection)
+  GET    /health/ready                # Readiness probe (DB + Arc connection)
   GET    /metrics                     # Prometheus metrics endpoint
 ```
 
@@ -620,7 +620,7 @@ frontend/
 │   │   │   ├── payouts/
 │   │   │   │   └── page.tsx       # Payout history
 │   │   │   ├── reputation/
-│   │   │   │   └── page.tsx       # MoiScore + reputation detail
+│   │   │   │   └── page.tsx       # DeoScore + reputation detail
 │   │   │   ├── notifications/
 │   │   │   │   └── page.tsx       # Notification center
 │   │   │   ├── settings/
@@ -673,7 +673,7 @@ frontend/
 │   │   │   ├── circle-vote-panel.tsx
 │   │   │   └── circle-status-badge.tsx
 │   │   ├── reputation/
-│   │   │   ├── moi-score-gauge.tsx     # 0-1000 radial gauge
+│   │   │   ├── deo-score-gauge.tsx     # 0-1000 radial gauge
 │   │   │   ├── reputation-breakdown.tsx
 │   │   │   └── reputation-history.tsx  # Timeline chart
 │   │   ├── wallet/
@@ -693,10 +693,10 @@ frontend/
 │   │       ├── page-header.tsx
 │   │       ├── confirm-dialog.tsx
 │   │       ├── copy-button.tsx
-│   │       └── stellar-address-display.tsx
+│   │       └── arc-address-display.tsx
 │   ├── hooks/
 │   │   ├── use-auth.ts
-│   │   ├── use-wallet.ts           # Stellar wallet connection hook
+│   │   ├── use-wallet.ts           # Arc wallet connection hook
 │   │   ├── use-circles.ts          # TanStack Query hooks for circles
 │   │   ├── use-contributions.ts
 │   │   ├── use-payouts.ts
@@ -714,7 +714,7 @@ frontend/
 │   │   └── notification-store.ts   # In-app notification state
 │   ├── lib/
 │   │   ├── api-client.ts          # Axios instance with interceptors
-│   │   ├── stellar.ts             # Horizon RPC + Freighter helpers
+│   │   ├── arc.ts             # Horizon RPC + Freighter helpers
 │   │   ├── validators.ts          # Zod schemas for forms
 │   │   ├── formatters.ts          # Currency, date, address formatting
 │   │   ├── constants.ts           # App-wide constants
@@ -726,10 +726,10 @@ frontend/
 │   │   ├── payment.ts
 │   │   ├── notification.ts
 │   │   ├── api.ts                 # API response types
-│   │   └── stellar.ts             # Stellar-specific types
+│   │   └── arc.ts             # Arc-specific types
 │   ├── providers/
 │   │   ├── auth-provider.tsx       # Auth context
-│   │   ├── wallet-provider.tsx     # Stellar wallet context
+│   │   ├── wallet-provider.tsx     # Arc wallet context
 │   │   ├── theme-provider.tsx      # Dark/light theme
 │   │   ├── i18n-provider.tsx       # Internationalization
 │   │   ├── query-provider.tsx      # TanStack Query
@@ -758,7 +758,7 @@ frontend/
 | `/` | LandingPage | No | Hero, features, CTA, supported currencies, testimonials |
 | `/login` | LoginPage | No | Wallet connect + optional email |
 | `/register` | RegisterPage | No | Create profile after wallet connect |
-| `/dashboard` | DashboardHome | Yes | Active circles overview, recent activity, MoiScore |
+| `/dashboard` | DashboardHome | Yes | Active circles overview, recent activity, DeoScore |
 | `/circles` | CircleDiscovery | Yes | Browse/filter public circles, join |
 | `/circles/create` | CircleCreate | Yes | Multi-step wizard (details, members, payout type, review) |
 | `/circles/[id]` | CircleDetail | Yes | Overview, round tracker, member list, actions |
@@ -767,7 +767,7 @@ frontend/
 | `/circles/[id]/settings` | CircleSettings | Yes | Organizer-only: edit circle, manage invites |
 | `/contributions` | ContributionHistory | Yes | All contributions across circles |
 | `/payouts` | PayoutHistory | Yes | All payouts received |
-| `/reputation` | ReputationPage | Yes | Detailed MoiScore breakdown + history chart |
+| `/reputation` | ReputationPage | Yes | Detailed DeoScore breakdown + history chart |
 | `/notifications` | NotificationCenter | Yes | All notifications, mark read, preferences |
 | `/settings` | UserSettings | Yes | Profile, KYC status, notification prefs, language |
 | `/wallet` | WalletPage | Yes | Connect wallet, view balance, transaction list |
@@ -790,7 +790,7 @@ frontend/
 5. Auth flow: nonce → wallet signature → JWT (Day 3-4)
 6. User CRUD + KYC integration (Day 4-5)
 7. Circle CRUD with Postgres (Day 5-7)
-8. Indexer service: consume Stellar events → DB (Day 7-9)
+8. Indexer service: consume Arc events → DB (Day 7-9)
 9. Contribution tracking (Day 9-10)
 10. WebSocket server for real-time updates (Day 10-11)
 
@@ -856,7 +856,7 @@ frontend/
 
 ### Frontend
 1. Analytics pages: overview stats, charts (Day 1-2)
-2. Reputation page: MoiScore gauge + breakdown + history (Day 2-3)
+2. Reputation page: DeoScore gauge + breakdown + history (Day 2-3)
 3. Admin pages: user management, circle management, audit log (Day 3-5)
 4. i18n: translation files for 6 languages (Day 5-6)
 5. PWA: service worker, offline support, install prompt (Day 6)
@@ -868,7 +868,7 @@ frontend/
 ## Phase 4: Polish & Launch (Week 8)
 
 ### Operations
-1. End-to-end tests (Cypress + Stellar testnet) (Day 1-3)
+1. End-to-end tests (Cypress + Arc testnet) (Day 1-3)
 2. Load testing (k6) — target: 10k concurrent circles (Day 3-4)
 3. Security audit (smart contracts external auditor) (Day 4-5)
 4. Documentation: developer docs, API reference, user guide (Day 5-7)
@@ -974,8 +974,8 @@ Since they're hosted separately:
 Frontend ──────────► Backend API ────────► PostgreSQL
 (Next.js)           (Go/Gin)              Redis
   │                    │                  RabbitMQ
-  │ WebSocket          │                  Stellar Horizon
-  └────────────────────┘                  Stellar RPC
+  │ WebSocket          │                  Arc Horizon
+  └────────────────────┘                  Arc RPC
 ```
 
 **Authentication Flow:**
@@ -988,7 +988,7 @@ Frontend ──────────► Backend API ────────�
 7. WebSocket connection authenticated via token in initial handshake
 
 **CORS Configuration (Backend):**
-- Allow origin: `https://app.moistello.io` (production), `http://localhost:3000` (dev)
+- Allow origin: `https://app.deodes.io` (production), `http://localhost:3000` (dev)
 - Allow methods: GET, POST, PATCH, DELETE, OPTIONS
 - Allow headers: Authorization, Content-Type, X-Request-ID
 - Allow credentials: true (for cookies)
@@ -1043,7 +1043,7 @@ Frontend ──────────► Backend API ────────�
 | Unit - Backend | go test | 90% | Services, handlers with mocked repos |
 | Unit - Frontend | Vitest | 85% | Components, hooks, utilities |
 | Integration - Backend | go test + testcontainers | 80% | API endpoints with real PG/Redis |
-| Integration - Contracts | Stellar testnet | N/A | Full deploy and invoke flow |
+| Integration - Contracts | Arc testnet | N/A | Full deploy and invoke flow |
 | E2E | Cypress | Happy paths | Auth → create circle → contribute → payout |
 | Load | k6 | N/A | 1000 concurrent users, 100 active circles |
 | Security | Slither + manual review | N/A | Contract audit |
@@ -1055,7 +1055,7 @@ Frontend ──────────► Backend API ────────�
 
 | Decision | Rationale |
 |---|---|
-| **Go for backend** | Strong concurrency (goroutines for indexer/websocket), single binary deploy, excellent Stellar SDK support |
+| **Go for backend** | Strong concurrency (goroutines for indexer/websocket), single binary deploy, excellent Arc SDK support |
 | **PostgreSQL over MongoDB** | ACID transactions for financial data, rich JSONB for semi-structured, strong type system |
 | **Gin/Echo over Fiber** | Mature ecosystem, middleware chaining, battle-tested |
 | **RabbitMQ over Kafka** | Lighter ops, sufficient for notification/event workloads, no need for log replay |
@@ -1063,7 +1063,7 @@ Frontend ──────────► Backend API ────────�
 | **Zustand over Redux** | Minimal boilerplate, works with React Query for server state |
 | **TanStack Query** | Deduplication, caching, background refetch, optimistic updates |
 | **Radix UI over MUI** | Headless, accessible, unstyled — full control with Tailwind |
-| **Soroban SDK** | Native Stellar smart contracts, Rust safety, low gas costs |
+| **Arc SDK** | Native Arc smart contracts, Rust safety, low gas costs |
 | **Separate indexer service** | Blockchain events are the source of truth; indexer syncs them to fast DB for queries |
 | **WebSocket for real-time** | Round status changes, contribution confirmations, notifications — push not poll |
 
@@ -1073,9 +1073,9 @@ Frontend ──────────► Backend API ────────�
 
 ```
 /root/
-├── moistello-backend/          # Go backend (API + indexer + workers)
+├── deodes-backend/          # Go backend (API + indexer + workers)
 │   └── product-spec.md         # Product specification (this document's source)
-├── moistello-frontend/         # Next.js frontend (React/TypeScript)
+├── deodes-frontend/         # Next.js frontend (React/TypeScript)
 ├── ab-lumeo/product-spec.md
 ├── ab-tractos/product-spec.md
 ├── ab-forgeon/product-spec.md
@@ -1092,6 +1092,6 @@ Frontend ──────────► Backend API ────────�
 4. Write `contracts/common/` crate (shared types, math, VRF, auth)
 5. Write `backend/internal/config/` and `backend/internal/database/` (foundation)
 6. Write `frontend/src/components/ui/` component library (all primitives)
-7. Deploy first contract to Stellar testnet
+7. Deploy first contract to Arc testnet
 8. Implement `POST /auth/nonce` and `POST /auth/verify` (first API endpoints)
 9. Build login page + wallet connection (first frontend page)

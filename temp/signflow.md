@@ -1,14 +1,14 @@
-# Moistello — Wallet Creation & Yellow Card Integration Flow
+# Deodes — Wallet Creation & Yellow Card Integration Flow
 
 ## Overview
 
 | Component | What It Does | Who Runs It |
 |-----------|-------------|-------------|
-| Backend WalletService | Generates Stellar keypair, funds account, sets trustlines | You |
-| Master XLM Pool | Holds XLM reserve for funding new accounts | You (self-custodied Stellar key) |
+| Backend WalletService | Generates Arc keypair, funds account, sets trustlines | You |
+| Master USDC Pool | Holds USDC reserve for funding new accounts | You (self-custodied Arc key) |
 | User Encrypted Wallet | Private key encrypted with passkey seed, stored in PostgreSQL | You (encrypted — cannot decrypt) |
-| Yellow Card API | Converts NGN ↔ USDC, sends USDC directly to user's Stellar wallet | Yellow Card (licensed) |
-| Soroban Contracts | Handles circle contributions, payouts, escrow | Stellar blockchain |
+| Yellow Card API | Converts NGN ↔ USDC, sends USDC directly to user's Arc wallet | Yellow Card (licensed) |
+| Arc Contracts | Handles circle contributions, payouts, escrow | Arc blockchain |
 
 ---
 
@@ -20,19 +20,19 @@
 User clicks "Create Wallet" on /register
         │
         ▼
-1. Generate Stellar Keypair
+1. Generate Arc Keypair
    │  └─ Public key: G... (starts with G)
    │  └─ Secret key: S... (starts with S)
    │
    ▼
 2. Fund Account from Master Pool
-   │  └─ 2 XLM sent from master wallet → user's public key
+   │  └─ 2 USDC sent from master wallet → user's public key
    │  └─ Master pool key stored in env (not in DB)
-   │  └─ Cost: ~$0.20 per user at current XLM prices
+   │  └─ Cost: ~$0.20 per user at current USDC prices
    │
    ▼
 3. Set USDC Trustline
-   │  └─ ChangeTrust operation: USDC issuer on Stellar
+   │  └─ ChangeTrust operation: USDC issuer on Arc
    │  └─ Required so the wallet can hold and send USDC
    │
    ▼
@@ -60,7 +60,7 @@ Done — wallet ready for deposits
 CREATE TABLE wallets (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    public_key VARCHAR(56) NOT NULL UNIQUE,       -- Stellar G address
+    public_key VARCHAR(56) NOT NULL UNIQUE,       -- Arc G address
     encrypted_secret_key BYTEA NOT NULL,            -- AES-256-GCM encrypted
     encryption_nonce BYTEA NOT NULL,                -- nonce used for AES
     wallet_type VARCHAR(20) DEFAULT 'auto',         -- 'auto' | 'freighter' | 'passkey'
@@ -70,15 +70,15 @@ CREATE TABLE wallets (
 );
 ```
 
-### Master XLM Pool Setup
+### Master USDC Pool Setup
 
 ```env
 # .env
-MASTER_XLM_SECRET=SDDBM2MKQSV2ZPEDKTSI3IWNEUSJU5DAWW5NSRWNKJ4FABXSYGYW72FO
-MASTER_XLM_PUBLIC=GAAAA...
+MASTER_USDC_SECRET=SDDBM2MKQSV2ZPEDKTSI3IWNEUSJU5DAWW5NSRWNKJ4FABXSYGYW72FO
+MASTER_USDC_PUBLIC=GAAAA...
 ```
 
-- Load with enough XLM to fund ~1000 users initially (~2000 XLM ≈ $200)
+- Load with enough USDC to fund ~1000 users initially (~2000 USDC ≈ $200)
 - Refill periodically
 - This is YOUR money, not user money — operational expense
 
@@ -91,13 +91,13 @@ User's passkey seed (during registration)
 SHA-256(passkey_seed) → 256-bit encryption key
         │
         ▼
-AES-256-GCM.encrypt(Stellar_secret_key, encryption_key)
+AES-256-GCM.encrypt(Arc_secret_key, encryption_key)
         │
         ▼
 { encrypted_data, nonce } → stored in wallets table
         │
         ▼
-Stellar_secret_key → zeroed from memory
+Arc_secret_key → zeroed from memory
 ```
 
 - Backend NEVER stores the encryption key
@@ -130,7 +130,7 @@ Stellar_secret_key → zeroed from memory
 4. User receives USDC
    ├── Yellow Card detects bank transfer
    ├── Converts NGN to USDC at quoted rate
-   └── Sends USDC to user's Stellar wallet (public key from step 1)
+   └── Sends USDC to user's Arc wallet (public key from step 1)
 
 5. Frontend shows confirmation
    ├── USDC balance updated
@@ -197,7 +197,7 @@ func (s *YellowCardService) CreateSend(ctx context.Context, req SendRequest) (*S
 User's Wallet ($USDC)
         │
         ▼
-Contribute to Soroban Circle Contract
+Contribute to Arc Circle Contract
         │
         ├── Round 1: pays out to Member C
         ├── Round 2: pays out to Member A
@@ -215,10 +215,10 @@ Idle USDC between rounds
 ```
 
 All internal transactions are:
-- **On Stellar**: transparent and verifiable
+- **On Arc**: transparent and verifiable
 - **Zero platform fee**: contract now uses `apply_fee(pool, 0)`
-- **Near-zero network fee**: ~0.00001 XLM per transaction
-- **Instant**: Stellar settles in 3-5 seconds
+- **Near-zero network fee**: ~0.00001 USDC per transaction
+- **Instant**: Arc settles in 3-5 seconds
 
 ---
 
@@ -237,9 +237,9 @@ All internal transactions are:
    └── User's wallet can sign the transfer
 
 3. User signs the transaction (passkey prompt)
-   ├── Decrypts their Stellar secret key
-   ├── Signs a USDC transfer: user_wallet → Yellow Card's Stellar address
-   └── Transaction submitted to Stellar
+   ├── Decrypts their Arc secret key
+   ├── Signs a USDC transfer: user_wallet → Yellow Card's Arc address
+   └── Transaction submitted to Arc
 
 4. Yellow Card receives USDC
    ├── Detects incoming USDC at their address
@@ -277,18 +277,18 @@ POST /api/v1/wallet/withdraw
 ### User Signs the USDC Transfer
 
 ```go
-// Backend generates the Stellar transaction
+// Backend generates the Arc transaction
 txn, _ := buildTransferTx(
     userPublicKey,
     yellowCardUSDCAddress,
-    amountInStroops,  // USDC has 7 decimal places on Stellar
+    amountInStroops,  // USDC has 7 decimal places on Arc
     usdcIssuer,
 )
 
 // Backend sends the unsigned XDR to frontend
 // Frontend calls passkey adapter to decrypt key and sign
 // Signed XDR returned to backend
-// Backend submits to Stellar network
+// Backend submits to Arc network
 ```
 
 ---
@@ -305,11 +305,11 @@ User B (wants USDC, has NGN in bank)
 
 1. A posts offer: "Sell 50 USDC at ₦1,600 per USDC"
 2. B accepts offer
-3. USDC moved to escrow contract (Soroban)
+3. USDC moved to escrow contract (Arc)
 4. B sends NGN directly to A's bank account (outside app)
-5. A confirms receipt on Moistello
+5. A confirms receipt on Deodes
 6. Escrow releases USDC to B's wallet
-7. Moistello charges 0% — peer-to-peer
+7. Deodes charges 0% — peer-to-peer
 ```
 
 ### Escrow Contract Functions
@@ -328,7 +328,7 @@ pub fn resolve_dispute(env, admin, offer_id, resolution) // admin resolves
 
 ```
 SIGNUP:
-  User → Backend generates wallet → Master pool funds 2 XLM
+  User → Backend generates wallet → Master pool funds 2 USDC
        → USDC trustline set → Encrypted key stored
        → User sees public key
 
@@ -339,7 +339,7 @@ DEPOSIT (NGN → USDC):
        → Balance updates in app
 
 CIRCLE ACTIVITY (all on-chain, 0% fee):
-  Contribute USDC → Soroban processes round → Payout USDC
+  Contribute USDC → Arc processes round → Payout USDC
        → Repeat for all rounds
 
 IDLE BETWEEN ROUNDS:
@@ -377,9 +377,9 @@ P2P SWAP (optional, 0%):
 
 | Concern | Mitigation |
 |---------|-----------|
-| Master XLM pool key leaked | Store in env, not DB. Use separate key for funding vs operations. |
+| Master USDC pool key leaked | Store in env, not DB. Use separate key for funding vs operations. |
 | Encrypted key brute force | Passkey seed has high entropy (WebAuthn). AES-256-GCM is quantum-resistant. |
 | Yellow Card API key leaked | Store in env. Rotate periodically. |
 | User loses passkey | Wallet recovery flow (optional). Not in V1. |
 | Replay attacks | Each signed transaction includes a unique nonce. |
-| Stellar network congestion | Transactions auto-retry. User sees status in UI. |
+| Arc network congestion | Transactions auto-retry. User sees status in UI. |

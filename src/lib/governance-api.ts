@@ -29,7 +29,7 @@ export const MOCK_GOVERNANCE_PROPOSALS: GovernanceProposal[] = [
   {
     id: "prop_101",
     title: "MIP-14: Lower Circle Collateral Requirement to 5%",
-    description: "Proposal to adjust the default collateral percent from 10% down to 5% for High-Reputation (MoiScore 750+) organizers to improve capital efficiency.",
+    description: "Proposal to adjust the default collateral percent from 10% down to 5% for High-Reputation (DeoScore 750+) organizers to improve capital efficiency.",
     status: "active",
     category: "Circle Parameter",
     votesFor: 1420,
@@ -43,7 +43,7 @@ export const MOCK_GOVERNANCE_PROPOSALS: GovernanceProposal[] = [
   {
     id: "prop_102",
     title: "MIP-15: Allocate 50,000 XLM from Community Treasury for Developer Grants",
-    description: "Direct community treasury funds towards building automated Soroban dispute resolution bots and notifications.",
+    description: "Direct community treasury funds towards building automated Arc dispute resolution bots and notifications.",
     status: "active",
     category: "Treasury Release",
     votesFor: 980,
@@ -57,7 +57,7 @@ export const MOCK_GOVERNANCE_PROPOSALS: GovernanceProposal[] = [
   {
     id: "prop_103",
     title: "MIP-12: Integrate Automated Inflation Protection for USDC Pools",
-    description: "Approved proposal implementing automatic yield routing for idle circle reserves into Soroban liquidity pools.",
+    description: "Approved proposal implementing automatic yield routing for idle circle reserves into Arc liquidity pools.",
     status: "passed",
     category: "Rule Amendment",
     votesFor: 2840,

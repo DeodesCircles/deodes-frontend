@@ -76,7 +76,7 @@ Three rules for keeping this list honest:
 ## Why a session cookie is seeded
 
 `/circles`, `/wallet` and `/settings` are in `PROTECTED_PATHS` in
-`src/middleware.ts`. Without a seeded `moistello_token` cookie the server
+`src/middleware.ts`. Without a seeded `deodes_token` cookie the server
 redirects all three to `/login`, and axe scans the login page three times while
 the suite reports green.
 

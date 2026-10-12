@@ -19,7 +19,7 @@ const meta: Meta<typeof OptimizedImage> = {
   },
   args: {
     src: "/logo.jpg",
-    alt: "Moistello logo",
+    alt: "Deodes logo",
     width: 320,
     height: 320,
   },

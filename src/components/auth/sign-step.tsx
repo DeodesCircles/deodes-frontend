@@ -128,7 +128,7 @@ export function SignStep({
           <CircleCheck className="h-7 w-7 text-emerald-400" />
         </div>
         <p className="text-sm font-medium text-foreground">
-          {mode === "login" ? t("auth.sign.welcomeBack") : t("auth.sign.welcomeToMoistello")}
+          {mode === "login" ? t("auth.sign.welcomeBack") : t("auth.sign.welcomeToDeodes")}
         </p>
         <p className="text-xs text-muted-foreground">{t("auth.sign.redirecting")}</p>
         <LoaderCircle className="h-5 w-5 animate-spin text-aurora-violet" />

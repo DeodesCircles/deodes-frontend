@@ -1,4 +1,4 @@
-# Moistello Wallet Integration — Phase Documentation Template
+# Deodes Wallet Integration — Phase Documentation Template
 
 > **How to use:** For each phase, copy this template and answer the prompts. Every `[ ]` must be filled. Every prompting question under each section must produce a detailed response. No phase is marked complete until every prompt is fully answered.
 
@@ -71,7 +71,7 @@ Before `npm install` or `cargo add`:
 ```
 [ ] What is the EXACT version being installed? (not caret range — exact pin)
 [ ] Is this version compatible with the EXISTING dependency tree? (check peer deps)
-[ ] For blockchain/Stellar packages: does the SDK version match the deployed contract SDK version?
+[ ] For blockchain/Arc packages: does the SDK version match the deployed contract SDK version?
 [ ] For wallet packages: does the package version match the wallet extension's current API version?
 [ ] Has this exact version been tested in ANY environment before? If no: what's the rollback plan?
 [ ] Bundle size impact: measure before AND after install. Reject if >50KB gzipped increase.

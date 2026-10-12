@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
   const sessionToken = createSession(userId);
 
   const response = NextResponse.json({ success: true, username });
-  response.cookies.set("moistello_session", sessionToken, {
+  response.cookies.set("deodes_session", sessionToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",

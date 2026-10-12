@@ -14,8 +14,8 @@ export default function PrivacyPage() {
           <div className="glass-premium rounded-2xl p-8 space-y-6">
             {[
               { title: "1. Information Collected", text: "Wallet address (public key), profile info you provide, on-chain activity (public, immutable), anonymous usage analytics." },
-              { title: "2. Usage", text: "To provide the Platform, authenticate via wallet signature, display MoiScore, send circle notifications, and improve the experience." },
-              { title: "3. Storage", text: "Profile data in our database. On-chain data on Stellar is permanent and cannot be deleted." },
+              { title: "2. Usage", text: "To provide the Platform, authenticate via wallet signature, display DeoScore, send circle notifications, and improve the experience." },
+              { title: "3. Storage", text: "Profile data in our database. On-chain data on Arc is permanent and cannot be deleted." },
               { title: "4. Sharing", text: "We do not sell data. Anonymized aggregates may be used for analytics. We disclose only as required by law." },
               { title: "5. Wallet Security", text: "We never have access to your private keys. You alone are responsible for wallet security." },
               { title: "6. Your Rights", text: "Request access, correction, or deletion of off-chain data. On-chain data is immutable. Disconnect your wallet anytime." },

@@ -1,6 +1,6 @@
 # E2E Tests
 
-This directory contains end-to-end tests for the Moistello application using Playwright.
+This directory contains end-to-end tests for the Deodes application using Playwright.
 
 ## Prerequisites
 
@@ -96,7 +96,7 @@ All tests use `page.route()` to mock API responses, so no running backend is req
 ### 5. Payouts & Claim Flow
 - Payout list display
 - Claiming payouts with transaction hash verification
-- Transaction links to Stellar explorer
+- Transaction links to Arc explorer
 - Pagination
 - Empty and error states
 - Navigation to circle from payout item

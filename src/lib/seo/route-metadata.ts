@@ -122,7 +122,7 @@ export const PUBLIC_ROUTES: readonly RouteSeo[] = [
     path: "/how-it-works",
     title: "How It Works — Deodes",
     description:
-      "A step-by-step walkthrough of a Deodes savings circle: passkey sign-in, creating or joining a circle, contributing USDC each cycle, receiving your payout, and building your MoiScore.",
+      "A step-by-step walkthrough of a Deodes savings circle: passkey sign-in, creating or joining a circle, contributing USDC each cycle, receiving your payout, and building your DeoScore.",
     ogTitle: "How Deodes savings circles work, step by step",
     ogDescription:
       "Five steps from passkey sign-in to your first payout. See how random, fixed-order, auction and vote-based payout rules are enforced on Arc.",
@@ -133,7 +133,7 @@ export const PUBLIC_ROUTES: readonly RouteSeo[] = [
       "passkey",
       "USDC",
       "payout",
-      "moiscore",
+      "deoscore",
       "arc",
       "rosca",
     ],
@@ -143,10 +143,10 @@ export const PUBLIC_ROUTES: readonly RouteSeo[] = [
     path: "/faq",
     title: "FAQ — Deodes",
     description:
-      "Answers about Deodes savings circles: what a ROSCA is, how passkey sign-in provisions your Arc wallet, penalties for missed contributions, and how MoiScore is scored.",
+      "Answers about Deodes savings circles: what a ROSCA is, how passkey sign-in provisions your Arc wallet, penalties for missed contributions, and how DeoScore is scored.",
     ogTitle: "Deodes FAQ — circles, wallets and fees",
     ogDescription:
-      "What is a ROSCA? How do late-payment penalties work? What does your MoiScore measure? Direct answers on circles, passkey wallets, USDC and zero platform fees.",
+      "What is a ROSCA? How do late-payment penalties work? What does your DeoScore measure? Direct answers on circles, passkey wallets, USDC and zero platform fees.",
     keywords: [
       "deodes",
       "faq",
@@ -157,7 +157,7 @@ export const PUBLIC_ROUTES: readonly RouteSeo[] = [
       "webauthn",
       "USDC",
       "USDC",
-      "moiscore",
+      "deoscore",
       "smart contracts",
     ],
     indexable: true,
@@ -222,7 +222,7 @@ export const PUBLIC_ROUTES: readonly RouteSeo[] = [
       "arc",
       "savings circles",
       "wallet setup",
-      "moiscore",
+      "deoscore",
       "security",
       "arc",
     ],
@@ -274,7 +274,7 @@ export const PUBLIC_ROUTES: readonly RouteSeo[] = [
     path: "/support",
     title: "Support — Deodes",
     description:
-      "Get help with Deodes: passkey sign-in, your auto-provisioned Arc wallet, USDC contributions and payouts, and your MoiScore reputation. Open a ticket or look one up by ID.",
+      "Get help with Deodes: passkey sign-in, your auto-provisioned Arc wallet, USDC contributions and payouts, and your DeoScore reputation. Open a ticket or look one up by ID.",
     ogTitle: "Deodes support — get help",
     ogDescription:
       "Troubleshooting for passkeys, wallets, contributions and reputation, plus a direct route to the Deodes support team.",
@@ -287,7 +287,7 @@ export const PUBLIC_ROUTES: readonly RouteSeo[] = [
       "passkey",
       "wallet",
       "USDC",
-      "moiscore",
+      "deoscore",
     ],
     indexable: true,
   },

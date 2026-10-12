@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
   }
 
   const user = auth.user
-  const sessionValue = request.cookies.get("moistello_session")?.value ?? ""
+  const sessionValue = request.cookies.get("deodes_session")?.value ?? ""
   // A `Cookie` request header is `name=value` pairs, so the raw value is not
   // enough — forwarding the bare token would leave the backend unable to match
   // a session and it would see the request as anonymous.

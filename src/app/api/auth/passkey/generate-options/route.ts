@@ -4,7 +4,7 @@ import { generateRegistrationOptions, generateAuthenticationOptions } from "@sim
 import { setTempChallenge, getCredential, getRpId } from "@/lib/passkey/store"
 import { requireAuthenticatedUser, checkRateLimit } from "@/lib/passkey/auth-guard"
 
-const RP_NAME = "Moistello"
+const RP_NAME = "Deodes"
 
 // #199: Secure random ID generation using crypto.getRandomValues as fallback
 function generateSecureRandomId(): string {

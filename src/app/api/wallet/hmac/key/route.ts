@@ -10,7 +10,7 @@ import { bytesToHex } from "@noble/hashes/utils.js"
  * stable across tests, and nothing depends on a per-request random value.
  */
 const DEV_HMAC_KEY_HEX = bytesToHex(
-  sha256(new TextEncoder().encode("moistello-dev-hmac-key")),
+  sha256(new TextEncoder().encode("deodes-dev-hmac-key")),
 )
 
 /**

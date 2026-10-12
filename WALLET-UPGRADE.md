@@ -1,19 +1,19 @@
-# Moistello — Enterprise Wallet Integration Plan
+# Deodes — Enterprise Wallet Integration Plan
 
 ## The Problem
 
-Moistello currently supports exactly **one** wallet: Freighter (browser extension). This excludes:
+Deodes currently supports exactly **one** wallet: Freighter (browser extension). This excludes:
 
 | User Segment | What They Have | What Happens Today |
 |---|---|---|
-| Mobile users in Africa/LATAM/Asia | Lobstr, Vibrant, Beans App | Can't use Moistello at all — Freighter is desktop-only |
-| Exchange-held XLM | Coinbase, Binance, Kraken, OKX | Can't sign in — no self-custody wallet |
-| MetaMask users | MetaMask with Stellar Snap | Sent to "Install Freighter" — they already have a wallet |
+| Mobile users in Africa/LATAM/Asia | Lobstr, Vibrant, Beans App | Can't use Deodes at all — Freighter is desktop-only |
+| Exchange-held USDC | Coinbase, Binance, Kraken, OKX | Can't sign in — no self-custody wallet |
+| MetaMask users | MetaMask with Arc Snap | Sent to "Install Freighter" — they already have a wallet |
 | Cross-chain users | Trust Wallet, Ledger, SafePal | No integration path |
-| Hardware wallet users | Ledger Nano via Stellar app | No connection option |
+| Hardware wallet users | Ledger Nano via Arc app | No connection option |
 | No-wallet users (target market!) | Just an email address | Must install a browser extension first — massive drop-off |
 | Institutional/DAO users | Multi-sig accounts, Safe | No multi-sig support |
-| WalletConnect users | xBull, Albedo, Rabet, Lobstr mobile | These wallets all support WC2 but Moistello doesn't |
+| WalletConnect users | xBull, Albedo, Rabet, Lobstr mobile | These wallets all support WC2 but Deodes doesn't |
 
 **Result:** 90%+ of your actual target users cannot log in to your app.
 
@@ -52,7 +52,7 @@ Moistello currently supports exactly **one** wallet: Freighter (browser extensio
 │         │           │ • Trust W    │           │                   │
 │  ┌──────▼───────┐   │ • MetaMask   │   ┌──────▼───────┐           │
 │  │ MetaMask     │   │ • Ledger     │   │ Hardware     │           │
-│  │ Stellar Snap │   │   (via WC2) │   │ Wallet       │           │
+│  │ Arc Snap │   │   (via WC2) │   │ Wallet       │           │
 │  └──────────────┘   └──────┬───────┘   │              │           │
 │                            │           │ • Ledger     │           │
 │  ┌─────────────────────────▼───────────┴──────────────┴──┐        │
@@ -71,13 +71,13 @@ Moistello currently supports exactly **one** wallet: Freighter (browser extensio
 
 | Category | Wallets | Integration Method | Priority |
 |---|---|---|---|
-| **Browser Extensions** | Freighter, xBull, Rabet, Albedo, MetaMask (Stellar Snap) | Direct extension API | P0 |
-| **WalletConnect v2** | Lobstr, xBull, Albedo, Rabet, Coinbase Wallet, Trust Wallet, Ledger Live, SafePal, MetaMask (mobile) | `@walletconnect/modal` + Stellar namespace | P0 |
-| **Passkey / WebAuthn** | No wallet needed — email/biometric | `@simplewebauthn` → Stellar keypair derived from credential | P1 |
-| **Hardware Wallets** | Ledger (all models), Trezor (Stellar app) | Ledger Live SDK + WalletConnect bridge | P1 |
-| **Multi-Sig / Safe** | Stellar Safe, organization accounts | SEP-0030 multi-sig coordination | P2 |
+| **Browser Extensions** | Freighter, xBull, Rabet, Albedo, MetaMask (Arc Snap) | Direct extension API | P0 |
+| **WalletConnect v2** | Lobstr, xBull, Albedo, Rabet, Coinbase Wallet, Trust Wallet, Ledger Live, SafePal, MetaMask (mobile) | `@walletconnect/modal` + Arc namespace | P0 |
+| **Passkey / WebAuthn** | No wallet needed — email/biometric | `@simplewebauthn` → Arc keypair derived from credential | P1 |
+| **Hardware Wallets** | Ledger (all models), Trezor (Arc app) | Ledger Live SDK + WalletConnect bridge | P1 |
+| **Multi-Sig / Safe** | Arc Safe, organization accounts | SEP-0030 multi-sig coordination | P2 |
 | **Direct Key Import** | Secret key (S...), seed phrase | Manual entry for advanced users | P2 |
-| **OAuth / Social** | Google, Apple, GitHub | WebAuthn → Stellar keypair behind the scenes | P3 |
+| **OAuth / Social** | Google, Apple, GitHub | WebAuthn → Arc keypair behind the scenes | P3 |
 
 ### Implementation Details Per Adapter
 
@@ -112,7 +112,7 @@ const freighterAdapter: ExtensionWallet = {
     const data = encoder.encode(msg)
     const xdr = buildAuthTransaction(data).toXDR()
     const { signedTxXdr } = await api.signTransaction(xdr, {
-      network: STELLAR_NETWORK,
+      network: ARC_NETWORK,
       networkPassphrase: getPassphrase(),
     })
     return { signature: signedTxXdr }
@@ -128,10 +128,10 @@ const freighterAdapter: ExtensionWallet = {
 
 ```typescript
 // This connects to 200+ wallets including:
-// - Lobstr (mobile) — THE most popular Stellar wallet in target markets
-// - Coinbase Wallet — users with exchange-bought XLM
+// - Lobstr (mobile) — THE most popular Arc wallet in target markets
+// - Coinbase Wallet — users with exchange-bought USDC
 // - Trust Wallet — cross-chain users
-// - MetaMask (mobile) — with Stellar Snap
+// - MetaMask (mobile) — with Arc Snap
 // - Ledger Live — hardware wallet with mobile support
 
 import { WalletConnectModal } from "@walletconnect/modal"
@@ -141,16 +141,16 @@ const wcAdapter: WalletConnectWallet = {
   name: "WalletConnect",
   icon: "walletconnect-icon",
   
-  // Stellar namespace registration
+  // Arc namespace registration
   namespace: {
-    stellar: {
+    arc: {
       methods: [
-        "stellar_signAndSubmitXDR",
-        "stellar_signXDR",
-        "stellar_getPublicKey",
-        "stellar_signMessage",
+        "arc_signAndSubmitXDR",
+        "arc_signXDR",
+        "arc_getPublicKey",
+        "arc_signMessage",
       ],
-      chains: ["stellar:pubnet", "stellar:testnet"],
+      chains: ["arc:pubnet", "arc:testnet"],
       events: ["chainChanged", "accountsChanged"],
     },
   },
@@ -158,7 +158,7 @@ const wcAdapter: WalletConnectWallet = {
   connect: async () => {
     // Open WalletConnect modal → user scans QR or selects wallet
     const { uri, approval } = await wcClient.connect({
-      requiredNamespaces: { stellar: { /* ... */ } },
+      requiredNamespaces: { arc: { /* ... */ } },
     })
     await approval()
     // Connected session stored for auto-reconnect
@@ -171,45 +171,45 @@ const wcAdapter: WalletConnectWallet = {
 ```typescript
 // This is CRITICAL for user onboarding in target markets.
 // User enters email → browser creates passkey → 
-// passkey credential used as seed for Stellar keypair.
+// passkey credential used as seed for Arc keypair.
 // Zero wallet needed. Zero crypto knowledge needed.
 
 import { startRegistration, startAuthentication } from "@simplewebauthn/browser"
 
-async function createStellarAccountFromPasskey(email: string) {
+async function createArcAccountFromPasskey(email: string) {
   // 1. Create WebAuthn credential
   const credential = await startRegistration({
-    rp: { name: "Moistello", id: "moistello.io" },
+    rp: { name: "Deodes", id: "deodes.io" },
     user: { id: emailToBuffer(email), name: email, displayName: email },
     // ...
   })
   
-  // 2. Derive Stellar keypair from credential ID
+  // 2. Derive Arc keypair from credential ID
   const seed = await sha256(credential.id)
   const keypair = Keypair.fromRawEd25519Seed(Buffer.from(seed))
   
   // 3. Fund account (friendbot on testnet, funding partner on mainnet)
-  // 4. Store mapping: credentialId → stellarAddress
+  // 4. Store mapping: credentialId → arcAddress
 }
 ```
 
 #### 4. Hardware Wallet Adapter
 
 ```typescript
-// Ledger via Stellar app
+// Ledger via Arc app
 const ledgerAdapter: HardwareWallet = {
   id: "ledger",
   name: "Ledger",
   
   connect: async () => {
     const transport = await TransportWebUSB.create()
-    const stellar = new StellarApp(transport)
-    const { publicKey } = await stellar.getPublicKey("44'/148'/0'")
+    const arc = new ArcApp(transport)
+    const { publicKey } = await arc.getPublicKey("44'/148'/0'")
     return { publicKey }
   },
   
   signTransaction: async (xdr) => {
-    const signed = await stellar.signTransaction("44'/148'/0'", xdr)
+    const signed = await arc.signTransaction("44'/148'/0'", xdr)
     return { signedXdr: signed.signature }
   },
 }
@@ -222,7 +222,7 @@ const ledgerAdapter: HardwareWallet = {
 ```
 ┌───────────────────────────────────────────────┐
 │                                               │
-│         Connect to Moistello                   │
+│         Connect to Deodes                   │
 │                                               │
 │  ┌─────────────────────────────────────────┐  │
 │  │ 📱 WalletConnect                           │  │
@@ -230,15 +230,15 @@ const ledgerAdapter: HardwareWallet = {
 │  │                                [Connect →] │  │
 │  ├─────────────────────────────────────────┤  │
 │  │ 🦊 Freighter                              │  │
-│  │    Stellar browser extension                │  │
+│  │    Arc browser extension                │  │
 │  │                                [Connect →] │  │
 │  ├─────────────────────────────────────────┤  │
 │  │ 🔐 xBull                                  │  │
-│  │    Stellar browser extension                │  │
+│  │    Arc browser extension                │  │
 │  │                                [Connect →] │  │
 │  ├─────────────────────────────────────────┤  │
 │  │ 🦎 Rabet                                   │  │
-│  │    Stellar browser extension (mobile OK)   │  │
+│  │    Arc browser extension (mobile OK)   │  │
 │  │                                [Connect →] │  │
 │  ├─────────────────────────────────────────┤  │
 │  │ 💻 Ledger                                  │  │
@@ -277,7 +277,7 @@ User closes tab → comes back → wallet reconnects automatically
 User connects Freighter → sees account A
 User also connects Lobstr → sees account B
 User switches between accounts in navbar dropdown
-Each account has independent: circles, contributions, MoiScore
+Each account has independent: circles, contributions, DeoScore
 ```
 
 ### Network Detection
@@ -303,7 +303,7 @@ Network mismatch → warning banner + switch prompt
 
 ### Phase 2 — WalletConnect v2 (2 days)
 - Install `@walletconnect/modal`, `@walletconnect/core`, `@walletconnect/sign-client`
-- Register Stellar namespace with SEP-0007 methods
+- Register Arc namespace with SEP-0007 methods
 - Build WC2 adapter implementing WalletAdapter interface
 - QR code modal for mobile pairing
 - Session persistence + reconnect
@@ -311,9 +311,9 @@ Network mismatch → warning banner + switch prompt
 
 ### Phase 3 — Passkey / WebAuthn (1 day)
 - Install `@simplewebauthn/browser`, `@simplewebauthn/server`
-- Implement credential → Stellar keypair derivation
+- Implement credential → Arc keypair derivation
 - Passkey adapter implementing WalletAdapter interface
-- Auto-create Stellar account on first signup (friendbot testnet / funding partner mainnet)
+- Auto-create Arc account on first signup (friendbot testnet / funding partner mainnet)
 - Biometric re-authentication on return visits
 
 ### Phase 4 — Hardware Wallet (1 day)

@@ -24,7 +24,7 @@ export function CreateStepReview({ formData, errors = {} }: CreateStepReviewProp
     { label: "Grace Period", value: `${formData.gracePeriodHours}h` },
     { label: "Max Strikes", value: String(formData.maxStrikes) },
     ...(formData.collateralPercent != null ? [{ label: "Collateral", value: `${formData.collateralPercent}%` }] : []),
-    ...(formData.minMoiScore != null && formData.minMoiScore > 0 ? [{ label: "Min MoiScore", value: String(formData.minMoiScore) }] : []),
+    ...(formData.minMoiScore != null && formData.minMoiScore > 0 ? [{ label: "Min DeoScore", value: String(formData.minMoiScore) }] : []),
   ]
 
   return (

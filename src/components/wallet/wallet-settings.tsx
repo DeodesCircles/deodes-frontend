@@ -15,7 +15,7 @@ export function WalletSettings() {
   const [confirmDisconnectAll, setConfirmDisconnectAll] = useState(false)
   const [aliases, setAliases] = useState<Record<string, string>>(() => {
     if (typeof window === "undefined") return {}
-    try { return JSON.parse(localStorage.getItem("moistello_wallet_aliases") || "{}") } catch { return {} }
+    try { return JSON.parse(localStorage.getItem("deodes_wallet_aliases") || "{}") } catch { return {} }
   })
   const [renamingId, setRenamingId] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState("")
@@ -28,7 +28,7 @@ export function WalletSettings() {
     const updated = { ...aliases, [walletId]: alias }
     setAliases(updated)
     if (typeof window !== "undefined") {
-      localStorage.setItem("moistello_wallet_aliases", JSON.stringify(updated))
+      localStorage.setItem("deodes_wallet_aliases", JSON.stringify(updated))
     }
     setRenamingId(null)
   }

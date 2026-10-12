@@ -11,7 +11,7 @@ import { useCallback, useEffect, useState } from "react";
  * "no recents" rather than breaking the palette.
  */
 
-const STORAGE_KEY = "moistello_recent_commands";
+const STORAGE_KEY = "deodes_recent_commands";
 export const MAX_RECENT_COMMANDS = 6;
 
 function isRecord(value: unknown): value is Record<string, unknown> {

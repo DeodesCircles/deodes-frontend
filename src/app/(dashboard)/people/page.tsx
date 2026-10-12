@@ -56,7 +56,7 @@ export const MOCK_PEOPLE: Person[] = [
     activeCircles: 3,
     totalSavings: 1800,
     country: "Brazil",
-    bio: "Fintech enthusiast and Stellar network contributor.",
+    bio: "Fintech enthusiast and Arc network contributor.",
     joinedDate: "2024-02-10",
   },
   {
@@ -95,7 +95,7 @@ export const MOCK_PEOPLE: Person[] = [
     activeCircles: 2,
     totalSavings: 820,
     country: "UAE",
-    bio: "Exploring ethical finance and Stellar smart contracts.",
+    bio: "Exploring ethical finance and Arc smart contracts.",
     joinedDate: "2024-03-18",
   },
   {

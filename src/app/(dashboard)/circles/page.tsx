@@ -201,7 +201,7 @@ export default function CirclesBrowsePage() {
     <div className="space-y-6">
       <PageHeader
         title={t("circles.title")}
-        description="Browse and join savings circles on the Stellar network."
+        description="Browse and join savings circles on the Arc network."
         action={
           <ButtonLink href="/circles/create" variant="premium" size="md" leftIcon={<Plus className="h-4 w-4" />}>
             {t("circles.create")}

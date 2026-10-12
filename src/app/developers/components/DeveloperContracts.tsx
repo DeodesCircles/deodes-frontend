@@ -18,7 +18,7 @@ export function DeveloperContracts({ mobile = false, headingId = "contracts-titl
         </h2>
       </div>
       <p className="text-sm text-muted-foreground">
-        {mobile ? "Smart contracts on Stellar. See" : "Smart contracts deployed on Stellar Mainnet. See"}{" "}
+        {mobile ? "Smart contracts on Arc. See" : "Smart contracts deployed on Arc Mainnet. See"}{" "}
         <Link href="/docs/contracts" className="text-cyan-700 underline decoration-cyan-700/50 underline-offset-2 hover:decoration-cyan-700 dark:text-cyan-300 dark:decoration-aurora-cyan/50" aria-label="Read smart contract documentation">
           {mobile ? "docs" : "documentation"}
         </Link>

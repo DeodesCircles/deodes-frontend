@@ -114,7 +114,7 @@ export function WalletConnectQR({
 
       const link = document.createElement("a")
       link.href = dataUrl
-      link.download = "moistello-walletconnect-qr.png"
+      link.download = "deodes-walletconnect-qr.png"
       link.click()
 
       setDownloaded(true)

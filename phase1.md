@@ -1,4 +1,4 @@
-# Moistello Wallet Integration — Phase 1 Documentation
+# Deodes Wallet Integration — Phase 1 Documentation
 
 ## Phase Metadata
 
@@ -19,9 +19,9 @@ Implementing Agent: Enterprise AI Agent
 
 ### 1.1 Conceptual Overview
 
-This phase establishes the **Wallet Abstraction Layer** — a universal interface that decouples the entire Moistello frontend from any single wallet implementation. Currently, every auth page, contribute modal, settings page, and wallet component directly calls `isFreighterInstalled()` and `connectFreighter()` — functions that check for exactly one browser extension: Freighter. This is architecturally equivalent to hardcoding a Stripe API key into every checkout button. It makes the application fragile, impossible to test with different wallets, and locked to a single provider.
+This phase establishes the **Wallet Abstraction Layer** — a universal interface that decouples the entire Deodes frontend from any single wallet implementation. Currently, every auth page, contribute modal, settings page, and wallet component directly calls `isFreighterInstalled()` and `connectFreighter()` — functions that check for exactly one browser extension: Freighter. This is architecturally equivalent to hardcoding a Stripe API key into every checkout button. It makes the application fragile, impossible to test with different wallets, and locked to a single provider.
 
-What this phase delivers is a **unified `WalletAdapter` interface** that every wallet provider implements, an **Adapter Registry** that discovers available wallets at runtime, a **Session Manager** that handles persistence and reconnection, and **four browser extension adapters** (Freighter, xBull, Rabet, Albedo) that are the first concrete implementations. After this phase, no code anywhere in the Moistello frontend will reference `window.freighterApi` directly. Every component will call `walletRegistry.connect(selectedWalletId)` and receive a consistent response regardless of which adapter is behind it.
+What this phase delivers is a **unified `WalletAdapter` interface** that every wallet provider implements, an **Adapter Registry** that discovers available wallets at runtime, a **Session Manager** that handles persistence and reconnection, and **four browser extension adapters** (Freighter, xBull, Rabet, Albedo) that are the first concrete implementations. After this phase, no code anywhere in the Deodes frontend will reference `window.freighterApi` directly. Every component will call `walletRegistry.connect(selectedWalletId)` and receive a consistent response regardless of which adapter is behind it.
 
 The architectural significance cannot be overstated. This is the difference between an application that works with one wallet when everything is perfect, and an application that works with any wallet under any conditions, including wallets that don't exist yet — because any future wallet can be integrated by writing a 50-line adapter implementing the interface, with zero changes to any page or component.
 
@@ -324,7 +324,7 @@ State survives:
 Algorithm: Cross-tab state synchronization
 
 Setup (on page load):
-  1. Create BroadcastChannel named "moistello-wallet"
+  1. Create BroadcastChannel named "deodes-wallet"
   2. Listen for 'message' events
   3. On message received:
      a. Validate message origin (same origin check)
@@ -575,7 +575,7 @@ CPU Profile (critical path — login flow):
 - adapter.connect(): varies by wallet extension popup (not our CPU)
 - adapter.signMessage(): varies by user confirmation speed (not our CPU)
 
-Total Moistello CPU overhead: <30ms for the entire wallet layer during login.
+Total Deodes CPU overhead: <30ms for the entire wallet layer during login.
 
 ### 4.4.1 — Actual Build Metrics
 
@@ -653,7 +653,7 @@ Total: 25 tests, all passing, 0 skipped. Coverage: >95% for wallet layer.
 | 7 | Extension auto-updates while connected | `isConnected()` check on next action returns false → SessionManager marks as "disconnected" → user prompted to reconnect | PASS |
 | 8 | Two tabs open, disconnect in Tab A | Tab B receives BroadcastChannel event → updates sidebar to show "not connected" | PASS |
 | 9 | User's system clock is wrong (off by days) | Session expiry uses `Date.now()` which is relative. Clock skew doesn't affect session validity calculation because expiry is measured from `lastConnected` timestamp, not absolute time. | PASS |
-| 10 | Wallet returns mainnet public key but app is on testnet | `adapter.getNetwork()` returns "mainnet" → SessionManager shows warning "This wallet is on mainnet. Moistello is on testnet. Switch your wallet network." | PASS |
+| 10 | Wallet returns mainnet public key but app is on testnet | `adapter.getNetwork()` returns "mainnet" → SessionManager shows warning "This wallet is on mainnet. Deodes is on testnet. Switch your wallet network." | PASS |
 
 ### 5.4 Regression Tests
 
@@ -666,18 +666,18 @@ All existing tests in the frontend continue to pass. The migration strategy uses
 ### 6.1 Flow Documentation — Primary Login Path
 
 ```
-USER LANDS ON MOISTELLO
+USER LANDS ON DEODES
   │
-  ├─ Sees: "Connect to Moistello" heading
+  ├─ Sees: "Connect to Deodes" heading
   │
   ├─ Sees: Wallet selection grid
   │   ┌─────────────────────────────────────────┐
   │   │  🦊 Freighter              [Detected ✓] │ ← Green badge
-  │   │     Stellar browser extension            │
+  │   │     Arc browser extension            │
   │   │                       [Connect →]       │
   │   ├─────────────────────────────────────────┤
   │   │  🔐 xBull                  [Detected ✓] │
-  │   │     Stellar browser extension            │
+  │   │     Arc browser extension            │
   │   │                       [Connect →]       │
   │   ├─────────────────────────────────────────┤
   │   │  🦎 Rabet               [Not Installed] │ ← Gray badge
@@ -703,7 +703,7 @@ USER LANDS ON MOISTELLO
   │   ├─ Frontend: POST /auth/verify → backend
   │   └─ ✓ Authenticated. Redirecting to dashboard...
   │
-  └─ Land on /dashboard. Wallet connected. MoiScore visible.
+  └─ Land on /dashboard. Wallet connected. DeoScore visible.
 ```
 
 **Metrics from login to authenticated:**
@@ -719,7 +719,7 @@ USER LANDS ON MOISTELLO
 | Extension detected but connection failed | "⚠️ Could not connect to Freighter. Is it unlocked? [Try Again]" | Unlock extension, retry |
 | User rejected connection in wallet popup | "You cancelled the connection. [Try Again]" | Retry |
 | Signature rejected | "You cancelled the signature. Please sign to verify your identity. [Try Again]" | Retry |
-| Wallet on wrong network | "Your wallet is on Mainnet. Moistello is currently on Testnet. [Switch wallet to Testnet]" | Switch network in wallet |
+| Wallet on wrong network | "Your wallet is on Mainnet. Deodes is currently on Testnet. [Switch wallet to Testnet]" | Switch network in wallet |
 | Session expired (7 days) | Wallet selector shown with previously used wallet marked "Reconnect" | Click Reconnect |
 | JWT expired mid-session | Auto-refresh via refresh token (silent). If refresh fails: redirect to login with "Session expired. Please reconnect." | Re-login |
 
@@ -739,7 +739,7 @@ On mobile browsers, browser extensions do not exist. The WalletSelector shows:
 - Passkey option (Phase 3) — email-based login, zero extensions needed
 
 For Phase 1 (extensions only), mobile users see:
-- "No wallets detected. Moistello works best with a Stellar wallet."
+- "No wallets detected. Deodes works best with a Arc wallet."
 - Links to install Lobstr (Play Store / App Store)
 - "WalletConnect coming soon" teaser
 
@@ -748,7 +748,7 @@ For Phase 1 (extensions only), mobile users see:
 ```
 MOBILE USER (Android/iOS, NO browser extensions)
   │
-  ├─ Visits moistello.io
+  ├─ Visits deodes.io
   ├─ WalletRegistry.detect() runs
   │   ├─ Freighter.isAvailable() → false (no extensions on mobile)
   │   ├─ xBull.isAvailable() → false
@@ -773,7 +773,7 @@ MOBILE USER (Android/iOS, NO browser extensions)
   │   │   📧 Sign in with Email                  │
   │   │                                          │
   │   │   No wallet required. We'll create       │
-  │   │   a Stellar account for you.             │
+  │   │   a Arc account for you.             │
   │   │                                          │
   │   │   [Coming in next update]                │
   │   │                                          │

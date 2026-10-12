@@ -52,7 +52,7 @@ const LAYOUT_FILES = ["layout.tsx", "layout.ts"]
 /** Next.js serves a missing route through this file; it needs metadata too. */
 const NOT_FOUND_FILE = "not-found.tsx"
 
-/** Collapse whitespace and case so "Moistello — X" and "moistello - x" collide. */
+/** Collapse whitespace and case so "Deodes — X" and "deodes - x" collide. */
 function normalize(value: string): string {
   return value.trim().replace(/\s+/g, " ").toLowerCase()
 }

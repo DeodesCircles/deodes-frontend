@@ -34,7 +34,7 @@ export function AuthFlowProvider({ children }: { children: ReactNode }) {
   // Multi-tab sync: listen for storage events
   useEffect(() => {
     function handleStorageChange(event: StorageEvent) {
-      if (event.key !== "moistello-auth-flow") return
+      if (event.key !== "deodes-auth-flow") return
       if (!event.newValue) return
 
       try {

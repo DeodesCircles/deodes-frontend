@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react"
 
 export type DeviceScreenState =
   | "dashboard"
-  | "stellar_logo"
+  | "arc_logo"
   | "waiting_commands"
   | "display_address"
   | "confirm_address"
@@ -74,7 +74,7 @@ function ScreenContent({ screen, address, amount, asset, destination, operationT
         </div>
       )
 
-    case "stellar_logo":
+    case "arc_logo":
       return (
         <div className="text-center">
           <div className="text-[10px] text-white font-bold">Stellar</div>
@@ -237,8 +237,8 @@ export function LedgerDeviceSim(props: LedgerDeviceSimProps) {
 function getScreenLabel(screen: DeviceScreenState): string {
   switch (screen) {
     case "dashboard": return "Your Ledger is on the Dashboard"
-    case "stellar_logo": return "Opening Stellar app..."
-    case "waiting_commands": return "Stellar app is ready"
+    case "arc_logo": return "Opening Arc app..."
+    case "waiting_commands": return "Arc app is ready"
     case "display_address": return "Check address on your Ledger"
     case "confirm_address": return "Press both buttons to confirm"
     case "review_transaction": return "Review on your Ledger"

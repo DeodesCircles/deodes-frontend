@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const canonical = `/u/${params.handle}`;
   // A profile is a person, not a page: say so in the preview so a shared link
-  // reads as "Ada joined Moistello" rather than as generic site marketing.
+  // reads as "Ada joined Deodes" rather than as generic site marketing.
   const description =
     profile.bio ||
     `${profile.displayName} saves in ${APP_NAME} savings circles on Stellar.`;

@@ -8,7 +8,7 @@ const meta: Meta<typeof ThemeToggle> = {
     docs: {
       description: {
         component:
-          "Theme toggle with system preference detection, smooth transitions, and multiple variants (button, segmented, dropdown). Reads and writes the persisted `moistello_theme` preference.",
+          "Theme toggle with system preference detection, smooth transitions, and multiple variants (button, segmented, dropdown). Reads and writes the persisted `deodes_theme` preference.",
       },
     },
   },

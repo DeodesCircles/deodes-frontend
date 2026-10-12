@@ -1,4 +1,4 @@
-# Moistello Frontend — Agentic Development Guidelines
+# Deodes Frontend — Agentic Development Guidelines
 
 ## Styling Rule
 

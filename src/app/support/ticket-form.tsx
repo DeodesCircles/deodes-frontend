@@ -11,7 +11,7 @@ const categories = [
   "Circle Management",
   "Payments & Withdrawals",
   "Passkey & Security",
-  "MoiScore & Reputation",
+  "DeoScore & Reputation",
   "Governance & Voting",
   "Bug Report",
   "Feature Request",

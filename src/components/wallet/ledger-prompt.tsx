@@ -45,7 +45,7 @@ function getDeviceScreenForStep(
     case "connect":
       return "waiting_commands";
     case "open_app":
-      return "stellar_logo";
+      return "arc_logo";
     case "verify":
       return "confirm_address";
     case "connected":
@@ -72,7 +72,7 @@ function getStepMessage(
         ? "Pairing with your Ledger Nano X..."
         : "Establishing USB connection...";
     case "open_app":
-      return "Open the Stellar app on your Ledger";
+      return "Open the Arc app on your Ledger";
     case "verify":
       return "Confirm the address on your Ledger screen";
     case "connected":

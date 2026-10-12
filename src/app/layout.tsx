@@ -30,12 +30,12 @@ import {
 } from "@/lib/seo/site"
 
 export const metadata: Metadata = {
-  title: "Moistello — Stellar Savings Circles",
-  description: "Decentralized rotating savings and credit circles on Stellar. Join trustless ROSCAs with USDC/XLM, build MoiScore reputation, and achieve financial freedom.",
-  keywords: "moistello, stellar, blockchain, savings circles, defi, decentralized finance, rotating credit, USDC, XLM, smart contracts, soroban",
+  title: "Deodes — Arc Savings Circles",
+  description: "Decentralized rotating savings and credit circles on Arc. Join trustless ROSCAs with USDC/XLM, build DeoScore reputation, and achieve financial freedom.",
+  keywords: "deodes, arc, blockchain, savings circles, defi, decentralized finance, rotating credit, USDC, XLM, smart contracts, arc",
   authors: [{ name: AUTHOR_NAME }],
-  creator: "Moistello",
-  publisher: "Moistello",
+  creator: "Deodes",
+  publisher: "Deodes",
   // Shared with src/lib/seo/route-metadata.ts so relative canonicals, og:url
   // and the sitemap can never resolve against a different origin.
   metadataBase: new URL(SITE_URL),
@@ -57,16 +57,16 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: SITE_URL,
     siteName: SITE_NAME,
-    title: "Moistello — Decentralized Savings Circles on Stellar",
-    description: "Join trustless savings circles with zero intermediaries. Built on Stellar for true financial sovereignty and on-chain reputation.",
+    title: "Deodes — Decentralized Savings Circles on Arc",
+    description: "Join trustless savings circles with zero intermediaries. Built on Arc for true financial sovereignty and on-chain reputation.",
     images: [OG_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
     site: TWITTER_SITE,
     creator: TWITTER_CREATOR,
-    title: "Moistello — Stellar Savings Circles",
-    description: "Build trustless savings circles on Stellar. Join rotating credit groups with USDC/XLM, earn on-chain reputation, and achieve financial sovereignty.",
+    title: "Deodes — Arc Savings Circles",
+    description: "Build trustless savings circles on Arc. Join rotating credit groups with USDC/XLM, earn on-chain reputation, and achieve financial sovereignty.",
     images: [OG_IMAGE.url],
   },
   icons: {
@@ -125,7 +125,7 @@ export default function RootLayout({
          <script
             nonce={nonce}
             dangerouslySetInnerHTML={{
-              __html: `(function(){try{var t=localStorage.getItem('moistello_theme');var theme='system';var density='comfortable';var fontSize='medium';if(t){var p=JSON.parse(t);if(p.state){theme=p.state.theme||'system';density=p.state.density||'comfortable';fontSize=p.state.fontSize||'medium'}}var prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;var isDark=theme==='dark'||(theme==='system'&&prefersDark);var resolved=isDark?'dark':'light';if(isDark){document.documentElement.classList.add('dark')}else{document.documentElement.classList.remove('dark')}document.documentElement.setAttribute('data-theme',resolved);document.documentElement.style.colorScheme=resolved;document.documentElement.setAttribute('data-density',density);document.documentElement.setAttribute('data-font-size',fontSize)}catch(e){void e}})()`,
+              __html: `(function(){try{var t=localStorage.getItem('deodes_theme');var theme='system';var density='comfortable';var fontSize='medium';if(t){var p=JSON.parse(t);if(p.state){theme=p.state.theme||'system';density=p.state.density||'comfortable';fontSize=p.state.fontSize||'medium'}}var prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;var isDark=theme==='dark'||(theme==='system'&&prefersDark);var resolved=isDark?'dark':'light';if(isDark){document.documentElement.classList.add('dark')}else{document.documentElement.classList.remove('dark')}document.documentElement.setAttribute('data-theme',resolved);document.documentElement.style.colorScheme=resolved;document.documentElement.setAttribute('data-density',density);document.documentElement.setAttribute('data-font-size',fontSize)}catch(e){void e}})()`,
             }}
           />
          <script
@@ -141,12 +141,12 @@ export default function RootLayout({
              __html: JSON.stringify({
                "@context": "https://schema.org",
                "@type": "Organization",
-               "name": "Moistello",
-               "alternateName": "Moistello Savings Platform",
+               "name": "Deodes",
+               "alternateName": "Deodes Savings Platform",
                "url": "https://moistello.com",
                "logo": "https://moistello.com/logo.jpg",
                "sameAs": ["https://github.com/cocor-tech", "https://x.com/nekwasar"],
-               "description": "Decentralized rotating savings and credit circles on the Stellar blockchain.",
+               "description": "Decentralized rotating savings and credit circles on the Arc blockchain.",
              }),
            }}
          />
@@ -157,7 +157,7 @@ export default function RootLayout({
              __html: JSON.stringify({
                "@context": "https://schema.org",
                "@type": "WebSite",
-               "name": "Moistello",
+               "name": "Deodes",
                "url": "https://moistello.com",
                "potentialAction": {
                  "@type": "SearchAction",
@@ -177,12 +177,12 @@ export default function RootLayout({
 (function(){
   /* Yandex Metrika — loaded asynchronously so it never blocks LCP/CLS.
      Wrapped in a consent check: if the user has declined analytics cookies
-     (stored as moistello_analytics_consent=false), we skip the initialisation
+     (stored as deodes_analytics_consent=false), we skip the initialisation
      entirely. The tag.js script itself is fetched by the browser engine via
      the dynamic <script async> insertion below, which means it does not
      participate in the critical rendering path. */
   try {
-    var consent = localStorage.getItem('moistello_analytics_consent');
+    var consent = localStorage.getItem('deodes_analytics_consent');
     if (consent === 'false') return;
   } catch(e) {}
   (function(m,e,t,r,i,k,a){

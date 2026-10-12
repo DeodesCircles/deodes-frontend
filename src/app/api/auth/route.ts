@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
   const blocked = blockInProduction();
   if (blocked) return blocked;
 
-  const cookie = request.cookies.get("moistello_session");
+  const cookie = request.cookies.get("deodes_session");
   if (!cookie) {
     return NextResponse.json({ authenticated: false }, { status: 401 });
   }

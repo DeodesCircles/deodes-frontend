@@ -32,7 +32,7 @@ export default function PersonProfilePage() {
     activeCircles: 3,
     totalSavings: 1500,
     country: "Global",
-    bio: "Active participant in Soroban community savings pools.",
+    bio: "Active participant in Arc community savings pools.",
     joinedDate: "2024-01-01",
   }
 
@@ -66,8 +66,8 @@ export default function PersonProfilePage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-muted-foreground hover:text-aurora-cyan transition-colors"
-                  title="View on Stellar.Expert"
-                  aria-label="Open wallet address in Stellar.Expert"
+                  title="View on Arc.Expert"
+                  aria-label="Open wallet address in Arc.Expert"
                 >
                   <ExternalLink className="h-3.5 w-3.5" />
                 </a>

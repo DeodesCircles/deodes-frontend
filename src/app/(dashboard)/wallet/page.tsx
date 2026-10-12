@@ -119,7 +119,7 @@ export default function WalletPage() {
 
   return (
     <div className="space-y-8">
-      <PageHeader title="Wallet" description="Manage your Stellar wallet." />
+      <PageHeader title="Wallet" description="Manage your Arc wallet." />
 
       {/* Receive modal */}
       {isReceiveDialogOpen && wallet && (
@@ -297,8 +297,8 @@ export default function WalletPage() {
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-muted-foreground hover:text-aurora-cyan transition-colors"
-                          title="View on Stellar.Expert"
-                           aria-label="View transaction on Stellar.Expert"
+                          title="View on Arc.Expert"
+                           aria-label="View transaction on Arc.Expert"
                         >
                           <ExternalLink className="h-3 w-3" />
                         </a>

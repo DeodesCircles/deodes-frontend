@@ -32,7 +32,7 @@ export function BackupCodes({ codes, onAcknowledged }: BackupCodesProps) {
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
     a.href = url
-    a.download = "moistello-backup-codes.txt"
+    a.download = "deodes-backup-codes.txt"
     a.click()
     URL.revokeObjectURL(url)
     setDownloaded(true)

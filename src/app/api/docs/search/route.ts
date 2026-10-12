@@ -52,10 +52,10 @@ function loadAllDocs(): DocEntry[] {
 }
 
 const staticPages: DocPage[] = [
-  { slug: "faq", title: "FAQ", source: "page", content: "passkey auth auto wallet stellar USDC zero fees MoiScore reputation savings circles ROSCA how to join create circle contribute payout" },
-  { slug: "how-it-works", title: "How It Works", source: "page", content: "sign in with passkey Face ID fingerprint create circle join contribute receive payout build reputation MoiScore start saving" },
-  { slug: "about", title: "About", source: "page", content: "mission financial inclusion Stellar blockchain open source passkey wallet no email no KYC" },
-  { slug: "developers", title: "Developers", source: "page", content: "API passkey auth circles contributions payouts reputation endpoints smart contracts Soroban Stellar" },
+  { slug: "faq", title: "FAQ", source: "page", content: "passkey auth auto wallet arc USDC zero fees DeoScore reputation savings circles ROSCA how to join create circle contribute payout" },
+  { slug: "how-it-works", title: "How It Works", source: "page", content: "sign in with passkey Face ID fingerprint create circle join contribute receive payout build reputation DeoScore start saving" },
+  { slug: "about", title: "About", source: "page", content: "mission financial inclusion Arc blockchain open source passkey wallet no email no KYC" },
+  { slug: "developers", title: "Developers", source: "page", content: "API passkey auth circles contributions payouts reputation endpoints smart contracts Arc Arc" },
   { slug: "support", title: "Support", source: "page", content: "help ticket support contact passkey wallet circle payment withdrawal" },
 ]
 

@@ -186,7 +186,7 @@ export default function InvitePage() {
             You have been invited
           </p>
           <h1 className="font-heading text-2xl font-bold text-foreground mt-1">
-            {invite.circleName ?? "a Moistello circle"}
+            {invite.circleName ?? "a Deodes circle"}
           </h1>
         </div>
 

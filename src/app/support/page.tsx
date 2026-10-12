@@ -35,7 +35,7 @@ const quickLinks = [
   },
   {
     title: "How It Works",
-    desc: "Learn how savings circles, MoiScore, and governance work.",
+    desc: "Learn how savings circles, DeoScore, and governance work.",
     href: "/how-it-works",
     color: "from-premium-gold/15 to-aurora-amber/10",
     iconColor: "text-premium-gold bg-premium-gold/15",

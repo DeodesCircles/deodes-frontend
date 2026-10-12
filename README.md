@@ -1,21 +1,21 @@
-# Moistello Frontend
+# Deodes Frontend
 
-Next.js 14 application delivering decentralized ROSCA (Rotating Savings and Credit Association) platform to 1.7B+ unbanked adults via Stellar blockchain.
+Next.js 14 application delivering decentralized ROSCA (Rotating Savings and Credit Association) platform to 1.7B+ unbanked adults via Arc blockchain.
 
 ## Business Model
 
-Moistello digitizes traditional savings circles (esusu, tontine, chit fund) using Soroban smart contracts. Members contribute USDC/XLM regularly, receiving periodic payouts based on programmed rules.
+Deodes digitizes traditional savings circles (esusu, tontine, chit fund) using Arc smart contracts. Members contribute USDC regularly, receiving periodic payouts based on programmed rules.
 
 ### Core Value Proposition
 - **Financial Inclusion**: Banking services for unbanked adults without traditional accounts
 - **Trustless Transparency**: Smart contracts enforce rules automatically
-- **Portable Reputation**: MoiScore (0-1000) builds lifelong financial reputation
-- **Sub-cent Fees**: Stellar transactions <$0.001, protocol fee 0.5% on payouts
+- **Portable Reputation**: DeoScore (0-1000) builds lifelong financial reputation
+- **Sub-cent Fees**: Arc transactions <$0.001, protocol fee 0.5% on payouts
 
 ### Circle Types
 | Type | Description | Access Control |
 |------|-----------|--------------|
-| Public | Anyone meeting minimum MoiScore can join | Permissionless |
+| Public | Anyone meeting minimum DeoScore can join | Permissionless |
 | Private | Invite-only via link or code | Restricted |
 | Community | Token-gated (DAO/token holder only) | Multi-sig |
 | Premium | Higher limits, priority support, collateralized | Permissioned |
@@ -28,7 +28,7 @@ Moistello digitizes traditional savings circles (esusu, tontine, chit fund) usin
 | Auction (Chit Fund) | Members bid discount, winner gets pool minus discount |
 | Vote-Based | Community votes recipient each round |
 
-### MoiScore Reputation (0-1000)
+### DeoScore Reputation (0-1000)
 | Factor | Weight |
 |--------|--------|
 | Streak (consecutive on-time payments) | 35% |
@@ -63,7 +63,7 @@ src/
 │   │   ├── circles/create/page.tsx   # Circle creation with 4 payout types
 │   │   ├── governance/page.tsx       # Community voting interface
 │   │   ├── reputation/page.tsx         # Score display + tier benefits
-│   │   ├── wallet/page.tsx           # USDC/XLM balance + transactions
+│   │   ├── wallet/page.tsx           # USDC balance + transactions
 │   │   └── settings/page.tsx         # Profile + notification prefs
 │   └── docs/                         # Documentation pages
 ├── stores/
@@ -150,7 +150,7 @@ Apache 2.0
 
 # V2-BE-369 — XSS Audit and CSP Hardening
 
-This scaffold addresses issue #369 in `cocor-tech/moistello-frontend`.
+This scaffold addresses issue #369 in `cocor-tech/deodes-frontend`.
 
 ## Security approach
 
@@ -209,7 +209,7 @@ This is a review scaffold, not a production certification.
 
 # V2-BE-359 Multi-Network Support Scaffold
 
-This scaffold provides a framework-neutral starting point for supporting Stellar testnet
+This scaffold provides a framework-neutral starting point for supporting Arc testnet
 and mainnet through a central MultiNetworkClient.
 
 Included:
@@ -224,7 +224,7 @@ Important:
 - Do not expose secret keys or signing material in client-side configuration.
 - Validate the selected network against the RPC node using getNetwork before signing/submitting.
 - Ensure wallet signing uses the selected network passphrase.
-- Confirm the repository's existing Stellar/Soroban client conventions before integration.
+- Confirm the repository's existing Arc/Arc client conventions before integration.
 
 
 # V2-BE-360 k6 Concurrent Transaction Load Testing

@@ -1,4 +1,4 @@
-# Moistello Wallet Integration — Phase 3 Documentation
+# Deodes Wallet Integration — Phase 3 Documentation
 
 ## Phase Metadata
 
@@ -36,13 +36,13 @@ DO NOT PROCEED to implementation until ALL gates are checked.
 
 ### 1.1 Conceptual Overview
 
-Phase 3 delivers the **Passkey / WebAuthn Adapter** — a zero-friction wallet integration that enables users with **ZERO wallet, ZERO cryptocurrency knowledge, and ZERO browser extensions** to log into Moistello using just their email address. This is the single most critical onboarding advancement in the entire wallet phase roadmap. It transforms Moistello from a dApp that requires pre-existing wallet infrastructure into a dApp that **creates the wallet for the user, transparently, in under 5 seconds.**
+Phase 3 delivers the **Passkey / WebAuthn Adapter** — a zero-friction wallet integration that enables users with **ZERO wallet, ZERO cryptocurrency knowledge, and ZERO browser extensions** to log into Deodes using just their email address. This is the single most critical onboarding advancement in the entire wallet phase roadmap. It transforms Deodes from a dApp that requires pre-existing wallet infrastructure into a dApp that **creates the wallet for the user, transparently, in under 5 seconds.**
 
-The problem Phase 3 solves is existential: 90%+ of Moistello's target users (Africa, LATAM, SE Asia) access the internet via mobile phone where browser extensions like Freighter simply don't exist. These users have an email address and a phone with biometrics. Phase 3 bridges the gap.
+The problem Phase 3 solves is existential: 90%+ of Deodes's target users (Africa, LATAM, SE Asia) access the internet via mobile phone where browser extensions like Freighter simply don't exist. These users have an email address and a phone with biometrics. Phase 3 bridges the gap.
 
 Under the hood, the architecture works as follows:
 
-1. **Registration**: User enters email → browser creates a WebAuthn passkey credential (stored in device secure enclave) → credential ID + email + server pepper → PBKDF2-SHA512 derivation (100K iterations) → 256-bit seed → deterministic Ed25519 Stellar keypair → public key checked against Stellar ledger → if no account exists, auto-created via friendbot (testnet) or funding partner (mainnet)
+1. **Registration**: User enters email → browser creates a WebAuthn passkey credential (stored in device secure enclave) → credential ID + email + server pepper → PBKDF2-SHA512 derivation (100K iterations) → 256-bit seed → deterministic Ed25519 Arc keypair → public key checked against Arc ledger → if no account exists, auto-created via friendbot (testnet) or funding partner (mainnet)
 
 2. **Authentication**: Returning user visits site → browser presents biometric challenge (Face ID / Touch ID / Windows Hello) via conditional mediation (no email re-entry needed) → PBKDF2 re-derives the same Ed25519 keypair → sign nonce → verify → authenticated
 
@@ -67,7 +67,7 @@ This adapter implements every method of the `WalletAdapter` interface from Phase
 | # | File Path | Purpose | Estimated Lines | Enterprise Pattern |
 |---|---|---|---|---|---|
 | 1 | `src/lib/wallet/adapters/passkey.ts` | Passkey adapter — implements `WalletAdapter`, manages WebAuthn registration, authentication, key derivation, account creation, session lifecycle | 180 | Adapter Pattern — wraps WebAuthn API + key derivation in uniform WalletAdapter interface |
-| 2 | `src/lib/crypto/key-derivation.ts` | PBKDF2 → Ed25519 deterministic key derivation engine — pure function: email + credentialId + pepper → Stellar keypair | 80 | Strategy Pattern — swappable derivation algorithm (KDF, iteration count, hash function) behind stable interface |
+| 2 | `src/lib/crypto/key-derivation.ts` | PBKDF2 → Ed25519 deterministic key derivation engine — pure function: email + credentialId + pepper → Arc keypair | 80 | Strategy Pattern — swappable derivation algorithm (KDF, iteration count, hash function) behind stable interface |
 | 3 | `src/app/(auth)/passkey-setup/page.tsx` | Passkey setup UI — shown after first login to guide user through biometric enrollment, displays public key, links to dashboard | 120 | Page Component — server component wrapper with client-side WebAuthn orchestration |
 | 4 | `src/lib/wallet/adapters/__tests__/passkey.test.ts` | Passkey adapter unit tests — 10 tests covering registration, auth, derivation, failures, SSR safety | 200 | Test Suite |
 | 5 | `src/lib/crypto/__tests__/key-derivation.test.ts` | Key derivation unit tests — 4 deterministic derivation tests | 80 | Test Suite |
@@ -92,7 +92,7 @@ This adapter implements every method of the `WalletAdapter` interface from Phase
 | Package | Version | License | Maintainer | Why This Over Alternatives | Bundle Impact | CVE Audit |
 |---|---|---|---|---|---|---|
 | `@simplewebauthn/browser` | 13.1.0 (exact pin) | MIT | Matthew Miller (MasterKale) | Official reference implementation for WebAuthn in browser. Handles credential creation (`startRegistration`) and assertion (`startAuthentication`) with proper CBOR encoding, Base64URL handling, and error mapping. Alternative: raw `navigator.credentials.create()/.get()` (rejected: 300+ lines of CBOR/Base64URL/attestation format parsing to maintain, fragile across browser versions). | ~8 KB gzipped | `npm audit` — 0 known CVEs as of 2026-05-14 |
-| `@noble/ed25519` | 2.1.0 (exact pin) | MIT | Paul Miller (paulmillr) | Audited, dependency-free Ed25519 implementation. Used for deterministic keypair derivation from PBKDF2 seed. Alternative: `tweetnacl` (unmaintained since 2017), `@stellar/js-xdr`'s internal Ed25519 (coupled to Stellar SDK, doesn't expose raw seed→keypair API). `@noble/ed25519` is NIST-tested, constant-time, and widely used (1.2M weekly downloads). | ~4 KB gzipped (tree-shaken, only `getPublicKey` + `sign` + `utils.randomPrivateKey`) | `npm audit` — 0 known CVEs. Independently audited by Cure53 (2023). |
+| `@noble/ed25519` | 2.1.0 (exact pin) | MIT | Paul Miller (paulmillr) | Audited, dependency-free Ed25519 implementation. Used for deterministic keypair derivation from PBKDF2 seed. Alternative: `tweetnacl` (unmaintained since 2017), `@arc/js-xdr`'s internal Ed25519 (coupled to Arc SDK, doesn't expose raw seed→keypair API). `@noble/ed25519` is NIST-tested, constant-time, and widely used (1.2M weekly downloads). | ~4 KB gzipped (tree-shaken, only `getPublicKey` + `sign` + `utils.randomPrivateKey`) | `npm audit` — 0 known CVEs. Independently audited by Cure53 (2023). |
 | `@simplewebauthn/server` | 13.1.0 (exact pin) | MIT | Matthew Miller (MasterKale) | Server-side WebAuthn verification — validates attestation format, authenticator data, challenge, origin, and RP ID. Used in backend API routes ONLY (not bundled in client). Imported server-side, zero client bundle impact. | ~0 KB gzipped (server-only, not in client bundle) | `npm audit` — 0 known CVEs as of 2026-05-14 |
 
 **Total client bundle increase: ~12 KB gzipped (well under the 50KB threshold).**
@@ -101,7 +101,7 @@ This adapter implements every method of the `WalletAdapter` interface from Phase
 
 | Package NOT Used | Why Rejected |
 |---|---|
-| `@stellar/stellar-sdk` (for passkey flow) | The Stellar SDK is 180KB+. We only need Ed25519 key derivation, not the full SDK. Using `@noble/ed25519` avoids pulling in the entire Horizon client, transaction builder, and Soroban SDK. The stellar-sdk is already imported elsewhere in the app for contract operations — this exclusion prevents duplicate dependency weight. |
+| `@arc/arc-sdk` (for passkey flow) | The Arc SDK is 180KB+. We only need Ed25519 key derivation, not the full SDK. Using `@noble/ed25519` avoids pulling in the entire Horizon client, transaction builder, and Arc SDK. The arc-sdk is already imported elsewhere in the app for contract operations — this exclusion prevents duplicate dependency weight. |
 | `crypto-browserify` / `pbkdf2` packages | Web Crypto API's `SubtleCrypto.deriveBits()` provides native PBKDF2-SHA512. No polyfill needed. Browser-native crypto is hardware-accelerated (AES-NI, ARM Crypto Extensions) and runs in the secure enclave on some platforms. |
 | `@noble/hashes` | `pbkdf2` from `@noble/hashes` is a pure-JS alternative when Web Crypto API is unavailable. Not included: `SubtleCrypto` has 97.4% browser support. Fallback: if `crypto.subtle` is undefined, adapter returns `not_supported` error with clear message. |
 
@@ -117,15 +117,15 @@ Before `npm install` or `cargo add`:
 [x] Is this version compatible with the EXISTING dependency tree? (check peer deps)
     @simplewebauthn/browser@13.1.0: No peer dependencies. Pure browser-side library.
     @noble/ed25519@2.1.0: No peer dependencies. Zero external dependency imports.
-    Neither package conflicts with existing React 19, Next.js 15, Stellar SDK v22.
-    Both packages are ES module compatible (import/export syntax matches Moistello's module system).
+    Neither package conflicts with existing React 19, Next.js 15, Arc SDK v22.
+    Both packages are ES module compatible (import/export syntax matches Deodes's module system).
 
-[x] For blockchain/Stellar packages: does the SDK version match the deployed contract SDK version?
-    N/A — this phase does not introduce any Stellar SDK dependency. Key derivation uses
-    `@noble/ed25519` which produces standard Ed25519 keypairs compatible with Stellar's
-    Ed25519-based accounts (RFC 8032). Stellar keypairs use a specific byte encoding:
+[x] For blockchain/Arc packages: does the SDK version match the deployed contract SDK version?
+    N/A — this phase does not introduce any Arc SDK dependency. Key derivation uses
+    `@noble/ed25519` which produces standard Ed25519 keypairs compatible with Arc's
+    Ed25519-based accounts (RFC 8032). Arc keypairs use a specific byte encoding:
     raw 32-byte secret seed → SHA-512 → first 32 bytes = private scalar, last 32 bytes = prefix.
-    @noble/ed25519 follows the same RFC 8032 standard. Cross-verified against `stellar-sdk`
+    @noble/ed25519 follows the same RFC 8032 standard. Cross-verified against `arc-sdk`
     keypair generation: given the same 32-byte seed, both produce identical public keys.
 
 [x] For wallet packages: does the package version match the wallet extension's current API version?
@@ -170,12 +170,12 @@ The Passkey adapter implements the exact same `WalletAdapter` interface from Pha
 
 interface PasskeySession {
   credentialId: string         // Base64URL-encoded WebAuthn credential ID
-  publicKey: string            // G... 56-char Stellar public key
+  publicKey: string            // G... 56-char Arc public key
   privateKey: Uint8Array       // 32-byte raw Ed25519 seed (EPHEMERAL — zeroed after use)
   email: string                // User's email (used as derivation input)
   network: "testnet" | "mainnet"
   expiresAt: number            // Unix timestamp — session expires after 1 hour
-  accountExists: boolean       // Whether Stellar account was found on first auth
+  accountExists: boolean       // Whether Arc account was found on first auth
 }
 
 export class PasskeyAdapter implements WalletAdapter {
@@ -225,7 +225,7 @@ export class PasskeyAdapter implements WalletAdapter {
 | `connect()` accepts optional email parameter | `connect(email?: string)` | Fixed email-only or no-parameter | Two distinct flows: (1) Registration — email passed in, credential created. (2) Authentication — no email, conditional mediation auto-selects existing credential. |
 | Private key is session-local, never persisted | `privateKey: Uint8Array` in session object, zeroed on `disconnect()` | Encrypted localStorage or IndexedDB | Security requirement: private key must never exist outside memory. PBKDF2 derivation is fast enough (~200ms) to re-derive on every auth. The derivation input (credentialId from WebAuthn, server pepper via API) must be reacquired each session. |
 | `isAvailable()` checks `PublicKeyCredential` | Checks for WebAuthn API existence | User agent string parsing | `PublicKeyCredential` is the definitive window property for WebAuthn support. User agent parsing is fragile and doesn't detect browser settings that disable WebAuthn. |
-| RP ID configurable per environment | `rpId` from constructor config | Hardcoded domain | Localhost, staging, and production have different RP IDs (localhost, staging.moistello.io, moistello.io). WebAuthn credentials are scoped to RP ID — a credential created on localhost won't work on production. |
+| RP ID configurable per environment | `rpId` from constructor config | Hardcoded domain | Localhost, staging, and production have different RP IDs (localhost, staging.deodes.io, deodes.io). WebAuthn credentials are scoped to RP ID — a credential created on localhost won't work on production. |
 | Server pepper fetched once per session, cached in memory | `serverPepper` stored in session object after first auth | Refetch every operation | Server pepper is fetched during `connect()` and cached in the session object. It's required for every sign operation. Refetch would add 200ms latency to every sign. |
 | `signMessage()` / `signTransaction()` zero the private key after use | `crypto.getRandomValues(privateKey)` after signing | Leave in memory | Private key exists in memory for <5 seconds per sign operation. Immediately overwritten with random bytes after use. |
 
@@ -269,12 +269,12 @@ Pseudocode:
              → returns { pepper: SERVER_PEPPER, publicKey: null }
    c. Timeout: 5 seconds
 
-6. Derive Stellar keypair:
+6. Derive Arc keypair:
    a. { publicKey, privateKey } = deriveKeypair(email, credentialId, serverPepper)
       → See Key Derivation Algorithm (2.2.3)
 
-7. Check Stellar account existence:
-   a. horizonResponse = await GET horizon.stellar.org/accounts/{publicKey}
+7. Check Arc account existence:
+   a. horizonResponse = await GET horizon.arc.org/accounts/{publicKey}
    b. IF 404 → accountExists = false
    c. IF 200 → accountExists = true
 
@@ -305,7 +305,7 @@ Failure modes:
   - User lacks biometric sensor: fallback to device PIN/pattern (userVerification: "required" permits PIN)
   - Server pepper fetch fails: retry 3× with exponential backoff (1s, 2s, 4s)
   - PBKDF2 derivation fails (missing crypto.subtle): fallback to pure-JS pbkdf2 (emergency path)
-  - Stellar account creation fails: accountExists = false, user sees "Account will be created on first contribution" → account created on first signTransaction()
+  - Arc account creation fails: accountExists = false, user sees "Account will be created on first contribution" → account created on first signTransaction()
 
 Tested inputs:
   - Valid: email + valid server options → credential created, session returned
@@ -370,7 +370,7 @@ Pseudocode:
       - Returns { verified: true, email, pepper, credentialId }
    c. Timeout: 5 seconds
 
-6. Derive Stellar keypair:
+6. Derive Arc keypair:
    a. { publicKey, privateKey } = deriveKeypair(email, credentialId, serverPepper)
 
 7. Create in-memory session (same as registration step 8):
@@ -469,13 +469,13 @@ Pseudocode:
 7. Generate Ed25519 keypair:
    a. privateKeyBytes = seedBytes      // 32-byte seed IS the Ed25519 private key
    b. publicKeyBytes = ed.getPublicKey(seedBytes)  // @noble/ed25519 — 32 bytes
-   c. stellarPublicKey = encodeStellarPublicKey(publicKeyBytes)
+   c. arcPublicKey = encodeArcPublicKey(publicKeyBytes)
       - Prefix with version byte (6 << 3 = 48 for ed25519 public key)
       - Append publicKeyBytes (32 bytes)
       - Append CRC16-XModem checksum of (version + key)
-      - Base32 encode (Stellar's alphabet: G... 56 characters)
+      - Base32 encode (Arc's alphabet: G... 56 characters)
 
-8. Return { publicKey: stellarPublicKey, privateKey: privateKeyBytes }
+8. Return { publicKey: arcPublicKey, privateKey: privateKeyBytes }
 
 Security properties:
   - PBKDF2-SHA512 at 100K iterations: brute-force cost ~5.6 × 10^15 operations for 56-bit entropy
@@ -492,7 +492,7 @@ Failure modes:
   - crypto.subtle unavailable (HTTP context, old browser): fallback to @noble/hashes pure-JS PBKDF2
   - PBKDF2 derivation takes >500ms on slow device: accepted — one-time cost during auth
   - Derivation produces invalid Ed25519 scalar: impossible — clamping guarantees valid scalar
-  - Derivation produces key already used on Stellar: collision probability < 2^-128
+  - Derivation produces key already used on Arc: collision probability < 2^-128
 
 Tested inputs:
   - Valid: standard inputs → deterministic output (same inputs → same keypair every time)
@@ -513,10 +513,10 @@ Cryptographic citations:
   - OWASP iteration count: OWASP Password Storage Cheat Sheet (2025), recommends 100K for PBKDF2-SHA512
   - Seed clamping: RFC 8032 §5.1.5 — required to avoid small-subgroup attacks
   - Web Crypto API: W3C Web Cryptography API (2017) §26 — SubtleCrypto.deriveBits()
-  - Stellar public key encoding: SEP-0005 §2.1 — version byte + key + CRC16-XModem + Base32
+  - Arc public key encoding: SEP-0005 §2.1 — version byte + key + CRC16-XModem + Base32
 ```
 
-#### 2.2.4 Stellar Account Creation Algorithm
+#### 2.2.4 Arc Account Creation Algorithm
 
 ```
 Algorithm: PasskeyAdapter.ensureAccount()
@@ -529,8 +529,8 @@ Pseudocode:
 
 2. Determine account creation method based on network:
    a. IF network === "testnet":
-      - POST https://friendbot.stellar.org/?addr={publicKey}
-        (Stellar testnet friendbot, rate-limited to 1 request per 5 minutes per address)
+      - POST https://friendbot.arc.org/?addr={publicKey}
+        (Arc testnet friendbot, rate-limited to 1 request per 5 minutes per address)
    b. IF network === "mainnet":
       - POST /api/account/create
         body: { publicKey }
@@ -555,7 +555,7 @@ Pseudocode:
         User sees: "Account creation was declined. Please contact support for help."
 
 5. Verify account on Horizon:
-   a. GET horizon.stellar.org/accounts/{publicKey}
+   a. GET horizon.arc.org/accounts/{publicKey}
    b. Retry up to 5× with 2 second intervals (account creation may take effect async)
    c. IF account found: session.accountExists = true
    d. IF 404 after 5 retries: account didn't create — inform user, suggest retry
@@ -604,7 +604,7 @@ Pseudocode:
    a. pepper = await GET /api/auth/passkey/pepper?credentialId={storedCredentialId}
    b. Backend: verifies credential is registered → returns pepper
 
-6. Derive Stellar keypair (same as 2.2.3):
+6. Derive Arc keypair (same as 2.2.3):
    a. { publicKey, privateKey } = deriveKeypair(email, credentialId, pepper)
 
 7. Check for wallet_locked event:
@@ -660,10 +660,10 @@ State additions to multi-wallet-store:
 
   passkeyEmail: string | null,        // Email entered during registration
   passkeyError: WalletError | null,   // Current error
-  passkeyPublicKey: string | null,    // Derived Stellar public key (display purposes)
+  passkeyPublicKey: string | null,    // Derived Arc public key (display purposes)
   passkeyCredentialId: string | null, // Current credential ID (for conditional mediation)
   passkeyExpiresAt: number | null,    // Session expiry timestamp (1 hour from auth)
-  passkeyAccountExists: boolean,      // Whether Stellar account found on network
+  passkeyAccountExists: boolean,      // Whether Arc account found on network
 
   // Server-side state (Redis — NOT in client store)
   // pendingRegistration: { email, challenge, credentialId, timestamp, ttl: 5min }
@@ -735,7 +735,7 @@ type PasskeyError =
 | `credential_not_found` | Conditional mediation returns no credentials, or stored credentialId not in server DB | (Graceful — falls back to email entry mode) "Welcome! Sign in with your email to get started." | credentialId that failed lookup | NO — redirects to registration flow |
 | `derivation_failed` | PBKDF2 or Ed25519 derivation throws error | "Something went wrong generating your wallet. Please try again. [Retry]" | Stack trace, crypto.subtle availability, input validation failures | YES — retry with new derivation |
 | `invalid_rp_id` | WebAuthn credential created with wrong RP ID (e.g., localhost credential on production) | "Your passkey was created for a different domain. Re-register on this site. [Set Up Passkey]" | Detected RP ID vs. configured RP ID | NO — user must re-register |
-| `account_creation_failed` | Friendbot down, funding partner rejects, or network error during account check | "Account creation service unavailable. You can still browse Moistello. Contributions will be enabled once your account is active. [Retry]" | HTTP status code, Horizon response | YES — exponential backoff retry |
+| `account_creation_failed` | Friendbot down, funding partner rejects, or network error during account check | "Account creation service unavailable. You can still browse Deodes. Contributions will be enabled once your account is active. [Retry]" | HTTP status code, Horizon response | YES — exponential backoff retry |
 | `account_creation_throttled` | Friendbot rate limit hit (testnet: 1 per 5 min per address) | "Account creation is temporarily paused. Try again in a few minutes. [Wait]" | Rate limit timestamp | YES — auto-retry after rate limit window |
 | `already_registered` | Email already associated with existing passkey credential on server | "This email already has a passkey. Sign in instead. [Sign In →]" | Email hash | NO — redirect to authentication flow |
 | `replay_detected` | Server detects reused challenge during assertion verification | "Security check failed. Please try again." (Silent to user — logged as security event) | Challenge, credentialId, timestamp, IP | YES — new challenge generated |
@@ -872,19 +872,19 @@ or wrap browser code in `useEffect` / event handlers.
 | LocalStorage credentialId leakage | Attacker reads credentialId from localStorage via XSS | credentialId is PUBLIC INFORMATION per WebAuthn spec. It's the identifier used to look up a credential — it is NOT a secret. It's stored unencrypted by design. Knowing the credentialId gives attacker zero ability to authenticate (needs biometric-protected private key credential). |
 | Server pepper stored in env var | Server compromised → attacker reads env var → accesses pepper | Pepper is stored in server env var (`PASSKEY_SERVER_PEPPER`), NEVER committed to git. Compromise requires server access. Even with pepper, attacker MUST ALSO have: credentialId + WebAuthn credential (biometric). Defense in depth. |
 | Derived private key leaked via browser extension | Malicious browser extension reads memory, finds derived key | Private key zeroed after <5 seconds. Extension must: (1) be installed by user (social engineering), (2) have memory read permissions, (3) be running during the exact 5s window. Browser extension manifest v3 restricts arbitrary memory access. Risk accepted: user-installed malware is outside threat model. |
-| Stellar account takeover via derived key | Attacker brute-forces PBKDF2 inputs to find same keypair | PBKDF2-SHA512 at 100K iterations: ~50ms per attempt. 32-byte seed = 256-bit space. Brute force cost: 2^256 × 50ms = heat death of universe × 10^50. Not computationally feasible. |
-| Cross-domain passkey misuse | Passkey created on malicious site pretending to be Moistello | RP ID verification: WebAuthn credential scoped to RP ID (moistello.io). A credential created for "moistello.io" will NOT be returned by `navigator.credentials.get()` called from "phishing-site.com". Browser enforces RP ID scope — this is not our code's responsibility, it's the browser's WebAuthn implementation. |
+| Arc account takeover via derived key | Attacker brute-forces PBKDF2 inputs to find same keypair | PBKDF2-SHA512 at 100K iterations: ~50ms per attempt. 32-byte seed = 256-bit space. Brute force cost: 2^256 × 50ms = heat death of universe × 10^50. Not computationally feasible. |
+| Cross-domain passkey misuse | Passkey created on malicious site pretending to be Deodes | RP ID verification: WebAuthn credential scoped to RP ID (deodes.io). A credential created for "deodes.io" will NOT be returned by `navigator.credentials.get()` called from "phishing-site.com". Browser enforces RP ID scope — this is not our code's responsibility, it's the browser's WebAuthn implementation. |
 
 ### 3.2 Authentication & Authorization
 
 **Complete authentication sequence for Passkey login:**
 
 ```
-User → Moistello → WebAuthn Platform → Secure Enclave → Backend
+User → Deodes → WebAuthn Platform → Secure Enclave → Backend
   │        │             │                    │              │
   │  1. User sees "Sign in with Passkey" button
   │        │             │                    │              │
-  │  2. Moistello: checks if credentialId in localStorage
+  │  2. Deodes: checks if credentialId in localStorage
   │        │             │                    │              │
   │  3. (If returning user) Conditional mediation: platform shows
   │     biometric prompt automatically
@@ -902,8 +902,8 @@ User → Moistello → WebAuthn Platform → Secure Enclave → Backend
   │        │             │                    │       7. Server verifies:
   │        │             │                    │          - authenticator signature
   │        │             │                    │          - challenge matches stored
-  │        │             │                    │          - origin = moistello.io
-  │        │             │                    │          - RP ID hash = moistello.io
+  │        │             │                    │          - origin = deodes.io
+  │        │             │                    │          - RP ID hash = deodes.io
   │        │             │                    │          - signature counter incremented
   │        │             │                    │       8. Server retrieves: email, pepper
   │        │             │                    │       9. Returns: { verified, email, pepper }
@@ -933,7 +933,7 @@ Time from click to authenticated: 2-5 seconds (dominated by biometric verificati
 | ES256 / RS256 (platform-dependent) | WebAuthn credential signing (assertion) | W3C WebAuthn Level 2 §6.5 |
 | SHA-256 | WebAuthn challenge hashing, salt generation, attestation verification | FIPS 180-4 |
 | PBKDF2-SHA512 | Deterministic derivation of Ed25519 seed from email+credentialId+pepper | RFC 8018 |
-| Ed25519 | Stellar keypair generation, transaction signing | RFC 8032 |
+| Ed25519 | Arc keypair generation, transaction signing | RFC 8032 |
 | HMAC-SHA256 | Session store integrity, pepper verification token | RFC 2104 |
 | CSPRNG (crypto.getRandomValues) | Server challenge generation (32 bytes) | NIST SP 800-90A |
 | TLS 1.3 | All client↔server communication | RFC 8446 |
@@ -947,7 +947,7 @@ Time from click to authenticated: 2-5 seconds (dominated by biometric verificati
 | Ed25519 private key | JavaScript memory (typed Uint8Array) | <5 seconds per signing operation | In-memory only. Overwritten with `crypto.getRandomValues()` after use. GC'd on session destroy. |
 | Server pepper | JavaScript memory (string) | Duration of session (max 1 hour) | In-memory only. Not persisted to any storage. |
 | JWT access token | JavaScript memory (Zustand store) | 15 minutes | In-memory only |
-| Stellar public key | JavaScript memory + multi-wallet-store (localStorage via session-manager) | Until disconnect | HMAC integrity (current), AES-256-GCM (Phase 6) |
+| Arc public key | JavaScript memory + multi-wallet-store (localStorage via session-manager) | Until disconnect | HMAC integrity (current), AES-256-GCM (Phase 6) |
 | User email | JavaScript memory | Duration of session | In-memory only |
 | WebAuthn credentialId | localStorage (plaintext) | Until user deletes passkey | Not a secret — public info per WebAuthn spec |
 | Biometric template (face/fingerprint data) | Secure Enclave / TPM | Until user deletes passkey | Hardware-isolated — application CANNOT access |
@@ -1138,7 +1138,7 @@ Significantly lighter than WalletConnect (which maintains a persistent WebSocket
 | WebAuthn assertion generation (platform-handled) | ~200ms |
 | Base64URL encode/decode (@simplewebauthn) | ~1ms |
 | Session setup (store writes, BroadcastChannel) | ~3ms |
-| Total Moistello CPU overhead | <160ms (excluding platform WebAuthn operations) |
+| Total Deodes CPU overhead | <160ms (excluding platform WebAuthn operations) |
 
 ### 4.3 Optimization Decisions
 
@@ -1220,10 +1220,10 @@ For every file in section 1.2:
 
 | Test | What It Verifies |
 |---|---|
-| `deriveKeypair() determinism across sessions` | Given email="test@moistello.io", credentialId="abc123...", pepper="dead...beef" (32 bytes), derive 3× → same keypair. Includes cross-session test: derive once, destroy context, derive again → same keypair. |
+| `deriveKeypair() determinism across sessions` | Given email="test@deodes.io", credentialId="abc123...", pepper="dead...beef" (32 bytes), derive 3× → same keypair. Includes cross-session test: derive once, destroy context, derive again → same keypair. |
 | `deriveKeypair() collision resistance` | 1000 random inputs (email, credentialId, pepper). All produce unique public keys. No collisions. Property-based test with fuzz inputs. |
 | `deriveKeypair() invalid input handling` | Null email, empty credentialId, pepper < 64 hex chars, Unicode normalization edge cases. All throw descriptive errors without crash. |
-| `deriveKeypair() Stellar key format compliance` | Derived public key: prefixed with 'G', 56 characters, valid CRC16-XModem checksum, valid Ed25519 point on curve. |
+| `deriveKeypair() Arc key format compliance` | Derived public key: prefixed with 'G', 56 characters, valid CRC16-XModem checksum, valid Ed25519 point on curve. |
 
 ### 5.2 Integration Tests — 4 Tests
 
@@ -1240,7 +1240,7 @@ For every file in section 1.2:
 |---|---|---|
 | Registration → auth → sign | Mocked WebAuthn, real crypto | Before release: test real passkey registration on iOS 18 Safari, Android 15 Chrome, Windows 11 Edge, macOS 15 Safari. Use platform authenticator (not virtual authenticator). Verify derivation on real Secure Enclave. |
 | Session restore | Real localStorage, mocked conditional mediation | Before release: test conditional mediation on real devices — iOS Safari (1-click Face ID restore), Android Chrome (fingerprint restore). Verify browser doesn't degrade to password prompt. |
-| Invalid credential | Mocked error | Test by intentionally creating passkey on staging.moistello.io, then trying to use on production moistello.io → verify error handling. |
+| Invalid credential | Mocked error | Test by intentionally creating passkey on staging.deodes.io, then trying to use on production deodes.io → verify error handling. |
 | Derivation determinism | Real PBKDF2 + Ed25519 | Cross-browser test: register on iOS Safari, authenticate on Chrome (desktop, same email) → verify same public key derived. Relies on credentialId being same (passkey synced via iCloud/Google Password Manager). |
 
 ### 5.3 Security Tests — 3 Tests
@@ -1323,7 +1323,7 @@ USER ON MOBILE — FIRST-TIME PASSKEY SIGN-UP
     │   │   │  │ your@email.com               │     │
     │   │   │  └─────────────────────────────┘     │
     │   │   │                                     │
-    │   │   │  We'll create a Stellar wallet       │
+    │   │   │  We'll create a Arc wallet       │
     │   │   │  for you automatically.              │
     │   │   │                                     │
     │   │   │           [Create Passkey →]         │
@@ -1340,7 +1340,7 @@ USER ON MOBILE — FIRST-TIME PASSKEY SIGN-UP
     │   │   │  ┌─────────────────────────────┐    │
     │   │   │  │         🔐                    │    │
     │   │   │  │  Create a passkey for          │    │
-    │   │   │  │  moistello.io?                 │    │
+    │   │   │  │  deodes.io?                 │    │
     │   │   │  │                                │    │
     │   │   │  │  Your face/fingerprint will    │    │
     │   │   │  │  be used to sign in.           │    │
@@ -1351,7 +1351,7 @@ USER ON MOBILE — FIRST-TIME PASSKEY SIGN-UP
     │   │
     │   ├─ User scans Face ID / fingerprint
     │   │   ├─ Platform: ✓ Passkey saved
-    │   │   ├─ "Generating your secure Stellar wallet..."
+    │   │   ├─ "Generating your secure Arc wallet..."
     │   │   ├─ PBKDF2 derivation (200ms) + account creation
     │   │   └─ ✓ "Wallet created! Your address: GABC...XYZ"
     │   │
@@ -1376,15 +1376,15 @@ Metrics from landing to authenticated via passkey:
 ### 6.1.2 — Returning User Flow (Conditional Mediation — The Daily Case)
 
 ```
-USER RETURNS TO MOISTELLO — 1 CLICK LOGIN
+USER RETURNS TO DEODES — 1 CLICK LOGIN
 
-  User opens moistello.io on mobile
+  User opens deodes.io on mobile
     │
     ├─ Page loads. WalletManager auto-detects passkey.
     ├─ Conditional mediation triggers: platform shows biometric prompt
     │   ┌─────────────────────────────────────┐
     │   │         🔐                            │
-    │   │  Sign in to moistello.io              │
+    │   │  Sign in to deodes.io              │
     │   │  Use your passkey for                 │
     │   │  alice@email.com                      │
     │   │                                       │
@@ -1433,8 +1433,8 @@ Metrics:
 | Email entry (registration) | Inline form with email input + "Continue" button. Standard form states. |
 | Creating passkey credential | Full-screen modal: animated key icon + "Creating your passkey..." + "This may take a moment" |
 | Biometric prompt active | Platform-native UI (system biometric prompt — not our UI) |
-| Generating wallet (PBKDF2 derivation) | Spinner + "Generating your secure Stellar wallet..." + progress bar (estimated 200ms) |
-| Creating Stellar account (friendbot) | Spinner + "Preparing your wallet for contributions..." + pulsing dot |
+| Generating wallet (PBKDF2 derivation) | Spinner + "Generating your secure Arc wallet..." + progress bar (estimated 200ms) |
+| Creating Arc account (friendbot) | Spinner + "Preparing your wallet for contributions..." + pulsing dot |
 | Signing to verify identity | Spinner + "Verifying your identity..." + biometric prompt |
 | Session restore (conditional mediation) | Page loads normally. Biometric prompt appears within 300ms of page load. No intermediate spinner. |
 | Reconnecting after session expiry | Biometric prompt appears on next action. "Session expired. Sign in to continue." |
@@ -1455,11 +1455,11 @@ Metrics:
       No wallet needed."
     - Email input: aria-label="Email address" with aria-describedby="passkey-email-hint"
     - Biometric prompt: platform-native UI (OS accessibility features apply). VoiceOver announces
-      "Create a passkey for Moistello" with instructions.
+      "Create a passkey for Deodes" with instructions.
     - Derivation/loading states: aria-live="polite" region announces "Generating wallet..."
       → "Wallet ready" on completion
     - Error messages: role="alert" for immediate screen reader announcement
-    - Public key display: aria-label="Your Stellar wallet address: G A B C..."
+    - Public key display: aria-label="Your Arc wallet address: G A B C..."
       (screen reader spells out character by character — expected for crypto addresses)
 
 [ ] Color contrast: do all text elements meet WCAG AA (4.5:1)?
@@ -1548,11 +1548,11 @@ Locales updated/added for Phase 3 (6 languages: en, fr, sw, es, pt, hi):
 | `passkey.error_biometric_failed` | "Biometric verification failed. Try again." | Error message |
 | `passkey.device_unsupported` | "Your device doesn't support passkeys" | Unsupported device message |
 | `passkey.email_placeholder` | "your@email.com" | Email input placeholder |
-| `passkey.generating_wallet` | "Generating your secure Stellar wallet..." | Loading state during PBKDF2 |
+| `passkey.generating_wallet` | "Generating your secure Arc wallet..." | Loading state during PBKDF2 |
 | `passkey.wallet_created` | "Wallet created! {publicKey}" | Success state (shorter public key display on mobile) |
 | `passkey.welcome_back` | "Welcome back! Sign in to continue." | Return user prompt |
 
-Proper nouns NOT translated: "Passkey", "Stellar", "Face ID", "Touch ID", "Windows Hello".
+Proper nouns NOT translated: "Passkey", "Arc", "Face ID", "Touch ID", "Windows Hello".
 
 RTL languages: Passkey setup form uses CSS logical properties (`margin-inline-start`, `padding-inline-end`, etc.) for future RTL support. Email input and CTA button mirror correctly for RTL direction. Public key display (G...XYZ) is always LTR (crypto addresses are Latin characters).
 
@@ -1582,7 +1582,7 @@ RTL languages: Passkey setup form uses CSS logical properties (`margin-inline-st
 | `PasskeyRegistrationFailure` | >30% of registrations fail within 10 minutes | P2 (high) | Check: server pepper env var set? Backend API healthy? WebAuthn options endpoint returning valid JSON? Server clock sync (challenge TTL dependent)? |
 | `PasskeyAuthFailureRate` | >20% of authentication attempts fail within 10 minutes | P2 (high) | Check: conditional mediation issues? Biometric platform errors? Server challenge generation failing? Redis connectivity? |
 | `PasskeyDerivationSlow` | p95 derivation time >1 second | P3 (warning) | Check: PBKDF2 iteration count correct? Device cohort affected? crypto.subtle performance regression in browser update? |
-| `PasskeyAccountCreationDown` | >50% of testnet friendbot calls fail within 5 min | P3 (warning) | Check: friendbot.stellar.org status. Fallback: warn users account creation delayed. Users can still authenticate — just can't contribute yet. |
+| `PasskeyAccountCreationDown` | >50% of testnet friendbot calls fail within 5 min | P3 (warning) | Check: friendbot.arc.org status. Fallback: warn users account creation delayed. Users can still authenticate — just can't contribute yet. |
 | `PasskeyPepperUnavailable` | >10% of pepper fetches fail within 5 min | P2 (high) | Check: env var loaded on all server instances? Secret rotation in progress? API route responding? |
 | `PasskeyBiometricLockout` | >5 users report 3× biometric failure in 1 hour | P4 (info) | Investigate: specific device models? OS update causing biometric sensor issues? Notify UX team. |
 
@@ -1592,8 +1592,8 @@ RTL languages: Passkey setup form uses CSS logical properties (`margin-inline-st
 NEXT_PUBLIC_FEATURE_PASSKEY=true       → Passkey adapter loads, login page shows passkey option
 NEXT_PUBLIC_FEATURE_PASSKEY=false      → Passkey adapter never imported (tree-shaken), login page unchanged
 
-NEXT_PUBLIC_PASSKEY_RP_ID              → "moistello.io" (production) / "localhost" (dev)
-NEXT_PUBLIC_PASSKEY_RP_NAME            → "Moistello"
+NEXT_PUBLIC_PASSKEY_RP_ID              → "deodes.io" (production) / "localhost" (dev)
+NEXT_PUBLIC_PASSKEY_RP_NAME            → "Deodes"
 NEXT_PUBLIC_PASSKEY_SERVER_URL         → Backend API base URL for passkey endpoints
 
 PASSKEY_SERVER_PEPPER                  → 32-byte hex-encoded secret (SERVER-SIDE ONLY, never exposed to client env)
@@ -1723,11 +1723,11 @@ Feature flag interaction:
 
 | Demographic | Today's Experience | With Phase 3 Passkey | Improvement |
 |---|---|---|---|
-| Mobile-only users in Africa/LATAM/SE Asia | Cannot use Moistello (no extensions) | 1 click biometric login, wallet auto-created | Infinite (from impossible to instant) |
+| Mobile-only users in Africa/LATAM/SE Asia | Cannot use Deodes (no extensions) | 1 click biometric login, wallet auto-created | Infinite (from impossible to instant) |
 | First-time crypto users | Must learn: "wallet," "extension," "public key," "seed phrase" | Enter email → scan fingerprint → done | Removes 6+ concepts from onboarding |
 | Returning users (all demographics) | Open extension, approve, wait 5-10s | Open site → scan biometric → 2s to dashboard | 3-5× faster login |
 | Users on public/shared computers | No wallet installed, can't install extensions | Passkey stays on user's phone, syncs to any device | Personal wallet on any device |
 | Users with lost/stolen phones | Wallet and funds lost with device | Pass key syncs to new device via iCloud/Google → funds accessible | Fund recovery without seed phrase |
 | Users in low-bandwidth areas | Download wallet app (50MB+) over slow 3G | No app download needed — passkeys are OS built-in | 50MB+ bandwidth saved |
 
-**Total addressable user base unlocked by Phase 3: ~4.5 billion mobile internet users who don't have a Stellar wallet but do have a phone with biometrics.**
+**Total addressable user base unlocked by Phase 3: ~4.5 billion mobile internet users who don't have a Arc wallet but do have a phone with biometrics.**

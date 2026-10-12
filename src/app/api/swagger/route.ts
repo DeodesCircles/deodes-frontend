@@ -11,7 +11,7 @@ export async function GET() {
     : [
         path.join(process.cwd(), "docs", "api", "swagger.json"),
         path.join(process.cwd(), "public", "swagger.json"),
-        "/opt/moistello/backend/docs/api/swagger.json",
+        "/opt/deodes/backend/docs/api/swagger.json",
       ];
 
   for (const filePath of candidatePaths) {

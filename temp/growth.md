@@ -1,4 +1,4 @@
-# Moistello V1 — Growth Architecture
+# Deodes V1 — Growth Architecture
 
 ## The Problem
 
@@ -65,7 +65,7 @@ These are **marketing expenses**, not financial products. You spend your own mon
 | Growth | 10,000 | $100K-$200K |
 | Scale | 100,000 | $1M-$2M |
 
-Compare to Nigerian fintech CAC (customer acquisition cost): typically $5-$15 per user. Moistello's blended CAC including all bonuses: $10-$20 per user — competitive.
+Compare to Nigerian fintech CAC (customer acquisition cost): typically $5-$15 per user. Deodes's blended CAC including all bonuses: $10-$20 per user — competitive.
 
 ---
 
@@ -90,7 +90,7 @@ Plus: transparent on-chain history = trust over time
 |---------|---------|
 | On-chain transaction history | Users can verify every contribution and payout independently |
 | Public smart contract code | Anyone can audit the circle logic |
-| Verifiable balances | Users see their wallet balance on Stellar explorer |
+| Verifiable balances | Users see their wallet balance on Arc explorer |
 | Badge system | Reputation badges for completed circles, streak milestones |
 | Transparent bonus attribution | Every bonus is a verifiable on-chain transaction |
 

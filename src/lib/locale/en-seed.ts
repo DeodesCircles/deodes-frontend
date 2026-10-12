@@ -31,6 +31,6 @@ export const EN_SEED: Record<string, string> = {
   "governance.title": "Governance",
   "referrals.title": "Referral dashboard",
   "profile.title": "Profile",
-  "reputation.title": "Your MoiScore",
+  "reputation.title": "Your DeoScore",
   "reputation.loadingAria": "Loading reputation",
 }

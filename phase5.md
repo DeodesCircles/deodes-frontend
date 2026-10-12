@@ -1,4 +1,4 @@
-# Moistello Wallet Integration — Phase 5 Documentation
+# Deodes Wallet Integration — Phase 5 Documentation
 
 ## Phase Metadata
 
@@ -39,9 +39,9 @@ DO NOT PROCEED to implementation until ALL gates are checked.
 
 ### 1.1 Conceptual Overview
 
-Phase 5 delivers the **Full UI Migration + Multi-Account Support** — the culmination of Phases 1–4. Every single page, component, and user interaction in the Moistello frontend that previously relied on hardcoded Freighter-only wallet logic is migrated to the Wallet Abstraction Layer. Simultaneously, this phase introduces first-class multi-account support, enabling a single user session to contain multiple connected wallets (Freighter + Lobstr + Ledger, for example), with instant switching between them.
+Phase 5 delivers the **Full UI Migration + Multi-Account Support** — the culmination of Phases 1–4. Every single page, component, and user interaction in the Deodes frontend that previously relied on hardcoded Freighter-only wallet logic is migrated to the Wallet Abstraction Layer. Simultaneously, this phase introduces first-class multi-account support, enabling a single user session to contain multiple connected wallets (Freighter + Lobstr + Ledger, for example), with instant switching between them.
 
-**Why this phase exists:** Phases 1–4 built adapters in isolation. Each adapter passed its own tests. But the actual Moistello UI — the dashboard, the circle creation flow, the contribution flow, the settings page — still uses the old anti-patterns:
+**Why this phase exists:** Phases 1–4 built adapters in isolation. Each adapter passed its own tests. But the actual Deodes UI — the dashboard, the circle creation flow, the contribution flow, the settings page — still uses the old anti-patterns:
 
 ```typescript
 // Anti-pattern — exists in 10+ files across the codebase
@@ -63,7 +63,7 @@ await activeAdapter.signTransaction(xdr)
 
 **What changes for users:**
 - **Before Phase 5:** One wallet connected at a time. If a user had Freighter AND Lobstr, they had to disconnect one to use the other. No mobile wallet users could see dashboard content designed for Freighter.
-- **After Phase 5:** Users can connect any combination of wallets. An account switcher dropdown in the navbar shows all connected wallets with their balances. Switching takes <100ms — no page reload. Each wallet has its own circles, contributions, and MoiScore, cleanly isolated from other wallets. A user can contribute to Circle A with their Freighter wallet, then switch to Lobstr and contribute to Circle B — all in the same session.
+- **After Phase 5:** Users can connect any combination of wallets. An account switcher dropdown in the navbar shows all connected wallets with their balances. Switching takes <100ms — no page reload. Each wallet has its own circles, contributions, and DeoScore, cleanly isolated from other wallets. A user can contribute to Circle A with their Freighter wallet, then switch to Lobstr and contribute to Circle B — all in the same session.
 
 ### 1.2 New Files Created
 
@@ -71,7 +71,7 @@ await activeAdapter.signTransaction(xdr)
 |---|---|---|---|---|
 | 1 | `src/components/wallet/account-switcher.tsx` | Dropdown in navbar showing all connected wallets, active wallet highlighted, switch-on-click with instant state update. Handles 0-wallet (empty), 1-wallet (no dropdown, just indicator), and N-wallet (full dropdown) states. | 180 | Composite Component — combines dropdown, avatar, balance snippet, disconnect option |
 | 2 | `src/components/wallet/wallet-settings.tsx` | Manage wallets page: list all connected wallets, show connection status, balances, adapter type (extension/WC2/passkey/hardware), connect new wallet button, disconnect button with confirmation, rename wallet alias feature. | 220 | Settings Panel — full CRUD for wallet connections |
-| 3 | `src/components/wallet/balance-display.tsx` | Multi-wallet balance card: fetches balances for all connected wallets concurrently via the active adapter's `getBalance()` or Horizon API query, displays per-wallet native (XLM) and token balances, handles loading/error/empty states, supports refresh-on-switch. | 150 | Data Display — aggregates async balance fetches into unified card |
+| 3 | `src/components/wallet/balance-display.tsx` | Multi-wallet balance card: fetches balances for all connected wallets concurrently via the active adapter's `getBalance()` or Horizon API query, displays per-wallet native (USDC) and token balances, handles loading/error/empty states, supports refresh-on-switch. | 150 | Data Display — aggregates async balance fetches into unified card |
 | 4 | `src/components/wallet/sign-prompt.tsx` | Generic signing modal: displays "Sign with {walletName} ({walletType icon})" header, transaction preview (decoded XDR → human-readable fields), approve/reject buttons, timeout countdown, adapter-specific status (e.g., "Check your phone" for WC2, "Confirm on device" for Ledger), loading spinner during signature generation. | 200 | Modal Component — wraps any adapter's sign flow in consistent UI |
 | 5 | `src/app/(dashboard)/wallet/page.tsx` | (FULL REWRITE) Multi-wallet dashboard page: replaces the old Freighter-only wallet page. Shows all connected wallets in a card grid, each with balance, recent activity, quick actions (send, receive, switch-to), connect-new-wallet CTA, manage-wallets link, per-wallet circles/contributions summary. SSR-safe with client-only wallet data hydration. | 320 | Dashboard Page — composite page assembling balance-display, wallet-settings, and account-switcher |
 
@@ -105,7 +105,7 @@ Phase 5 is a **UI migration phase**. It introduces **zero new npm dependencies**
 | `@radix-ui/react-dropdown-menu` | account-switcher dropdown | Project inception |
 | `@radix-ui/react-dialog` | sign-prompt modal | Project inception |
 | `lucide-react` | Wallet type icons (Wallet, Shield, Key, Smartphone, Scan) | Project inception |
-| `@stellar/stellar-sdk` | XDR decoding in sign-prompt (human-readable display) | Project inception |
+| `@arc/arc-sdk` | XDR decoding in sign-prompt (human-readable display) | Project inception |
 
 **Bundle size impact: ~0 KB new dependencies.** Only our own code adds weight — estimated ~12 KB gzipped for 5 new components + store/hook enhancements.
 
@@ -121,9 +121,9 @@ Before `npm install` or `cargo add`:
 [x] Is this version compatible with the EXISTING dependency tree? (check peer deps)
     N/A — no new packages.
 
-[x] For blockchain/Stellar packages: does the SDK version match the deployed contract SDK version?
-    @stellar/stellar-sdk v13.1.0 (used for XDR decoding in sign-prompt). Same SDK version
-    used throughout Phases 1-4 and in deployed Soroban contracts. Compatible.
+[x] For blockchain/Arc packages: does the SDK version match the deployed contract SDK version?
+    @arc/arc-sdk v13.1.0 (used for XDR decoding in sign-prompt). Same SDK version
+    used throughout Phases 1-4 and in deployed Arc contracts. Compatible.
 
 [x] For wallet packages: does the package version match the wallet extension's current API version?
     No new wallet packages in Phase 5. Phase 5 uses adapters from Phases 1-4 which have
@@ -227,10 +227,10 @@ interface TransactionSummary {
   sourceAccount: string
   operations: {
     type: "payment" | "createAccount" | "manageData" | "setOptions" | "changeTrust" | "invokeHostFunction"
-    description: string                     // "Send 100 XLM to GABC..."
+    description: string                     // "Send 100 USDC to GABC..."
     amount?: { value: number; asset: string }
     destination?: string
-    contractFn?: string                     // Soroban function name
+    contractFn?: string                     // Arc function name
   }[]
   fee: string
   network: "testnet" | "mainnet"
@@ -268,7 +268,7 @@ interface WalletBalance {
   native: {
     balance: string                         // "125.5000000"
     usdValue: number
-    assetCode: "XLM"
+    assetCode: "USDC"
   }
   tokens: {
     contractId: string
@@ -385,7 +385,7 @@ Pseudocode:
       - Wallet type icon (from adapterCategory)
       - Wallet name (alias or adapterName)
       - Truncated address
-      - Balance snippet: "125.5 XLM ($42.13)"
+      - Balance snippet: "125.5 USDC ($42.13)"
       - If isActive: checkmark + muted background
       - onClick: handleSwitch(entry.walletId)
    b. Separator
@@ -431,7 +431,7 @@ Memory complexity: O(n) for display entries
 ```
 Algorithm: SignatureRouter.route(xdr, opts?)
 
-Input: xdr: string (base64 Stellar XDR), opts?: { preferredWallet?: string }
+Input: xdr: string (base64 Arc XDR), opts?: { preferredWallet?: string }
 Output: { signedXdr: string } | WalletError
 
 Pseudocode:
@@ -452,7 +452,7 @@ Pseudocode:
    b. IF opts.network !== adapterNetwork: return "network_mismatch" error
 5. OPEN SignPrompt modal with wallet info:
    a. Decode XDR into TransactionSummary (best-effort):
-      - Parse XDR using @stellar/stellar-sdk TransactionBuilder.fromXDR()
+      - Parse XDR using @arc/arc-sdk TransactionBuilder.fromXDR()
       - Extract operations, source account, fee, memo
       - Map operation types to human-readable descriptions
       - IF decoding fails: TransactionSummary = null (show raw XDR)
@@ -485,7 +485,7 @@ Security properties:
    - Adapter-specific security contexts preserved (WC2 relay encryption, hardware
      wallet on-device signing, passkey biometric verification)
    - Signed XDR validated before being returned (ensures signature was added)
-   - No private key material ever enters Moistello code
+   - No private key material ever enters Deodes code
 
 Failure modes:
    - Adapter disconnected between route and sign: detected at step 3
@@ -552,7 +552,7 @@ Pseudocode:
 Performance optimizations:
    - Promises launched concurrently (not sequentially) → fetch time = max(wallet_fetch_time)
    - Horrizon server connection cached per network (same Horizon instance reused)
-   - XLM price cached for 60 seconds (no per-wallet refetch)
+   - USDC price cached for 60 seconds (no per-wallet refetch)
    - BalanceDisplay component accepts refreshIntervalMs prop for auto-polling
    - Deduplication: if same balance fetch already in flight, reuse existing promise
 
@@ -564,9 +564,9 @@ Security properties:
 
 Failure modes:
    - Horizon rate limit (429): retry with exponential backoff
-   - Account not found (404): wallet has no Stellar account yet, show "Not funded" state
+   - Account not found (404): wallet has no Arc account yet, show "Not funded" state
    - Network timeout: individual wallet fails, others succeed (Promise.allSettled)
-   - XLM price API down: balances show XLM quantity only, hide USD value
+   - USDC price API down: balances show USDC quantity only, hide USD value
    - Wallet network mismatch with Horizon: adapter reports network, Horizon endpoint
      selected accordingly (testnet vs mainnet)
 
@@ -584,7 +584,7 @@ Output: void (side-effects: multi-wallet store populated, legacy data preserved)
 
 Pseudocode:
 1. CHECK if migration already completed:
-   a. migrated = localStorage.getItem("moistello:multi_wallet_migrated_v1")
+   a. migrated = localStorage.getItem("deodes:multi_wallet_migrated_v1")
    b. IF migrated === "true": return (no-op)
 2. CHECK if legacy session exists:
    a. legacyAddress = walletStore.address (old store, Freighter-only public key)
@@ -622,17 +622,17 @@ Pseudocode:
 6. MIGRATE per-wallet data from legacy store:
    a. circles = fetchCirclesForAddress(legacyAddress)
    b. contributions = fetchContributionsForAddress(legacyAddress)
-   c. moiScore = fetchMoiScoreForAddress(legacyAddress)
+   c. deoScore = fetchDeoScoreForAddress(legacyAddress)
    d. STORE in per-wallet data cache: keyed by walletId
 7. SET migration flag:
-   a. localStorage.setItem("moistello:multi_wallet_migrated_v1", "true")
+   a. localStorage.setItem("deodes:multi_wallet_migrated_v1", "true")
    b. store.migrationCompleted = true
 8. LOG migration event:
    a. { legacyAddress, migrated: true, connected: legacyConnected, durationMs }
 9. BROADCAST migration complete via BroadcastChannel
 
 Security properties:
-   - No private key material in legacy store (never stored by Moistello)
+   - No private key material in legacy store (never stored by Deodes)
    - Migration is read-only on legacy data (original legacy store unchanged)
    - Migration flag prevents double-migration (idempotent)
    - Legacy session integrity: if Freighter disconnected, entry marked as such
@@ -678,7 +678,7 @@ State additions to multi-wallet-store (Zustand):
   migrationCompleted: boolean,
 
   // ── Per-wallet derived data (computed, not stored) ──
-  // Each wallet's circles, contributions, MoiScore are fetched from backend
+  // Each wallet's circles, contributions, DeoScore are fetched from backend
   // on switch and cached in per-wallet React Query cache (TanStack Query
   // cache key includes walletId)
 
@@ -737,7 +737,7 @@ State on error/failure:
     user reconnects wallets
 
 Cross-tab sync (BroadcastChannel):
-  Channel name: "moistello:multi-wallet:v1"
+  Channel name: "deodes:multi-wallet:v1"
   Events:
     - "wallet:added"       { walletId, publicKey, adapterName }
     - "wallet:removed"     { walletId }
@@ -846,7 +846,7 @@ Before writing ANY code, every file must answer:
     sign-prompt.tsx:
       - "use client" directive at file top
       - Modal rendering: if (typeof window === "undefined") return null
-      - XDR decoding: gated behind useEffect (requires stellar-sdk, browser-safe)
+      - XDR decoding: gated behind useEffect (requires arc-sdk, browser-safe)
       - Adapter calls: only in response to button clicks (browser events)
     wallet/page.tsx:
       - "use client" directive at file top
@@ -914,9 +914,9 @@ Before writing ANY code, every file must answer:
 | Account switcher DOM injection | Attacker injects fake wallet entry into switcher dropdown via XSS, tricking user into "switching" to attacker's wallet | All wallet entries rendered from store state only. Store populated only by adapter.connect() which verifies the wallet cryptographically (WC2 Noise handshake, extension signature, passkey biometric). No path for attacker-injected wallet entries. Content Security Policy prevents inline script injection. |
 | Wallet alias XSS | User sets malicious alias containing <script> tags, rendered in switcher dropdown | React's JSX auto-escapes all string content. Alias sanitized on input: max 30 chars, alphanumeric + spaces + hyphens only. No HTML rendered from alias strings. |
 | Cross-wallet data leakage via UI | User switches wallet → previous wallet's circles/contributions still in memory, could be exposed via React DevTools or memory dump | Per-wallet data held in TanStack Query cache keyed by walletId. Switching wallets resets the query cache for display. Previous wallet data only accessible by switching back (intentional action). No cross-wallet data visible in a single render. |
-| Migration bridge replay | Attacker modifies localStorage to fake a "not migrated" state, causing re-execution of migration with tampered data | Migration reads from existing Phase 1 store (Zustand with integrity check). If store data is corrupted, migration gracefully skips. Migration flag uses version key ("moistello:multi_wallet_migrated_v1") — attacker injecting old/stale migration flag triggers no re-migration. |
+| Migration bridge replay | Attacker modifies localStorage to fake a "not migrated" state, causing re-execution of migration with tampered data | Migration reads from existing Phase 1 store (Zustand with integrity check). If store data is corrupted, migration gracefully skips. Migration flag uses version key ("deodes:multi_wallet_migrated_v1") — attacker injecting old/stale migration flag triggers no re-migration. |
 | Sign prompt clickjacking | Attacker overlays transparent element on "Approve" button to trick user into signing unintended transaction | SignPrompt renders in a dedicated modal (Radix Dialog, which uses React Portal). Modal has z-index management. BUT modal itself is not iframe-sandboxed — this is a known risk for ALL in-page dApp sign prompts. Phase 6 adds: iframe sandboxing for sign prompts. In Phase 5: SignPrompt shows full transaction summary before approve button, so user must still read and approve. |
-| Balance display data exfiltration | Attacker observes balance display network requests to fingerprint wallets | Horizon API requests are public blockchain queries — no sensitive data exposed. Public keys are already known once wallet is connected. Balance data is public on the Stellar ledger. |
+| Balance display data exfiltration | Attacker observes balance display network requests to fingerprint wallets | Horizon API requests are public blockchain queries — no sensitive data exposed. Public keys are already known once wallet is connected. Balance data is public on the Arc ledger. |
 | Account switcher enumeration | Attacker opens switcher dropdown in public to photograph all connected wallet addresses | Switcher shows truncated addresses by default ("GABC...XYZ"). Full address only visible on click-to-copy. This is UI-level obfuscation, not cryptographic protection. Users should not open their wallet switcher in untrusted environments. |
 | Cross-tab BroadcastChannel injection | Malicious script in another tab posts fake "wallet:switched" events to hijack active wallet | BroadcastChannel is same-origin only. Attacker must compromise the same origin first (XSS). If XSS exists, BroadcastChannel injection is the least of concerns — attacker already has full DOM access. |
 | Wallet settings CRUD without re-verification | User renames/disconnects wallets without re-authenticating | Renaming is cosmetic (aliases are display-only, do not affect wallet identity). Disconnecting requires confirmation (modal with wallet name + address). Adding new wallet requires full adapter connection flow (cryptographic verification). |
@@ -947,9 +947,9 @@ Phase 5 is primarily a UI migration phase. It does not introduce new cryptograph
 | Secret | Location | Lifetime | Encryption |
 |---|---|---|---|
 | JWT (per wallet) | Zustand store (in-memory) | 15 min per wallet | In-memory only, cleared on tab close |
-| Stellar public keys | Zustand store (in-memory + localStorage sync) | Until wallet disconnected | HMAC integrity (Phase 2), planned AES-256-GCM (Phase 6) |
+| Arc public keys | Zustand store (in-memory + localStorage sync) | Until wallet disconnected | HMAC integrity (Phase 2), planned AES-256-GCM (Phase 6) |
 | Wallet adapter session data | Adapter-managed storage (IndexedDB/localStorage) | Per-adapter policy | Per-adapter (Phase 2-4 implementations) |
-| Stellar private key | NEVER in Moistello | N/A | Managed by wallet (extension, mobile app, hardware device) |
+| Arc private key | NEVER in Deodes | N/A | Managed by wallet (extension, mobile app, hardware device) |
 
 ### 3.3 Data Protection
 
@@ -980,7 +980,7 @@ Phase 5 is primarily a UI migration phase. It does not introduce new cryptograph
 | `zustand` | Enhanced store with multi-wallet state, cross-tab sync | Audited in Phase 1. 0 CVEs. 1.5M+ weekly downloads. |
 | `@radix-ui/react-dropdown-menu` | Account switcher dropdown | Audited in project inception. 0 CVEs. Maintained by WorkOS. |
 | `@radix-ui/react-dialog` | Sign prompt modal, disconnect confirmation | Audited in project inception. 0 CVEs. |
-| `@stellar/stellar-sdk` | XDR decoding in SignPrompt TransactionSummary | Audited in Phase 1. 0 CVEs. Verified compatibility with deployed Soroban SDK. |
+| `@arc/arc-sdk` | XDR decoding in SignPrompt TransactionSummary | Audited in Phase 1. 0 CVEs. Verified compatibility with deployed Arc SDK. |
 | `lucide-react` | Wallet type icons | Audited in project inception. 0 CVEs. Tree-shakeable icons. |
 | `react` / `react-dom` | All new components | Audited in project inception. React 19 stable. |
 
@@ -1098,7 +1098,7 @@ Sign flow with SignPrompt (from click to signed):
 |---|---|---|
 | Account switcher open (balance snippets) | 0 (balances cached from last refresh) | 0 |
 | Balance fetch (per wallet) | 1 GET Horizon per wallet | ~2 KB per wallet |
-| Wallet switch (cold data) | 2-3 GET backend (circles, contributions, moiScore) | ~5 KB total |
+| Wallet switch (cold data) | 2-3 GET backend (circles, contributions, deoScore) | ~5 KB total |
 | Sign prompt (XDR decode) | 0 (client-side decode) | 0 |
 | Sign (adapter-specific) | Adapter-internal (WC2 relay, extension API, etc.) | Phase 1-4 measured |
 | Cross-tab sync (per event) | 0 (browser-internal BroadcastChannel) | 0 |
@@ -1133,7 +1133,7 @@ Sign flow with SignPrompt (from click to signed):
 | `Promise.allSettled` for balance fetches (not `Promise.all`) | If one wallet's Horizon endpoint is slow (e.g., testnet Horizon throttling), `Promise.all` would block ALL balances. `Promise.allSettled` ensures 4 of 5 wallets still show balances while the 5th retries. This is critical UX — users shouldn't see a full balance page failure because one wallet is on a slow network. |
 | BroadcastChannel for cross-tab sync even though Zustand supports middleware | Zustand's persist middleware only syncs to localStorage, which fires `storage` events cross-tab. But localStorage events have 50-100ms latency in Chrome. BroadcastChannel achieves <5ms latency for the same message. For wallet switching (where Tab A switches, Tab B must update immediately), BroadcastChannel's low latency is worth the extra 20 lines of code. |
 | Wallet connection order maintained as a separate array | `Map` in JavaScript preserves insertion order, but we need MOST-RECENTLY-USED order, not insertion order. Maintaining `walletConnectionOrder: string[]` separately is slightly redundant but makes the sort O(1) (just read the array) vs O(n log n) (sort Map entries by lastActive on every render). |
-| XLM price cached separately from balances | Balance fetches happen every 30-60s per wallet. XLM price from a price oracle changes far less frequently. Caching the price for 60s avoids calling the price API for every balance refresh of every wallet. |
+| USDC price cached separately from balances | Balance fetches happen every 30-60s per wallet. USDC price from a price oracle changes far less frequently. Caching the price for 60s avoids calling the price API for every balance refresh of every wallet. |
 
 **Where future optimization yields highest ROI:**
 - **TanStack Query cache persistence across wallet switches:** Currently each wallet gets its own query cache key. If user flips between two wallets frequently, the second wallet's data is always a cache hit after first fetch. This is already optimal for the common 2-3 wallet case.
@@ -1201,8 +1201,8 @@ For every file in sections 1.2 and 1.3:
 
 | # | Test | What It Verifies |
 |---|---|---|
-| 12 | `fetches and displays balances for multiple wallets` | 3 wallets in store → 3 Horizon API calls mocked → component renders 3 cards each with: wallet name, XLM balance, USD equivalent, token list → loading state shown during fetch → error state shown for failed fetch (per-wallet, not full component) |
-| 13 | `handles wallet with no Stellar account yet` | Horizon API returns 404 (account not found) → balance card shows "Account not funded" with "Fund on testnet" link (testnet) or "Deposit XLM" CTA (mainnet) |
+| 12 | `fetches and displays balances for multiple wallets` | 3 wallets in store → 3 Horizon API calls mocked → component renders 3 cards each with: wallet name, USDC balance, USD equivalent, token list → loading state shown during fetch → error state shown for failed fetch (per-wallet, not full component) |
+| 13 | `handles wallet with no Arc account yet` | Horizon API returns 404 (account not found) → balance card shows "Account not funded" with "Fund on testnet" link (testnet) or "Deposit USDC" CTA (mainnet) |
 
 **Multi-wallet store enhancement test scenarios (2 tests):**
 
@@ -1223,7 +1223,7 @@ For every file in sections 1.2 and 1.3:
 
 | Test | Mock or Real | Plan for Real Testing |
 |---|---|---|
-| Switch → create circle → contribute | Mocked adapters | Before release: test with real Freighter + real Lobstr (WC2) on Stellar testnet. Create circle as wallet A, switch to wallet B, contribute to same circle. Verify on-chain. |
+| Switch → create circle → contribute | Mocked adapters | Before release: test with real Freighter + real Lobstr (WC2) on Arc testnet. Create circle as wallet A, switch to wallet B, contribute to same circle. Verify on-chain. |
 | Concurrent operations | Real store, mocked adapters | Before release: test with two real adapters (Freighter + xBull). Disconnect xBull while Freighter is mid-sign. Verify graceful handling. |
 | Session survival across refresh | Real localStorage, mocked restore | Before release: connect 3 real wallets (Freighter + Lobstr/WC2 + passkey if Phase 3 complete), refresh page, verify all 3 restore and active wallet is correct. |
 
@@ -1241,14 +1241,14 @@ For every file in sections 1.2 and 1.3:
 | # | Scenario | Expected Behavior | Status |
 |---|---|---|---|
 | 1 | User connects 10 wallets (max) then tries to connect an 11th | Error: "Maximum of 10 wallets connected. Disconnect one first." | PENDING |
-| 2 | User connects same public key via different adapter (Freighter + Lobstr controlling same Stellar account) | Warning: "Wallet GABC...123 is already connected via Freighter. Connect anyway?" — duplicate supported (same key, different adapter) but user warned | PENDING |
+| 2 | User connects same public key via different adapter (Freighter + Lobstr controlling same Arc account) | Warning: "Wallet GABC...123 is already connected via Freighter. Connect anyway?" — duplicate supported (same key, different adapter) but user warned | PENDING |
 | 3 | User opens account switcher, tab loses focus, comes back | Switcher dropdown remains open. Click outside closes it. No state corruption. | PENDING |
 | 4 | User rapidly switches wallets 5 times in 1 second | Last switch wins (debounced internally). All intermediate switches fire and complete but only final state rendered. No React batching issues. | PENDING |
 | 5 | User disconnects active wallet while sign prompt is open | Sign prompt detects active wallet disconnect → auto-closes with "Wallet disconnected during signing" message → returns to previous page | PENDING |
 | 6 | User clicks browser back during sign prompt | beforeunload event fires: "You have a pending signature. Leave anyway?" → if user confirms, sign prompt is abandoned, adapter handles cleanup | PENDING |
 | 7 | User switches browser tabs while WC2 sign request pending | WC2 relay tracks session across tabs. Sign request still pending in wallet app. User returns to original tab → sign prompt still open → wallet approval/signature arrives normally | PENDING |
 | 8 | User's localStorage is full, wallet state persist fails | Warning logged to console. Session works for this tab only. On page refresh, wallets lost (must reconnect). Error shown: "Could not save your wallet session. Your wallets will disconnect when you close this tab." | PENDING |
-| 9 | User has wallet on mainnet, Moistello routes to testnet pages | Network mismatch detected. Wallet settings shows "Mainnet" badge. If user navigates to mainnet-only page, shows prompt to switch network. | PENDING |
+| 9 | User has wallet on mainnet, Deodes routes to testnet pages | Network mismatch detected. Wallet settings shows "Mainnet" badge. If user navigates to mainnet-only page, shows prompt to switch network. | PENDING |
 | 10 | User renames wallet to empty string | Validation prevents empty alias. Falls back to adapter name ("Freighter", "Lobstr"). | PENDING |
 | 11 | Migration bridge runs when user has NO legacy session | No-op. migrationCompleted = true. No wallet entries created. User sees empty wallet settings page. | PENDING |
 | 12 | User connects wallet, browser crashes, reopens | On reopen, adapter attempts session restore. If restore succeeds, wallet reappears. If restore fails, wallet reconnects via user-initiated connect. | PENDING |
@@ -1306,13 +1306,13 @@ USER HAS 3 CONNECTED WALLETS — SWITCHES TO A DIFFERENT ONE
     │   │   │ Connected Wallets                    │
     │   │   │                                      │
     │   │   │ ✓ 🦊 Freighter                       │
-    │   │   │    GABC...XYZ   125.5 XLM ($42.13)   │
+    │   │   │    GABC...XYZ   125.5 USDC ($42.13)   │
     │   │   │                                      │
     │   │   │   📱 Lobstr                           │
-    │   │   │    GDEF...789   450.0 XLM ($151.00)  │
+    │   │   │    GDEF...789   450.0 USDC ($151.00)  │
     │   │   │                                      │
     │   │   │   🔐 Passkey                          │
-    │   │   │    GHIJ...012   0.0 XLM               │
+    │   │   │    GHIJ...012   0.0 USDC               │
     │   │   │                                      │
     │   │   │ ─────────────────────────────        │
     │   │   │ + Connect Another Wallet             │
@@ -1326,7 +1326,7 @@ USER HAS 3 CONNECTED WALLETS — SWITCHES TO A DIFFERENT ONE
     │   ├─ Dashboard content re-fetches for Lobstr wallet:
     │   │   ├─ Circles list updates (Lobstr's circles)
     │   │   ├─ Contribution history updates
-    │   │   └─ MoiScore updates
+    │   │   └─ DeoScore updates
     │   └─ Toast briefly: "Switched to Lobstr" (300ms, auto-dismiss)
     │
     └─ User is now operating as Lobstr wallet
@@ -1352,7 +1352,7 @@ USER CONTRIBUTES TO A CIRCLE — ANY WALLET CAN SIGN
     │   ┌──────────────────────────────────────────┐
     │   │ Contribute to "Community Fund"           │
     │   │                                          │
-    │   │ Amount: [  50  ] XLM                     │
+    │   │ Amount: [  50  ] USDC                     │
     │   │                                          │
     │   │ Signing with: 🦊 Freighter (GABC...XYZ)   │
     │   │ [Switch wallet for this transaction?]    │
@@ -1379,10 +1379,10 @@ USER CONTRIBUTES TO A CIRCLE — ANY WALLET CAN SIGN
     │   │   │ ────────────────────                 │
     │   │   │ From:  GDEF...789                    │
     │   │   │ Type:  Payment                       │
-    │   │   │ Send:  50 XLM                        │
+    │   │   │ Send:  50 USDC                        │
     │   │   │ To:    Community Fund (GXYZ...)      │
-    │   │   │ Fee:   0.00001 XLM                   │
-    │   │   │ Net:   Stellar Testnet               │
+    │   │   │ Fee:   0.00001 USDC                   │
+    │   │   │ Net:   Arc Testnet               │
     │   │   │                                      │
     │   │   │ Check your phone and approve in      │
     │   │   │ Lobstr.                              │
@@ -1413,7 +1413,7 @@ USER MANAGES CONNECTED WALLETS
         │ ┌────────────────────────────────────────┐     │
         │ │ 🦊 Freighter                     Active │     │
         │ │    GABC...XYZ                            │     │
-        │ │    125.5 XLM ($42.13)                   │     │
+        │ │    125.5 USDC ($42.13)                   │     │
         │ │    Connected: 2 hours ago                │     │
         │ │    [ Rename: "Main Account"        ]    │     │
         │ │    [ Disconnect ]                       │     │
@@ -1422,7 +1422,7 @@ USER MANAGES CONNECTED WALLETS
         │ ┌────────────────────────────────────────┐     │
         │ │ 📱 Lobstr                                   │     │
         │ │    GDEF...789                               │     │
-        │ │    450.0 XLM ($151.00)                      │     │
+        │ │    450.0 USDC ($151.00)                      │     │
         │ │    Connected: 30 minutes ago                 │     │
         │ │    [ Rename: "Mobile Wallet"          ]    │     │
         │ │    [ Disconnect ]                           │     │
@@ -1431,7 +1431,7 @@ USER MANAGES CONNECTED WALLETS
         │ ┌────────────────────────────────────────┐     │
         │ │ 🔐 Passkey                         Not     │     │
         │ │    GHIJ...012                    Funded │     │
-        │ │    0.0 XLM                               │     │
+        │ │    0.0 USDC                               │     │
         │ │    Connected: 5 minutes ago               │     │
         │ │    [ Fund on Testnet ]                    │     │
         │ │    [ Disconnect ]                         │     │
@@ -1468,7 +1468,7 @@ USER MANAGES CONNECTED WALLETS
 |---|---|
 | Page initial load (no wallets) | Full-page skeleton: grey card placeholders → resolve to "Connect a wallet" CTA |
 | Page initial load (wallets restoring) | Full-page skeleton → header shows pulsing wallet indicator → resolves to actual wallet |
-| Account switcher opening (balance snippets loading) | Dropdown shows wallet entries immediately (name + address known) → balance area shows pulsing placeholder "—.—— XLM" → resolves to actual balance (<200ms typically) |
+| Account switcher opening (balance snippets loading) | Dropdown shows wallet entries immediately (name + address known) → balance area shows pulsing placeholder "—.—— USDC" → resolves to actual balance (<200ms typically) |
 | Wallet switch (cold data) | Dashboard content shows skeleton cards for circles, contributions → resolves as data arrives |
 | Balance refresh (auto or manual) | Balance card shows subtle shimmer overlay on balance numbers → numbers update in-place (no layout shift) |
 | Sign prompt opening | Modal appears with transaction summary immediately → loading state only after "Approve" click: spinner + adapter-specific message ("Waiting for confirmation in Lobstr...") |
@@ -1508,7 +1508,7 @@ USER MANAGES CONNECTED WALLETS
       Press Enter to switch wallet. 3 wallets connected."
     - Dropdown open: aria-label="Wallet switcher" role="listbox"
     - Each wallet entry: role="option" aria-selected="true/false"
-    - Balance snippet: aria-label="Balance: 125.5 XLM, approximately 42 dollars"
+    - Balance snippet: aria-label="Balance: 125.5 USDC, approximately 42 dollars"
     - Sign prompt modal: aria-labelledby="sign-prompt-title" 
       aria-describedby="sign-prompt-summary"
     - Transaction summary: role="region" aria-label="Transaction details"
@@ -1567,7 +1567,7 @@ USER MANAGES CONNECTED WALLETS
       timeout (Phase 1-4 implementations).
     Offline: No new degradation — Phases 1-4 already handle offline gracefully.
       Account switcher works fully (local state). Balance shows "Offline". 
-      Sign operations require wallet's connectivity (not Moistello's).
+      Sign operations require wallet's connectivity (not Deodes's).
     Spotty WiFi: Balance fetches use retry (up to 3 attempts with exponential backoff).
       Switcher opens with cached balance data (last successful fetch).
 
@@ -1638,7 +1638,7 @@ Locales updated/added for Phase 5 (6 languages: en, fr, sw, es, pt, hi):
 | `wallet.sign.cancelled` | "Transaction cancelled." | Rejection toast |
 | `wallet.balance.title` | "Wallet Balances" | BalanceDisplay section title |
 | `wallet.balance.per_wallet` | "{walletName} Balance" | Per-wallet balance heading |
-| `wallet.balance.xlm` | "{amount} XLM" | XLM balance display |
+| `wallet.balance.xlm` | "{amount} USDC" | USDC balance display |
 | `wallet.balance.usd` | "≈ ${amount} USD" | USD equivalent display |
 | `wallet.balance.tokens` | "Tokens" | Token list heading |
 | `wallet.balance.retry` | "Retry" | Balance fetch retry button |

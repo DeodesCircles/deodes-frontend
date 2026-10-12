@@ -46,7 +46,7 @@ export const OG_IMAGE = {
   url: "/logo.jpg",
   width: 1200,
   height: 630,
-  alt: "Moistello — decentralized savings circles on Stellar",
+  alt: "Deodes — decentralized savings circles on Arc",
 }
 
 /** Turn a route path into the absolute URL a social scraper should cache. */

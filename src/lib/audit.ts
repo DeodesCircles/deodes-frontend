@@ -12,7 +12,7 @@ export interface AuditEntry {
   ipHash?: string
 }
 
-const AUDIT_STORAGE_KEY = "moistello_audit_trail"
+const AUDIT_STORAGE_KEY = "deodes_audit_trail"
 const MAX_ENTRIES = 1000
 
 export function logAuditEvent(entry: Omit<AuditEntry, "id" | "timestamp">): void {

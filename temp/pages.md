@@ -1,4 +1,4 @@
-# Moistello V1 — All Pages (Updated)
+# Deodes V1 — All Pages (Updated)
 
 ## Legend
 - ✅ = Built (56 routes)
@@ -9,12 +9,12 @@
 ## Existing Pages (56 routes)
 
 ### Auth
-- `/` — Landing page promoting passkey-based decentralized savings circles on Stellar.
+- `/` — Landing page promoting passkey-based decentralized savings circles on Arc.
 - `/login` — Sign in with passkey biometrics; redirects to register if no credential stored.
-- `/register` — Create passkey, set profile, sign message, auto-create Stellar wallet.
+- `/register` — Create passkey, set profile, sign message, auto-create Arc wallet.
 
 ### Dashboard
-- `/dashboard` — Overview of active circles, contributions, payouts, and MoiScore.
+- `/dashboard` — Overview of active circles, contributions, payouts, and DeoScore.
 - `/contributions` — Paginated list of your contributions across all circles.
 - `/payouts` — Paginated list of your received payouts across all circles.
 
@@ -57,11 +57,11 @@
 - `/settings/savings` — Savings goals with target amounts, progress bars, round-ups toggle.
 
 ### Static Pages
-- `/about` — Mission, why Stellar, open source, contact information and team.
+- `/about` — Mission, why Arc, open source, contact information and team.
 - `/how-it-works` — Five-step guide to savings circles with payout type explanations.
-- `/faq` — Frequently asked questions about circles, passkey auth, MoiScore, zero fees.
+- `/faq` — Frequently asked questions about circles, passkey auth, DeoScore, zero fees.
 - `/privacy` — Privacy policy covering wallet addresses, on-chain data, user rights.
-- `/terms` — Terms of service for decentralized savings platform on Stellar.
+- `/terms` — Terms of service for decentralized savings platform on Arc.
 - `/status` — System status dashboard showing frontend, API, and database uptime.
 - `/developers` — API reference, quick start, endpoint list, contributor information.
 - `/become-a-contributor` — Apply to contribute as developer, designer, writer, community builder.
@@ -109,8 +109,8 @@
 
 ### Wallet
 - `/wallet/transactions` — Full transaction history with filters by type, date, and circle.
-- `/wallet/transactions/:id` — Single transaction detail with hash, status, and Stellar explorer link.
-- `/wallet/addresses` — Manage connected Stellar addresses, set primary, add or remove.
+- `/wallet/transactions/:id` — Single transaction detail with hash, status, and Arc explorer link.
+- `/wallet/addresses` — Manage connected Arc addresses, set primary, add or remove.
 
 ### Notifications
 - `/notifications/archive` — All read notifications with sort, filter, and clear archive.
@@ -141,7 +141,7 @@
 
 ### Help & Support
 - `/help/circles` — Guide explaining ROSCA model, circle lifecycle, payout types, rules.
-- `/help/wallet` — Stellar wallet guide, passkey security tips, troubleshooting common issues.
+- `/help/wallet` — Arc wallet guide, passkey security tips, troubleshooting common issues.
 - `/help/glossary` — A-Z searchable glossary of all platform terms and definitions.
 
 ### Onboarding & Education

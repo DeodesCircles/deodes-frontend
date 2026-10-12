@@ -29,7 +29,7 @@ export function evaluatePasswordStrength(password: string): PasswordStrengthResu
   // Common weak patterns check
   const commonWeak = [
     "password", "123456", "12345678", "qwerty", "admin", "welcome",
-    "moistello", "letmein", "monkey", "dragon", "123123", "abc123"
+    "deodes", "letmein", "monkey", "dragon", "123123", "abc123"
   ]
 
   const lower = password.toLowerCase()

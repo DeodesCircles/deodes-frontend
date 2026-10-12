@@ -53,7 +53,7 @@ export function ReputationHistory({ history }: ReputationHistoryProps) {
           preserveAspectRatio="none"
           className="h-44 w-full overflow-visible"
           role="img"
-          aria-label="MoiScore history chart"
+          aria-label="DeoScore history chart"
         >
           {[25, 50, 75].map((y) => (
             <line

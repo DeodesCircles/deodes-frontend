@@ -9,7 +9,7 @@ export function UploadHeader({ onLogout }: UploadHeaderProps) {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 px-3 pt-3">
       <div className="bg-card/90 border border-white/10 rounded-xl h-14 flex items-center justify-between px-4 max-w-4xl mx-auto">
-        <Link href="/" className="font-heading font-bold text-lg gradient-text-extended" aria-label="Moistello home">
+        <Link href="/" className="font-heading font-bold text-lg gradient-text-extended" aria-label="Deodes home">
           Moistello
         </Link>
         <div className="flex items-center gap-3">

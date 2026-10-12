@@ -13,7 +13,7 @@ Write your content in **Markdown**. You can use:
 
 - **Bold text** for emphasis
 - *Italic text* for secondary emphasis
-- [Links](https://moistello.io) to other pages
+- [Links](https://deodes.io) to other pages
 - Images: ![Alt text](https://example.com/image.png)
 
 ## Section 2
@@ -53,4 +53,4 @@ Horizontal rules separate sections.
 - The **filename** becomes the route: `my-page.md` → `/p/my-page`
 - Use **frontmatter** (`---` block at top) for title and description
 - The system auto-extracts these for SEO
-- Your page gets the same glass theme as the rest of Moistello
+- Your page gets the same glass theme as the rest of Deodes

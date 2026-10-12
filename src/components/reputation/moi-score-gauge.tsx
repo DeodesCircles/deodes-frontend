@@ -50,14 +50,14 @@ export function MoiScoreGauge({ score, className }: MoiScoreGaugeProps) {
               cy="100"
               r={radius}
               fill="none"
-              stroke="url(#moi-score-gradient)"
+              stroke="url(#deo-score-gradient)"
               strokeLinecap="round"
               strokeWidth="12"
               strokeDasharray={circumference}
               strokeDashoffset={offset}
             />
             <defs>
-              <linearGradient id="moi-score-gradient" x1="0" y1="0" x2="1" y2="1">
+              <linearGradient id="deo-score-gradient" x1="0" y1="0" x2="1" y2="1">
                 <stop offset="0%" stopColor="#8b5cf6" />
                 <stop offset="55%" stopColor="#22d3ee" />
                 <stop offset="100%" stopColor="#34d399" />

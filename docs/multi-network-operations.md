@@ -5,7 +5,7 @@
 Each network must carry:
 - RPC endpoint
 - Optional Horizon endpoint
-- Stellar network passphrase
+- Arc network passphrase
 - Contract IDs deployed on that network
 
 Mainnet and testnet contract IDs must never be reused interchangeably.

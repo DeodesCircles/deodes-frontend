@@ -5,7 +5,7 @@ order: 2
 
 # Smart Contracts
 
-Moistello's smart contracts are built on Soroban (Stellar's smart contract platform). The system consists of three contracts deployed on-chain.
+Deodes's smart contracts are built on Arc (Arc's smart contract platform). The system consists of three contracts deployed on-chain.
 
 ## Contract Architecture
 
@@ -21,7 +21,7 @@ Each savings circle is a separate contract instance that manages:
 
 ### Reputation Contract
 
-Tracks and stores MoiScore data for each member, including:
+Tracks and stores DeoScore data for each member, including:
 - Contribution streaks
 - Circle completions
 - Total contributed volume
@@ -30,15 +30,15 @@ Tracks and stores MoiScore data for each member, including:
 ### Wallet Contract
 
 Manages the on-chain wallet lifecycle:
-- Creates new Stellar wallets for each member
-- Funds new wallets with 2 XLM from the master pool
+- Creates new Arc wallets for each member
+- Funds new wallets with 2 USDC from the master pool
 - Tracks wallet ownership and encryption metadata
 
 ## Integration
 
-Contracts are deployed using the Soroban CLI. Contact support for SDK access and integration guidelines.
+Contracts are deployed using the Arc CLI. Contact support for SDK access and integration guidelines.
 
 ```bash
-# Soroban CLI installation
-cargo install --locked soroban-cli
+# Arc CLI installation
+cargo install --locked arc-cli
 ```

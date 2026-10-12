@@ -175,7 +175,7 @@ export default function TransactionDetailPage() {
               <button type="button" onClick={copyHash} className="text-muted-foreground hover:text-foreground transition-colors" aria-label={copied ? "Transaction hash copied" : "Copy transaction hash"}>
                 {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
               </button>
-              <a href={getExplorerTxUrl(tx.txnHash, network)} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-aurora-cyan transition-colors" aria-label="Open transaction in Stellar Explorer">
+              <a href={getExplorerTxUrl(tx.txnHash, network)} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-aurora-cyan transition-colors" aria-label="Open transaction in Arc Explorer">
                 <ExternalLink className="h-3.5 w-3.5" />
               </a>
             </div>

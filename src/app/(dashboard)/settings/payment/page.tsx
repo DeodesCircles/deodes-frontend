@@ -105,7 +105,7 @@ export default function PaymentSettingsPage() {
           label={t("payment.preferredCurrency")}
           options={[
             { value: "NGN", label: "NGN - Nigerian Naira" },
-            { value: "USDC", label: "USDC - Stellar USD" },
+            { value: "USDC", label: "USDC - Arc USD" },
           ]}
           value={currency}
           onChange={setCurrency}

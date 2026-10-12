@@ -10,7 +10,7 @@ import { Bookmark, Clock, Users, ExternalLink, Trash2 } from "lucide-react"
 import { useCircle } from "@/hooks/use-circles"
 import { formatCurrency } from "@/lib/formatters"
 
-const SAVED_KEY = "moistello_saved_circles"
+const SAVED_KEY = "deodes_saved_circles"
 
 function getSavedIds(): string[] {
   try { return JSON.parse(localStorage.getItem(SAVED_KEY) || "[]") } catch { return [] }

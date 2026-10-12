@@ -1,6 +1,6 @@
 # Accessibility
 
-Moistello targets WCAG 2.1 AA. Interactive controls must have an accessible name, remain operable with a keyboard, expose their state, and provide a visible focus indicator.
+Deodes targets WCAG 2.1 AA. Interactive controls must have an accessible name, remain operable with a keyboard, expose their state, and provide a visible focus indicator.
 
 ## Authoring checklist
 

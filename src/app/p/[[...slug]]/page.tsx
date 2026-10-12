@@ -136,8 +136,8 @@ export async function generateMetadata({
 
   if (!fs.existsSync(filePath)) {
     return {
-      title: "Page Not Found — Moistello",
-      description: "That page does not exist on Moistello.",
+      title: "Page Not Found — Deodes",
+      description: "That page does not exist on Deodes.",
       robots: { index: false, follow: false },
     };
   }
@@ -160,7 +160,7 @@ export async function generateMetadata({
       type: "article",
       locale: "en_US",
       url: absoluteUrl(canonical),
-      siteName: "Moistello",
+      siteName: "Deodes",
       title: `${pageTitle} — Moistello`,
       description: summary,
       images: [OG_IMAGE],

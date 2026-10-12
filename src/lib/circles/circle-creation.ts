@@ -69,7 +69,7 @@ export function validateCircleStep(
       return { success: false, errors }
     }
     if (formData.circleType === "premium" && userMoiScore < 50) {
-      errors.submit = "Premium circles require at least 50 MoiScore"
+      errors.submit = "Premium circles require at least 50 DeoScore"
       return { success: false, errors }
     }
     return { success: true, errors: {} }

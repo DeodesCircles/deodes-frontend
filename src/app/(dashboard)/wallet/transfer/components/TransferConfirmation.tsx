@@ -32,7 +32,7 @@ const STATUS_META: Record<
   { label: string; sublabel: string; iconClass: string; ringClass: string }
 > = {
   pending: {
-    label: "Confirming on Stellar…",
+    label: "Confirming on Arc…",
     sublabel: "Usually takes a few seconds. Stay on this page.",
     iconClass: "text-amber-400",
     ringClass: "bg-amber-400/10 border-amber-400/20",
@@ -45,7 +45,7 @@ const STATUS_META: Record<
   },
   failed: {
     label: "Transaction Failed",
-    sublabel: "The Stellar network rejected this transaction.",
+    sublabel: "The Arc network rejected this transaction.",
     iconClass: "text-red-400",
     ringClass: "bg-red-500/10 border-red-500/20",
   },
@@ -200,7 +200,7 @@ export function TransferConfirmation({
               href={explorerUrl}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="View transaction on Stellar Explorer"
+              aria-label="View transaction on Arc Explorer"
               className="shrink-0 text-muted-foreground transition-colors hover:text-aurora-cyan"
             >
               <ExternalLink className="h-3.5 w-3.5" />

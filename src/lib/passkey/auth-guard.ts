@@ -22,7 +22,7 @@ function readJsonFile<T>(filePath: string): T[] {
 }
 
 export function getAuthenticatedUser(req: NextRequest): AuthenticatedUser | null {
-  const cookie = req.cookies.get("moistello_session")
+  const cookie = req.cookies.get("deodes_session")
   if (!cookie?.value) return null
 
   const sessions = readJsonFile<{ token: string; userId: string; createdAt: number }>(SESSIONS_FILE)

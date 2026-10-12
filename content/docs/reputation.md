@@ -1,15 +1,15 @@
 ---
-title: Reputation (MoiScore)
+title: Reputation (DeoScore)
 order: 4
 ---
 
-# MoiScore — Platform Reputation
+# DeoScore — Platform Reputation
 
-MoiScore is your portable reputation on Moistello. It's a 0-1000 score that tracks your reliability across all savings circles. The score is computed server-side from on-chain contribution data.
+DeoScore is your portable reputation on Deodes. It's a 0-1000 score that tracks your reliability across all savings circles. The score is computed server-side from on-chain contribution data.
 
 ## Score Components
 
-MoiScore is calculated from four factors:
+DeoScore is calculated from four factors:
 
 | Factor | Weight | Description |
 |---|---|---|
@@ -38,8 +38,8 @@ MoiScore is calculated from four factors:
 
 ## Score Transparency
 
-MoiScore is computed server-side using blockchain data and is visible on your public profile. This creates a trust network across the entire ecosystem.
+DeoScore is computed server-side using blockchain data and is visible on your public profile. This creates a trust network across the entire ecosystem.
 
 ## Future: Cross-Platform Reputation
 
-Future integrations will allow your MoiScore to be recognized by other Stellar applications, creating a universal reputation system for the Stellar ecosystem.
+Future integrations will allow your DeoScore to be recognized by other Arc applications, creating a universal reputation system for the Arc ecosystem.

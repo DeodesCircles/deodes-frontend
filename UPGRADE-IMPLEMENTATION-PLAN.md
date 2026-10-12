@@ -1,4 +1,4 @@
-# Moistello — Outstanding Upgrades: Systematic Implementation Plan
+# Deodes — Outstanding Upgrades: Systematic Implementation Plan
 
 ## Dependency Graph (What Blocks What)
 
@@ -24,7 +24,7 @@
 └─────────────────────────────────────────────────────────────┘
                             │
 ┌───────────────────────────▼─────────────────────────────────┐
-│ Phase 6-9: Contracts Governance (Rust/Soroban)              │
+│ Phase 6-9: Contracts Governance (Rust/Arc)              │
 │                                                              │
 │  Phase 6: Scoring Upgrade (reputation-registry)             │
 │  Phase 7: Circle Integration (circle contract)               │
@@ -198,7 +198,7 @@ Sections:
        - Adapter icon + name
        - Public key (truncated, copyable)
        - Connection status badge (connected/reconnecting/disconnected/error)
-       - Balance (XLM + USDC)
+       - Balance (USDC + USDC)
        - Last connected timestamp
        - "Disconnect" button with confirmation dialog
        - "Rename" button (saves alias to localStorage)
@@ -320,7 +320,7 @@ Add these new functions (pseudocode from uxupgrade.md):
 
 ```
 fn calculate_collateral(env: &Env, member: &Address) -> u32:
-  Get MoiScore for member
+  Get DeoScore for member
   Match tier:
     Diamond (801-1000) → 0 bips (0%)
     Platinum (601-800) → 100 bips (1%)  
@@ -391,7 +391,7 @@ fn apply_inactivity_decay(env, member) → u32:
 ## PHASE 7 — Contracts: Circle Integration (uxupgrade.md Phase C)
 
 ### What It Does
-Updates the circle contract to ENFORCE the tier-based limits from Phase 6. When a user creates or joins a circle, the contract checks their MoiScore tier and enforces the limits.
+Updates the circle contract to ENFORCE the tier-based limits from Phase 6. When a user creates or joins a circle, the contract checks their DeoScore tier and enforces the limits.
 
 ### Implementation Details
 
@@ -467,7 +467,7 @@ CollateralRequired       = 18
 ## PHASE 8 — Contracts: Governance Contract (uxupgrade.md Phase B)
 
 ### What It Does
-Creates an entirely NEW Soroban contract — the Governance system. This is the most complex upgrade: proposal creation, MOI token voting, on-chain execution.
+Creates an entirely NEW Arc contract — the Governance system. This is the most complex upgrade: proposal creation, MOI token voting, on-chain execution.
 
 ### 8.1 — New Contract Structure
 ```
@@ -523,7 +523,7 @@ All of these are governable through proposals:
 - Collateral percentages per tier
 - Circle size limits per tier
 - Contribution ceilings per tier
-- MoiScore tier thresholds
+- DeoScore tier thresholds
 - Platform fee
 - Proposal deposit amount
 - Voting period length
@@ -555,7 +555,7 @@ Builds the governance voting interface in the frontend. This includes the tier p
 File: src/components/reputation/tier-card.tsx (NEW)
 
 Shows at the top of /reputation page:
-  - Current MoiScore (large gradient text)
+  - Current DeoScore (large gradient text)
   - Tier badge (Bronze/Silver/Gold/Platinum/Diamond) with glow
   - Progress bar to next tier
   - "Points to next tier: XX"
@@ -619,7 +619,7 @@ Writes comprehensive tests that exercise the FULL governance + reputation loop e
 
 ### 10.1 — Backend Integration Tests
 ```
-File: moistello-backend/tests/integration/governance_test.go
+File: deodes-backend/tests/integration/governance_test.go
 
 Tests:
   - TestGovernance_CreateProposal
