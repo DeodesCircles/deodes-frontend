@@ -26,6 +26,7 @@ import {
   ShieldQuestionMark,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { ScrollToTop } from "@/components/shared/scroll-to-top";
 import { cn } from "@/lib/cn";
 import { useAuthStore } from "@/stores/auth-store";
 import { useTranslate } from "@/lib/locale/context";
@@ -484,6 +485,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
 
       {/* ════════════════ PAGE CONTENT ════════════════ */}
       <main id="main-content" tabIndex={-1} className="pt-20">{children}</main>
+      <ScrollToTop />
 
       {/* ════════════════ FAT FOOTER (agentsdb root-footer pattern) ════════════════ */}
       <footer className="mt-20 border-t border-white/[0.06] bg-black/[0.4]">
