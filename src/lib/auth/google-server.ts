@@ -40,6 +40,12 @@ export function googleRedirectUri(): string {
   return `${appOrigin()}/api/auth/google/callback`;
 }
 
+/** Public origin for post-OAuth redirects (never the internal host). */
+export function publicOrigin(requestUrl: string): string {
+  void requestUrl;
+  return appOrigin();
+}
+
 export function newState(): string {
   return crypto.randomBytes(24).toString("base64url");
 }

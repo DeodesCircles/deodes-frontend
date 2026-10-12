@@ -5,6 +5,7 @@ import {
   buildAuthUrl,
   googleConfigured,
   newState,
+  publicOrigin,
 } from "@/lib/auth/google-server"
 
 export const runtime = "nodejs"
@@ -12,7 +13,7 @@ export const runtime = "nodejs"
 /** Begin Google sign-in: set a CSRF state cookie and redirect to Google. */
 export async function GET(request: NextRequest) {
   if (!googleConfigured()) {
-    const url = new URL("/login", request.url)
+    const url = new URL("/login", publicOrigin(request.url))
     url.searchParams.set("error", "google-not-configured")
     return NextResponse.redirect(url)
   }

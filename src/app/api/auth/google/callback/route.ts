@@ -3,6 +3,7 @@ import {
   GOOGLE_STATE_COOKIE,
   exchangeCode,
   mintSessionJwt,
+  publicOrigin,
   splitState,
   verifyIdToken,
 } from "@/lib/auth/google-server"
@@ -18,7 +19,7 @@ import {
 import crypto from "crypto"
 
 function fail(request: NextRequest, reason: string): NextResponse {
-  const url = new URL("/login", request.url)
+  const url = new URL("/login", publicOrigin(request.url))
   url.searchParams.set("error", reason)
   const response = NextResponse.redirect(url)
   response.cookies.set(GOOGLE_STATE_COOKIE, "", { path: "/", maxAge: 0 })
@@ -45,7 +46,7 @@ export async function GET(request: NextRequest) {
     const profile = await verifyIdToken(tokens.id_token)
     const session = mintSessionJwt(profile)
 
-    const response = NextResponse.redirect(new URL(next, request.url))
+    const response = NextResponse.redirect(new URL(next, publicOrigin(request.url)))
     response.cookies.set(ACCESS_TOKEN_COOKIE, session, {
       ...SESSION_COOKIE_OPTIONS,
       maxAge: ACCESS_TOKEN_MAX_AGE,
