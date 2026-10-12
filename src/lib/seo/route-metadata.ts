@@ -119,6 +119,60 @@ export const PUBLIC_ROUTES: readonly RouteSeo[] = [
     indexable: true,
   },
   {
+    path: "/explore",
+    title: "Explore Circles — Deodes",
+    description:
+      "Browse public, private, community and premium savings circles on Deodes. See circle types and join from the app.",
+    ogTitle: "Explore savings circles on Deodes",
+    ogDescription:
+      "Public, private, community and premium ROSCA circles with USDC on Arc. Find your circle and start saving.",
+    keywords: [
+      "deodes",
+      "explore",
+      "savings circles",
+      "public circles",
+      "private circles",
+      "community circles",
+      "rosca",
+    ],
+    indexable: true,
+  },
+  {
+    path: "/payout-modes",
+    title: "Payout Modes — Deodes",
+    description:
+      "Random, fixed-order, auction and vote-based payouts explained. How each DEODES circle distributes its pool.",
+    ogTitle: "Four payout modes on Deodes",
+    ogDescription:
+      "VRF draws, fixed sequences, chit-fund auctions and community votes — every payout rule, enforced on-chain.",
+    keywords: [
+      "deodes",
+      "payout",
+      "chit fund",
+      "auction",
+      "rosca payout",
+      "vrf",
+    ],
+    indexable: true,
+  },
+  {
+    path: "/deoscore",
+    title: "DeoScore Reputation — Deodes",
+    description:
+      "DeoScore is portable 0–1000 savings reputation: streak, completions, volume and recency, plus governance weight.",
+    ogTitle: "DeoScore — reputation that follows your wallet",
+    ogDescription:
+      "On-time payments build on-chain credit that unlocks bigger circles, lower collateral and governance votes.",
+    keywords: [
+      "deodes",
+      "deoscore",
+      "reputation",
+      "credit score",
+      "governance",
+    ],
+    indexable: true,
+  },
+  {
     path: "/how-it-works",
     title: "How It Works — Deodes",
     description:

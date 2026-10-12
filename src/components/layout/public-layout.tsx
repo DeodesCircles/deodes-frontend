@@ -62,23 +62,23 @@ interface NavMenu {
 const iconCls = "h-[18px] w-[18px]";
 
 const CIRCLES_MENU: NavMenu = {
-  label: "Circles",
+  label: "Save",
   groups: [
     {
-      heading: "By access",
+      heading: "Discover",
       items: [
-        { title: "Public circles", description: "Open to anyone meeting the minimum DeoScore.", href: "/circles", icon: <Globe className={iconCls} /> },
-        { title: "Private circles", description: "Invite-only savings with people you trust.", href: "/circles", icon: <Lock className={iconCls} /> },
-        { title: "Community circles", description: "Token-gated circles for DAOs and holders.", href: "/communities", icon: <Users className={iconCls} /> },
-        { title: "Premium circles", description: "Higher limits, collateralized, priority support.", href: "/circles", icon: <Crown className={iconCls} /> },
+        { title: "Explore circles", description: "Browse public, private and community circles.", href: "/explore", icon: <Compass className={iconCls} /> },
+        { title: "Circle types", description: "Permissionless, invite-only, token-gated, premium.", href: "/explore#types", icon: <Globe className={iconCls} /> },
+        { title: "How circles work", description: "Lifecycle, penalties and collateral explained.", href: "/how-it-works", icon: <BookOpen className={iconCls} /> },
       ],
     },
     {
-      heading: "Actions",
+      heading: "Get started",
       items: [
-        { title: "Browse all", description: "Discover open circles across the network.", href: "/circles", icon: <Compass className={iconCls} /> },
-        { title: "Start a circle", description: "Spin up daily, weekly or monthly rounds.", href: "/circles/create", icon: <CirclePlus className={iconCls} /> },
-        { title: "How circles work", description: "Lifecycle, penalties and collateral explained.", href: "/how-it-works", icon: <BookOpen className={iconCls} /> },
+        { title: "Start a circle", description: "Spin up daily, weekly or monthly rounds.", href: "/register", icon: <CirclePlus className={iconCls} /> },
+        { title: "Join with invite", description: "Redeem an organizer's invite code.", href: "/how-it-works", icon: <Lock className={iconCls} /> },
+        { title: "Communities", description: "Save with your DAO or holder group.", href: "/explore#types", icon: <Users className={iconCls} /> },
+        { title: "Premium circles", description: "Higher limits for proven savers.", href: "/explore#types", icon: <Crown className={iconCls} /> },
       ],
     },
   ],
@@ -90,17 +90,17 @@ const EARN_MENU: NavMenu = {
     {
       heading: "Payout modes",
       items: [
-        { title: "Random", description: "Provably-fair VRF draw each round.", href: "/how-it-works", icon: <Dices className={iconCls} /> },
-        { title: "Fixed order", description: "Sequential, pre-defined distribution.", href: "/how-it-works", icon: <ListOrdered className={iconCls} /> },
-        { title: "Auction", description: "Chit-fund bidding for the pool.", href: "/how-it-works", icon: <Gavel className={iconCls} /> },
-        { title: "Vote-based", description: "Community votes the recipient.", href: "/how-it-works", icon: <Vote className={iconCls} /> },
+        { title: "Random", description: "Provably-fair VRF draw each round.", href: "/payout-modes#random", icon: <Dices className={iconCls} /> },
+        { title: "Fixed order", description: "Sequential, pre-defined distribution.", href: "/payout-modes#fixed", icon: <ListOrdered className={iconCls} /> },
+        { title: "Auction", description: "Chit-fund bidding for the pool.", href: "/payout-modes#auction", icon: <Gavel className={iconCls} /> },
+        { title: "Vote-based", description: "Community votes the recipient.", href: "/payout-modes#vote", icon: <Vote className={iconCls} /> },
       ],
     },
     {
       heading: "Reputation",
       items: [
-        { title: "DeoScore", description: "Portable 0–1000 savings reputation.", href: "/reputation", icon: <Trophy className={iconCls} /> },
-        { title: "Governance", description: "Vote on circles and disputes.", href: "/governance", icon: <Landmark className={iconCls} /> },
+        { title: "DeoScore", description: "Portable 0–1000 savings reputation.", href: "/deoscore", icon: <Trophy className={iconCls} /> },
+        { title: "Governance", description: "Vote on circles and disputes.", href: "/deoscore#governance", icon: <Landmark className={iconCls} /> },
         { title: "Developers", description: "Build on the DEODES API.", href: "/developers", icon: <Code className={iconCls} /> },
       ],
     },

@@ -215,7 +215,7 @@ export function LandingContent() {
                 {t("landing.launchApp")} <ArrowRight className="h-5 w-5" />
               </Link>
               <Link
-                href={Routes.CIRCLES}
+                href="/explore"
                 className="holo-border h-14 px-10 rounded-2xl text-lg font-heading font-medium text-foreground inline-flex items-center justify-center glass-strong hover:bg-white/[0.06] transition-all"
               >
                 Explore circles
@@ -311,13 +311,13 @@ export function LandingContent() {
             </div>
             <div className="mt-8 flex flex-wrap gap-4">
               <Link
-                href={Routes.CIRCLES}
+                href="/explore"
                 className="inline-flex items-center gap-2 text-sm font-heading font-semibold hover:opacity-80 transition-all"
               >
                 Browse all circles <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
-                href={Routes.CREATE_CIRCLE}
+                href={Routes.REGISTER}
                 className="inline-flex items-center gap-2 text-sm font-heading font-semibold text-muted-foreground hover:text-foreground transition-all"
               >
                 <CirclePlus className="h-4 w-4" /> Start your own
@@ -397,7 +397,7 @@ export function LandingContent() {
                 every circle and community. High scores unlock bigger circles and lower collateral.
               </p>
               <Link
-                href={Routes.REPUTATION}
+                href="/deoscore"
                 className="mt-6 inline-flex items-center gap-2 rounded-2xl px-6 py-3 text-sm font-heading font-semibold glass-strong hover:bg-white/[0.06] transition-all"
               >
                 <Trophy className="h-4 w-4" /> Check your DeoScore

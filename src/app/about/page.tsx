@@ -9,7 +9,7 @@ export default function AboutPage() {
     <PublicLayout>
       <div className="auroral-mesh min-h-screen">
         <main className="container-premium py-16">
-          <h1 className="holo-text font-heading text-5xl md:text-7xl font-black mb-8">About Moistello</h1>
+          <h1 className="holo-text font-heading text-5xl md:text-7xl font-black mb-8">About Deodes</h1>
           <div className="space-y-6 max-w-3xl">
             <div className="glass-premium rounded-2xl p-8 holo-border border-l-4 border-l-aurora-indigo">
               <h2 className="font-heading text-xl font-semibold mb-3 gradient-text">Our Mission</h2>
