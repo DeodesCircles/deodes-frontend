@@ -144,7 +144,7 @@ export function formatCurrency(
   // a plain number plus the code, because a token has no fiat quote and a
   // currency symbol would imply one.
   if (!ISO_CURRENCY_CODE.test(currency)) {
-    return `${amount.toLocaleString(locale, { maximumFractionDigits: 2 })} ${currency}`
+    return `${amount.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency}`
   }
 
   return new Intl.NumberFormat(locale, {

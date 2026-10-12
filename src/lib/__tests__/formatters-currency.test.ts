@@ -9,12 +9,12 @@ import { formatCurrency } from "../formatters"
 describe("formatCurrency with non-ISO currency codes", () => {
   it("renders USDC instead of throwing", () => {
     expect(() => formatCurrency(100, "USDC")).not.toThrow()
-    expect(formatCurrency(100, "USDC")).toBe("100 USDC")
+    expect(formatCurrency(100, "USDC")).toBe("100.00 USDC")
   })
 
   it("keeps the numeric formatting locale-aware for non-ISO codes", () => {
-    expect(formatCurrency(1234.5, "USDC", "en-US")).toBe("1,234.5 USDC")
-    expect(formatCurrency(1234.5, "USDC", "de-DE")).toBe("1.234,5 USDC")
+    expect(formatCurrency(1234.5, "USDC", "en-US")).toBe("1,234.50 USDC")
+    expect(formatCurrency(1234.5, "USDC", "de-DE")).toBe("1.234,50 USDC")
   })
 
   it("is unchanged for a real ISO currency", () => {

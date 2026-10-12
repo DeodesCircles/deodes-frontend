@@ -196,7 +196,7 @@ describe("CircleInviteModal", () => {
       const textarea = screen.getByPlaceholderText(/Enter member emails or Stellar addresses/i)
 
       await user.type(textarea, `valid@domain.com, ${stellarAddr}, bad-email`)
-      await user.click(screen.getByRole("button", { name: "Import Members" }))
+      await user.click(screen.getByRole("button", { name: /Import \d+ Members/ }))
 
       expect(onBulkImport).toHaveBeenCalledTimes(1)
       expect(onBulkImport).toHaveBeenCalledWith(["valid@domain.com", stellarAddr])
@@ -250,7 +250,7 @@ describe("CircleInviteModal", () => {
 
       await user.upload(fileInput, file)
 
-      expect(screen.getByTestId("summary-text").textContent).toContain("1 valid entries, 1 invalid")
+      expect((await screen.findByTestId("summary-text")).textContent).toContain("1 valid entries, 1 invalid")
       expect(screen.getByText("fileuser@example.com")).toBeDefined()
     })
   })

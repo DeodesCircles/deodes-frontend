@@ -18,7 +18,7 @@ export interface MemberEntryValidation {
   raw: string
   clean: string
   isValid: boolean
-  type?: "email" | "arc"
+  type?: "email" | "stellar"
 }
 
 export function validateMemberEntry(raw: string): MemberEntryValidation {
@@ -30,7 +30,7 @@ export function validateMemberEntry(raw: string): MemberEntryValidation {
     return { raw, clean, isValid: true, type: "email" }
   }
   if (/^G[A-Z2-7]{55}$/.test(clean)) {
-    return { raw, clean, isValid: true, type: "arc" }
+    return { raw, clean, isValid: true, type: "stellar" }
   }
   return { raw, clean, isValid: false }
 }
@@ -238,7 +238,7 @@ export function CircleInviteModal({
             <textarea
               value={csvText}
               onChange={(e) => setCsvText(e.target.value)}
-              placeholder="Enter member emails or Arc addresses (G...), comma or newline separated..."
+              placeholder="Enter member emails or Stellar addresses (G...), comma or newline separated..."
               rows={4}
               className="w-full p-3 text-xs font-mono rounded-xl bg-slate-950/60 border border-white/10 text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-emerald-500/50"
             />
@@ -249,6 +249,7 @@ export function CircleInviteModal({
                 <div className="flex items-center justify-between text-2xs" data-testid="summary-text">
                   <span className="text-emerald-400 flex items-center gap-1 font-semibold">
                     <CheckCircle2 className="h-3 w-3" /> {validEntries.length} valid entries
+                    {invalidEntries.length > 0 ? "," : ""}
                   </span>
                   {invalidEntries.length > 0 && (
                     <span className="text-red-400 flex items-center gap-1 font-semibold">
