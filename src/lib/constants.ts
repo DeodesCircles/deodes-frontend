@@ -4,7 +4,49 @@ export const API_BASE_URL =
 export const WS_URL =
   process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:1100/ws"
 
-/** Stellar network — set NEXT_PUBLIC_STELLAR_NETWORK=mainnet for production. Defaults to "testnet". */
+/** Arc network — set NEXT_PUBLIC_ARC_NETWORK=mainnet for production. Defaults to "testnet". */
+export const ARC_NETWORK: "testnet" | "mainnet" =
+  (process.env.NEXT_PUBLIC_ARC_NETWORK as "testnet" | "mainnet") ?? "testnet"
+
+/**
+ * Arc chain IDs (docs.arc.io/arc/references/connect-to-arc):
+ * mainnet 5042, testnet 5042002.
+ */
+export const ARC_CHAIN_ID: number =
+  Number(process.env.NEXT_PUBLIC_ARC_CHAIN_ID) ||
+  (ARC_NETWORK === "mainnet" ? 5042 : 5042002)
+
+export const ARC_RPC_URL =
+  process.env.NEXT_PUBLIC_ARC_RPC_URL ||
+  (ARC_NETWORK === "mainnet"
+    ? "https://rpc.mainnet.arc.io"
+    : "https://rpc.testnet.arc.io")
+
+export const ARC_EXPLORER_URL =
+  process.env.NEXT_PUBLIC_ARC_EXPLORER_URL ||
+  (ARC_NETWORK === "mainnet"
+    ? "https://explorer.arc.io"
+    : "https://explorer.testnet.arc.io")
+
+export const ARC_FAUCET_URL = "https://faucet.circle.com"
+
+/**
+ * USDC on Arc uses 18 decimals natively (NOT 6) and is the gas token.
+ * Native and ERC-20 USDC are the SAME balance — never show two rows.
+ * See docs.arc.io EVM-differences + connect-to-arc.
+ */
+export const USDC_DECIMALS = 18
+
+/** System emitter logging every native USDC Transfer (EIP-7708). */
+export const ARC_SYSTEM_EMITTER = "0xffffFFFfFFffffffffffffffFfFFFfffFFFfFFfE"
+
+/** Mempool maxFeePerGas floor enforced on Arc (20 Gwei). */
+export const ARC_MIN_MAX_FEE_GWEI = 20
+
+export const DEODES_CONTRACT_ID =
+  process.env.NEXT_PUBLIC_DEODES_CONTRACT_ID || ""
+
+/** LEGACY Stellar network — kept for migration reference. DEODES builds on Arc, not Stellar. */
 export const STELLAR_NETWORK: "testnet" | "mainnet" =
   (process.env.NEXT_PUBLIC_STELLAR_NETWORK as "testnet" | "mainnet") ?? "testnet"
 
@@ -22,22 +64,33 @@ export const USDC_CONTRACT_ID =
   process.env.NEXT_PUBLIC_USDC_CONTRACT_ID ||
   "CAWQBY6LQ6TUKH4H6RDRSFPSZZMEQH7HURB5X4AFTYLA3T4R7SCAORR6"
 
-export const APP_NAME = "Moistello"
+export const APP_NAME = "Deodes"
+export const APP_CHAIN = "Arc" as const
 
 export const SUPPORTED_CURRENCIES = [
   {
     code: "USDC",
-    name: "USD Coin",
+    name: "USD Coin on Arc",
+    icon: "/icons/usdc.svg",
+    decimals: 18,
+    chain: "arc",
+    isNativeGas: true,
+  },
+  {
+    code: "USDC-LEGACY",
+    name: "USD Coin (Stellar legacy)",
     icon: "/icons/usdc.svg",
     decimals: 7,
     issuer: "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5",
+    chain: "stellar-legacy",
   },
   {
-    code: "XLM",
-    name: "Stellar Lumens",
+    code: "XLM-LEGACY",
+    name: "Stellar Lumens (legacy)",
     icon: "/icons/xlm.svg",
     decimals: 7,
-    isNative: true,
+    isNative: false,
+    chain: "stellar-legacy",
   },
 ] as const
 
@@ -62,10 +115,10 @@ export const CIRCLE_TYPES = [
   { value: "premium", label: "Premium" },
 ] as const
 
-export const MOI_SCORE_MAX = 1000
+export const DEO_SCORE_MAX = 1000
 
-/** High score threshold for MOI reputation badges */
-export const MOI_SCORE_HIGH_THRESHOLD = 600
+/** High score threshold for DEO reputation badges */
+export const DEO_SCORE_HIGH_THRESHOLD = 600
 
 export const MAX_PENDING_APPLICATIONS = 10
 
