@@ -464,25 +464,29 @@ export function LandingContent() {
           </div>
         </section>
 
-        {/* ═══ FINAL CTA (agentsdb CTA-band analog) ═══ */}
+        {/* ═══ FINAL CTA — sckoll "simple by design" pattern, DEODES phrase ═══ */}
         <section className="relative z-10 py-24 text-center border-t border-white/[0.06]">
           <div className="container-premium">
-            <h2 className="font-heading text-4xl md:text-6xl gradient-text-extended">
-              {t("landing.readyTitle")}
+            <p className="text-sm uppercase tracking-widest text-muted-foreground">Simple by design</p>
+            <h2 className="mt-3 font-heading text-4xl md:text-6xl gradient-text-extended max-w-4xl mx-auto">
+              Start with the circle. Stay for the momentum.
             </h2>
-            <p className="text-muted-foreground mt-4">{t("landing.readyDesc")}</p>
+            <p className="text-muted-foreground mt-4 max-w-2xl mx-auto">
+              Join your first round, skip the bank queue, or organize savers without becoming a
+              treasurer.
+            </p>
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
                 href={Routes.REGISTER}
                 className="gradient-bg-premium h-14 px-10 rounded-2xl text-lg font-heading font-semibold text-white inline-flex items-center justify-center gap-2 holo-glow hover:opacity-90 transition-all shadow-[0_0_40px_rgb(var(--premium-gold)/0.25)]"
               >
-                {t("landing.launchApp")} <ArrowRight className="h-5 w-5" />
+                Start saving free <ArrowRight className="h-5 w-5" />
               </Link>
               <Link
-                href={Routes.LOGIN}
+                href="/contact"
                 className="h-14 px-10 rounded-2xl text-lg font-heading font-medium inline-flex items-center justify-center glass-strong hover:bg-white/[0.06] transition-all"
               >
-                Log in
+                Talk to the team
               </Link>
             </div>
           </div>
