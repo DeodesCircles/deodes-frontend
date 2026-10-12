@@ -172,7 +172,7 @@ function RotatingGrow() {
   }, [])
 
   return (
-    <span className="block text-center" aria-live="polite">
+    <span className="block text-left" aria-live="polite">
       <span
         key={index}
         className="grow-word gradient-text font-heading text-5xl md:text-7xl xl:text-8xl font-black tracking-tight"
@@ -189,9 +189,9 @@ export function LandingContent() {
   return (
     <>
       <div className="auroral-mesh min-h-screen">
-        {/* ═══ HERO — centered, zero-lag rotating word ═══ */}
+        {/* ═══ HERO — left-aligned, zero-lag rotating word ═══ */}
         <section className="relative z-10 min-h-[92vh] flex flex-col justify-center">
-          <div className="container-premium text-center">
+          <div className="container-premium">
             <p className="font-heading text-xs tracking-[0.3em] uppercase text-muted-foreground mb-6">
               {t("landing.badge")}
             </p>
@@ -204,10 +204,10 @@ export function LandingContent() {
                 {t("landing.together")}
               </span>
             </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mt-8 mx-auto">{t("landing.heroDesc")}</p>
+            <p className="text-lg text-muted-foreground max-w-2xl mt-8">{t("landing.heroDesc")}</p>
 
             {/* Dual CTAs: savers + organizers (sckoll two-sided pattern) */}
-            <div className="mt-10 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-4">
+            <div className="mt-10 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
               <Link
                 href={Routes.REGISTER}
                 className="gradient-bg-premium h-14 px-10 rounded-2xl text-lg font-heading font-semibold text-white inline-flex items-center justify-center gap-2 holo-glow hover:opacity-90 transition-all shadow-[0_0_40px_rgb(var(--premium-gold)/0.25)]"
@@ -224,7 +224,7 @@ export function LandingContent() {
 
             {/* Invite-code search (sckoll search-bar analog) */}
             <form
-              className="mt-8 flex max-w-xl mx-auto items-center gap-2"
+              className="mt-8 flex max-w-xl items-center gap-2"
               action="/invite"
               method="get"
               onSubmit={(e) => {
@@ -253,7 +253,7 @@ export function LandingContent() {
             </form>
 
             {/* Saver pills */}
-            <div className="mt-10 text-center">
+            <div className="mt-10">
               <div className="glass-strong rounded-full px-6 py-3 inline-flex flex-wrap items-center justify-center gap-8 text-sm">
                 <span className="flex items-center gap-1.5">
                   <span className="h-1.5 w-1.5 rounded-full bg-aurora-cyan animate-pulse-glow" />

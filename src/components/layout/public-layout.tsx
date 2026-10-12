@@ -160,7 +160,7 @@ function MegaDropdown({
             transition={{ duration: 0.18 }}
             className="absolute left-1/2 top-full z-50 w-[560px] -translate-x-1/2 pt-3"
           >
-            <div className="glass-flagship backdrop-blur-2xl rounded-2xl border border-white/[0.08] p-4 shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
+            <div className="bg-[#f7f7fa] dark:bg-[#0b0b13] backdrop-blur-2xl rounded-2xl border border-black/10 dark:border-white/[0.12] p-4 shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
               <div className="grid grid-cols-2 gap-4">
                 {menu.groups.map((group) => (
                   <div key={group.heading}>
