@@ -114,6 +114,25 @@
   --depth-shadow-hover: 0 2px 4px rgba(0,0,0,0.25), 0 8px 24px rgba(0,0,0,0.2), 0 16px 56px rgba(0,0,0,0.4);
 }
 
+/* ── Marquee ticker: single transform loop over a doubled list ── */
+.marquee-track {
+  animation: marquee-slide 36s linear infinite;
+  will-change: transform;
+}
+
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
+@keyframes marquee-slide {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
 /* ── Hero rotating word: compositor-only (transform + opacity). ──
    Zero layout, zero paint — safe on low-end devices. The key remounts the
    span every 2.6s so the entry animation replays per word. */
@@ -135,6 +154,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+  }
   .grow-word {
     animation: none;
   }
@@ -524,13 +546,6 @@
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
-
-  /* Static glow companions for gradient hero words. Painted once — the word
-     swap animation stays transform/opacity only, so this adds zero lag. */
-  .glow-violet { text-shadow: 0 0 24px rgb(var(--aurora-violet) / 0.45), 0 0 72px rgb(var(--aurora-violet) / 0.2); }
-  .glow-gold { text-shadow: 0 0 24px rgb(var(--premium-gold) / 0.45), 0 0 72px rgb(var(--aurora-amber) / 0.2); }
-  .glow-cyan { text-shadow: 0 0 24px rgb(var(--aurora-cyan) / 0.45), 0 0 72px rgb(var(--aurora-cyan) / 0.2); }
-  .glow-indigo { text-shadow: 0 0 24px rgb(var(--aurora-indigo) / 0.5), 0 0 72px rgb(var(--aurora-indigo) / 0.22); }
 
   .gradient-bg { background: linear-gradient(135deg, rgb(var(--aurora-indigo)), rgb(var(--aurora-violet))); }
   .gradient-bg-extended { background: linear-gradient(135deg, rgb(var(--aurora-indigo)), rgb(var(--aurora-violet)), rgb(var(--aurora-cyan))); }

@@ -28,6 +28,8 @@ import {
 import { Routes } from "@/lib/constants"
 import { useTranslate } from "@/lib/locale/context"
 import { MemberDot } from "@/components/payouts/round-simulator"
+import { Marquee } from "@/components/landing/marquee"
+import { useAutoDrift } from "@/hooks/use-auto-drift"
 
 // ── DEODES landing: dense marketplace-style page ─────────────────────────────
 // Structure references: sckoll.com (two-sided paths, search, stats strip,
@@ -129,13 +131,14 @@ const trustItems = [  {
 
 // ── Zero-lag rotating hero word ──────────────────────────────────────────────
 // Compositor-only animation (transform + opacity): no layout, no paint, no
-// gradient re-raster. Each word carries its own static gradient + glow mix,
-// painted once — the swap animation never touches pixels.
+// gradient re-raster. Each word carries its own static gradient, painted
+// once — the swap animation never touches pixels. No glow: the words stay
+// crisp at display sizes.
 const GROW_WORDS = [
-  { word: "Grow.", gradient: "gradient-text-extended", glow: "glow-violet" },
-  { word: "Save.", gradient: "gradient-text-gold", glow: "glow-gold" },
-  { word: "Earn.", gradient: "gradient-text-cyan", glow: "glow-cyan" },
-  { word: "Rise.", gradient: "gradient-text", glow: "glow-indigo" },
+  { word: "Grow.", gradient: "gradient-text-extended" },
+  { word: "Earn.", gradient: "gradient-text-gold" },
+  { word: "Rise.", gradient: "gradient-text-cyan" },
+  { word: "Win.", gradient: "gradient-text" },
 ]
 
 function RotatingGrow() {
@@ -155,42 +158,13 @@ function RotatingGrow() {
     <span className="block text-left" aria-live="polite">
       <span
         key={index}
-        className={`grow-word ${current.gradient} ${current.glow} font-display text-5xl md:text-7xl xl:text-8xl font-black tracking-tight`}
+        className={`grow-word ${current.gradient} font-display text-5xl md:text-7xl xl:text-8xl font-black tracking-tight`}
       >
         {current.word}
       </span>
     </span>
   )
 }
-
-// ── Audience tabs (arc.io use-case tabs pattern) ─────────────────────────────
-// Instant switching (no animation library): one state, conditional render.
-const AUDIENCES = [
-  {
-    id: "savers",
-    tab: "For savers",
-    title: "Join a circle, get paid on your round.",
-    desc: "Pick a public circle or redeem an invite, contribute USDC each round, and receive the full pool when your turn lands. Your DeoScore grows with every on-time payment.",
-    points: ["Passkey wallet in one tap", "VRF-fair or fixed payouts", "Portable 0–1000 reputation"],
-    cta: { label: "Explore circles", href: "/explore" },
-  },
-  {
-    id: "organizers",
-    tab: "For organizers",
-    title: "Run a circle without becoming a treasurer.",
-    desc: "Set the amount, frequency and payout rule. Contracts collect, enforce late fees and release payouts — you just invite the people.",
-    points: ["Daily, weekly or monthly rounds", "Late fees + grace periods on-chain", "Invite links with usage caps"],
-    cta: { label: "Start a circle", href: "/register" },
-  },
-  {
-    id: "communities",
-    tab: "For communities",
-    title: "Turn your group chat into a savings engine.",
-    desc: "Token-gated circles for DAOs and holder groups, multi-sig guarded, with community votes directing payouts where need is greatest.",
-    points: ["Token-gated membership", "Vote-based payouts", "Shared DeoScore standing"],
-    cta: { label: "How it works", href: "/how-it-works" },
-  },
-] as const
 
 // ── Round-ledger motif ───────────────────────────────────────────────────────
 // The page's signature device: member dots marching across rounds. Thin
@@ -293,55 +267,9 @@ function RoundStrip() {
   )
 }
 
-function AudienceTabs() {  const [active, setActive] = useState<(typeof AUDIENCES)[number]["id"]>("savers")
-  const current = AUDIENCES.find((a) => a.id === active) ?? AUDIENCES[0]
-
-  return (
-    <div>
-      <div className="flex flex-wrap gap-2" role="tablist" aria-label="Who is Deodes for">
-        {AUDIENCES.map((a) => (
-          <button
-            key={a.id}
-            type="button"
-            role="tab"
-            aria-selected={active === a.id}
-            onClick={() => setActive(a.id)}
-            className={
-              active === a.id
-                ? "rounded-full px-5 py-2 text-sm font-heading font-semibold text-white gradient-bg-extended"
-                : "rounded-full px-5 py-2 text-sm font-heading font-medium text-muted-foreground glass-whisper hover:text-foreground transition-colors"
-            }
-          >
-            {a.tab}
-          </button>
-        ))}
-      </div>
-      <div key={current.id} className="mt-8 grid gap-8 lg:grid-cols-2 lg:items-center">
-        <div>
-          <h3 className="font-heading text-3xl md:text-4xl font-bold tracking-tight">{current.title}</h3>
-          <p className="mt-3 text-muted-foreground leading-relaxed">{current.desc}</p>
-          <Link
-            href={current.cta.href}
-            className="mt-6 inline-flex items-center gap-2 rounded-2xl px-6 py-3 text-sm font-heading font-semibold glass-strong hover:bg-white/[0.06] transition-all"
-          >
-            {current.cta.label} <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
-        <ul className="space-y-3">
-          {current.points.map((p) => (
-            <li key={p} className="flex items-center gap-3 rounded-2xl border border-white/[0.08] px-5 py-4 text-sm">
-              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-aurora-cyan" />
-              {p}
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
-  )
-}
-
 export function LandingContent() {
   const { t } = useTranslate()
+  const railRef = useAutoDrift<HTMLDivElement>(28)
 
   return (
     <>
@@ -409,20 +337,6 @@ export function LandingContent() {
               </button>
             </form>
 
-            {/* Saver pills */}
-            <div className="mt-10">
-              <div className="glass-strong rounded-full px-6 py-3 inline-flex flex-wrap items-center justify-center gap-8 text-sm">
-                <span className="flex items-center gap-1.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-aurora-cyan animate-pulse-glow" />
-                  1.7B+ Unbanked
-                </span>
-                <span className="text-muted-foreground">|</span>
-                <span>{t("landing.fees")}</span>
-                <span className="text-muted-foreground">|</span>
-                <span>{t("landing.settlement")}</span>
-              </div>
-            </div>
-
             {/* Settlement trust strip (arc.io logo-wall pattern) */}
             <div className="mt-12 flex flex-wrap items-center gap-x-8 gap-y-4">
               <span className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
@@ -445,6 +359,8 @@ export function LandingContent() {
           </div>
         </section>
 
+        <Marquee />
+
         {/* ═══ TRUST STRIP (agentsdb stat-band pattern) ═══ */}
         <section className="relative z-10 border-y border-white/[0.06]">
           <div className="container-premium grid grid-cols-2 gap-6 py-12 text-center sm:grid-cols-4">
@@ -459,16 +375,48 @@ export function LandingContent() {
           </div>
         </section>
 
-        {/* ═══ AUDIENCES (arc.io use-case tabs pattern) ═══ */}
+        {/* ═══ VOICES — illustrative saver stories (labeled as such) ═══ */}
         <section className="relative z-10 py-24 md:py-32">
           <div className="container-premium">
-            <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">Who it serves</p>
-            <h2 className="mt-2 font-heading text-4xl md:text-5xl gradient-text-extended">
-              Built for savers, organizers, communities.
+            <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">Why they stay</p>
+            <h2 className="mt-2 font-heading text-4xl md:text-5xl gradient-text-extended max-w-3xl">
+              Savings discipline, in their words.
             </h2>
-            <div className="mt-10">
-              <AudienceTabs />
+            <div className="mt-12 grid gap-4 md:grid-cols-3">
+              {[
+                {
+                  quote: "My esusu group moved on-chain and nobody chases contributions anymore. The contract does the chasing.",
+                  who: "Market trader · Lagos",
+                  role: "Saver, private circle",
+                },
+                {
+                  quote: "I run three circles from my phone. Invites, late fees, payouts — I just watch the rounds close.",
+                  who: "Cooperative organizer · Accra",
+                  role: "Organizer, 42 members",
+                },
+                {
+                  quote: "Our DAO treasury finally has a savings rhythm. Votes decide payouts; the ledger proves everything.",
+                  who: "DAO steward · Nairobi",
+                  role: "Community circle",
+                },
+              ].map((v) => (
+                <figure key={v.who} className="flex flex-col rounded-2xl border border-white/[0.08] bg-card p-6 md:p-8">
+                  <span className="font-display text-5xl leading-none gradient-text" aria-hidden="true">
+                    &ldquo;
+                  </span>
+                  <blockquote className="mt-2 flex-1 text-[15px] leading-relaxed">
+                    {v.quote}
+                  </blockquote>
+                  <figcaption className="mt-6">
+                    <p className="text-sm font-heading font-semibold">{v.who}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{v.role}</p>
+                  </figcaption>
+                </figure>
+              ))}
             </div>
+            <p className="mt-6 text-xs text-muted-foreground/70">
+              Illustrative stories based on common savings-circle experiences.
+            </p>
           </div>
         </section>
 
@@ -488,7 +436,7 @@ export function LandingContent() {
               </Link>
             </div>
           </div>
-          <div className="mt-10 flex gap-4 overflow-x-auto snap-x snap-mandatory px-4 md:px-8 pb-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div ref={railRef} className="mt-10 flex gap-4 overflow-x-auto snap-x snap-mandatory px-4 md:px-8 pb-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {circleTypes.map((c) => {
               const Icon = c.icon
               return (
@@ -518,6 +466,32 @@ export function LandingContent() {
                 Create a circle <ArrowRight className="h-4 w-4" />
               </span>
             </Link>
+            {/* Duplicate set for the seamless drift loop (hidden from AT) */}
+            <div className="flex gap-4 shrink-0" aria-hidden="true">
+              {circleTypes.map((c) => {
+                const Icon = c.icon
+                return (
+                  <div
+                    key={`dup-${c.name}`}
+                    className={`snap-start shrink-0 w-[300px] md:w-[340px] glass-premium rounded-2xl p-6 md:p-8 ${c.featured ? "holo-border" : ""}`}
+                  >
+                    <div className="w-12 h-12 rounded-2xl gradient-bg-extended flex items-center justify-center text-white mb-5">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <h3 className="font-heading text-lg md:text-xl font-semibold mb-2">{c.name}</h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed">{c.desc}</p>
+                    <span className="mt-4 inline-block rounded-full px-3 py-1 text-xs font-mono border border-white/10 text-muted-foreground">
+                      {c.meta}
+                    </span>
+                  </div>
+                )
+              })}
+              <div className="snap-start shrink-0 w-[300px] md:w-[340px] rounded-2xl p-6 md:p-8 gradient-bg-premium text-white flex flex-col justify-center gap-3">
+                <CirclePlus className="h-8 w-8" />
+                <span className="font-heading text-xl font-semibold">Start your own</span>
+                <span className="text-sm text-white/80">Daily, weekly or monthly rounds.</span>
+              </div>
+            </div>
           </div>
         </section>
 
