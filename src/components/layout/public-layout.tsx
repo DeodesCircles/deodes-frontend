@@ -220,6 +220,7 @@ function MegaDropdown({
                         <Link
                           key={item.title}
                           href={item.href}
+                          scroll={false}
                           onClick={onClose}
                           className="flex items-start gap-3 rounded-xl px-3 py-2.5 hover:glass-whisper transition-all duration-200"
                         >
@@ -434,6 +435,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
                                   <Link
                                     key={item.title}
                                     href={item.href}
+                                    scroll={false}
                                     onClick={closeMenu}
                                     className="block px-1 py-1.5 text-sm text-muted-foreground hover:text-foreground"
                                   >
@@ -542,7 +544,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
             <p className="mb-3 text-xs font-heading tracking-[0.25em] uppercase text-muted-foreground/60">Save</p>
             <div className="flex flex-col space-y-2.5 text-sm font-medium">
               <Link href="/explore" className="hover:text-foreground text-muted-foreground transition-colors">Explore circles</Link>
-              <Link href="/explore#types" className="hover:text-foreground text-muted-foreground transition-colors">Circle types</Link>
+              <Link href="/explore#types" scroll={false} className="hover:text-foreground text-muted-foreground transition-colors">Circle types</Link>
               <Link href="/register" className="hover:text-foreground text-muted-foreground transition-colors">Start a circle</Link>
               <Link href="/how-it-works" className="hover:text-foreground text-muted-foreground transition-colors">How it works</Link>
             </div>
@@ -552,7 +554,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
             <div className="flex flex-col space-y-2.5 text-sm font-medium">
               <Link href="/payout-modes" className="hover:text-foreground text-muted-foreground transition-colors">Payout modes</Link>
               <Link href="/deoscore" className="hover:text-foreground text-muted-foreground transition-colors">DeoScore</Link>
-              <Link href="/deoscore#governance" className="hover:text-foreground text-muted-foreground transition-colors">Governance</Link>
+              <Link href="/deoscore#governance" scroll={false} className="hover:text-foreground text-muted-foreground transition-colors">Governance</Link>
             </div>
           </div>
           <div>
