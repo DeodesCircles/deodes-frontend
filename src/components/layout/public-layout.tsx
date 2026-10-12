@@ -12,6 +12,8 @@ import {
   Code,
   BookOpen,
   CircleQuestionMark,
+  Globe2,
+  Trophy,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { cn } from "@/lib/cn";
@@ -44,6 +46,8 @@ export function PublicLayout({ children }: PublicLayoutProps) {
   }
 
   const navItems = [
+    { label: "Circles", href: "/circles" },
+    { label: "DeoScore", href: "/reputation" },
     { label: t("nav.howItWorks"), href: "/how-it-works" },
     { label: t("nav.developers"), href: "/developers" },
     { label: t("nav.docs"), href: "/docs" },
@@ -77,7 +81,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
           {/* Left: Logo */}
           <Link href="/" className="flex items-center gap-2 select-none shrink-0">
             <span className="gradient-text-extended font-heading font-bold text-lg tracking-tight">
-              Moistello
+              Deodes
             </span>
           </Link>
 
@@ -157,7 +161,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
                 <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-aurora-violet/40 to-transparent" />
                 <div className="flex h-16 items-center justify-between px-5 shrink-0">
                   <span className="gradient-text-extended font-heading font-bold text-xl">
-                    Moistello
+                    Deodes
                   </span>
                   <button
                     type="button"
@@ -173,6 +177,8 @@ export function PublicLayout({ children }: PublicLayoutProps) {
                     Navigate
                   </p>
                   {[
+                    { label: "Circles", href: "/circles", icon: <Globe2 className="h-[18px] w-[18px]" /> },
+                    { label: "DeoScore", href: "/reputation", icon: <Trophy className="h-[18px] w-[18px]" /> },
                     { label: t("nav.howItWorks"), href: "/how-it-works", icon: <ShieldQuestionMark className="h-[18px] w-[18px]" /> },
                     { label: t("nav.developers"), href: "/developers", icon: <Code className="h-[18px] w-[18px]" /> },
                     { label: t("nav.docs"), href: "/docs", icon: <BookOpen className="h-[18px] w-[18px]" /> },
@@ -211,7 +217,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
                 </div>
                 <div className="shrink-0 border-t border-white/[0.04] px-5 py-3">
                   <p className="text-[10px] text-muted-foreground/40">
-                    &copy; {new Date().getFullYear()} Moistello
+                    &copy; {new Date().getFullYear()} Deodes
                   </p>
                 </div>
               </div>
@@ -226,8 +232,10 @@ export function PublicLayout({ children }: PublicLayoutProps) {
       {/* ════════════════ FOOTER ════════════════ */}
       <footer className="glass mt-20 py-8 border-t border-border">
         <div className="container-premium flex flex-col md:flex-row justify-between items-center gap-6 text-sm text-muted-foreground">
-          <span>&copy; {new Date().getFullYear()} Moistello</span>
+          <span>&copy; {new Date().getFullYear()} Deodes</span>
           <nav className="flex flex-wrap justify-center gap-6" aria-label="Footer navigation">
+            <Link href="/circles" className="hover:text-foreground transition-colors">Circles</Link>
+            <Link href="/reputation" className="hover:text-foreground transition-colors">DeoScore</Link>
             <Link href="/about" className="hover:text-foreground transition-colors">{t("nav.about")}</Link>
             <Link href="/how-it-works" className="hover:text-foreground transition-colors">{t("nav.howItWorks")}</Link>
             <Link href="/developers" className="hover:text-foreground transition-colors">{t("nav.developers")}</Link>
@@ -238,7 +246,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
             <Link href="/terms" className="hover:text-foreground transition-colors">{t("nav.terms")}</Link>
             <Link href="/privacy" className="hover:text-foreground transition-colors">{t("nav.privacy")}</Link>
           </nav>
-          <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-aurora-cyan animate-pulse-glow" />{t("nav.builtOnStellar")}</span>
+          <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-aurora-cyan animate-pulse-glow" />Built on Arc</span>
         </div>
       </footer>
     </div>
