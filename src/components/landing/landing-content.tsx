@@ -175,7 +175,7 @@ function RotatingGrow() {
     <span className="block text-left" aria-live="polite">
       <span
         key={index}
-        className="grow-word gradient-text font-heading text-5xl md:text-7xl xl:text-8xl font-black tracking-tight"
+        className="grow-word gradient-text font-display text-5xl md:text-7xl xl:text-8xl font-black tracking-tight"
       >
         {GROW_WORDS[index]}
       </span>
@@ -196,11 +196,11 @@ export function LandingContent() {
               {t("landing.badge")}
             </p>
             <h1>
-              <span className="font-heading text-5xl md:text-7xl xl:text-8xl font-black tracking-tighter block">
+              <span className="font-display text-5xl md:text-7xl xl:text-8xl font-black tracking-tighter block">
                 {t("landing.saveTogether")}
               </span>
               <RotatingGrow />
-              <span className="font-heading text-5xl md:text-7xl xl:text-8xl font-black tracking-tighter block">
+              <span className="font-display text-5xl md:text-7xl xl:text-8xl font-black tracking-tighter block">
                 {t("landing.together")}
               </span>
             </h1>

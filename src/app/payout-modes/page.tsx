@@ -3,43 +3,23 @@ import Link from "next/link"
 import { ArrowRight, Dices, Gavel, ListOrdered, Vote } from "lucide-react"
 import { buildRouteMetadata } from "@/lib/seo/route-metadata"
 import { PublicLayout } from "@/components/layout/public-layout"
+import { RoundSimulator } from "@/components/payouts/round-simulator"
 import { Routes } from "@/lib/constants"
 
 export const metadata: Metadata = buildRouteMetadata("/payout-modes")
 
-const modes = [
-  {
-    id: "random",
-    icon: Dices,
-    name: "Random",
-    tag: "Provably fair",
-    how: "A verifiable random draw picks the recipient each round. Nobody — not even the organizer — can rig the order.",
-    bestFor: "Groups that want pure fairness with zero politics.",
-  },
-  {
-    id: "fixed",
-    icon: ListOrdered,
-    name: "Fixed order",
-    tag: "Predictable",
-    how: "The payout sequence is set when the circle is created and enforced on-chain. Everyone knows their round up front.",
-    bestFor: "Planners who need to know exactly when their payout lands.",
-  },
-  {
-    id: "auction",
-    icon: Gavel,
-    name: "Auction",
-    tag: "Market-priced",
-    how: "Classic chit-fund mechanics: members bid the discount they'll accept, the highest discount wins the pool minus the bid. Early access has a price; patience earns a premium.",
-    bestFor: "Groups comfortable letting the market price urgency.",
-  },
-  {
-    id: "vote",
-    icon: Vote,
-    name: "Vote-based",
-    tag: "Community-led",
-    how: "Members vote the recipient each round. Useful when need is uneven — the group directs funds where they matter most.",
-    bestFor: "Communities built on mutual aid, not just savings.",
-  },
+const strip = [
+  { icon: Dices, name: "Random", line: "Fresh draw, every round." },
+  { icon: ListOrdered, name: "Fixed", line: "Your round, known day one." },
+  { icon: Gavel, name: "Auction", line: "Bid urgency, earn patience." },
+  { icon: Vote, name: "Vote", line: "Need directs the pool." },
+]
+
+const glossary: Array<[string, string, string]> = [
+  ["Random", "VRF draw", "Groups that want pure fairness with zero politics."],
+  ["Fixed order", "Locked sequence", "Planners who need their payout date up front."],
+  ["Auction", "Highest discount wins", "Groups comfortable pricing urgency."],
+  ["Vote-based", "Majority decides", "Communities built on mutual aid."],
 ]
 
 export default function PayoutModesPage() {
@@ -49,51 +29,35 @@ export default function PayoutModesPage() {
         <main className="container-premium py-12">
           <p className="text-sm uppercase tracking-widest text-muted-foreground">Payout modes</p>
           <h1 className="font-heading text-4xl md:text-6xl font-black tracking-tight mt-2">
-            Four ways the <span className="gradient-text">pool finds you.</span>
+            Watch four rounds <span className="gradient-text">play out.</span>
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mt-4">
-            Every DEODES circle picks one payout rule at creation. The rule is enforced by smart
-            contracts — the organizer can&apos;t change it mid-circle.
+            Same six savers, four different rules. Every rule is locked at creation and enforced
+            by smart contracts — the organizer can&apos;t change it mid-circle.
           </p>
-          <a href="#random" className="mt-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-            Compare the modes <span aria-hidden="true">↓</span>
+          <a href="#simulator" className="mt-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+            See the simulation <span aria-hidden="true">↓</span>
           </a>
 
-          <div className="mt-12 grid gap-4 md:grid-cols-2">
-            {modes.map((m) => {
-              const Icon = m.icon
+          <div className="mt-10 grid grid-cols-2 gap-3 lg:grid-cols-4">
+            {strip.map((s) => {
+              const Icon = s.icon
               return (
-                <article
-                  key={m.id}
-                  id={m.id}
-                  className="glass-premium rounded-2xl p-6 md:p-8 tilt-hover scroll-mt-24"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <span className="w-12 h-12 rounded-2xl gradient-bg-extended flex items-center justify-center text-white">
-                      <Icon className="h-5 w-5" />
-                    </span>
-                    <span className="whitespace-nowrap rounded-full bg-accent px-2 py-1 text-xs font-medium text-accent-foreground">
-                      {m.tag}
-                    </span>
-                  </div>
-                  <h2 className="mt-5 font-heading text-2xl font-semibold">{m.name}</h2>
-                  <p className="mt-2 text-muted-foreground text-sm leading-relaxed">{m.how}</p>
-                  <p className="mt-4 text-sm">
-                    <span className="text-muted-foreground">Best for: </span>
-                    {m.bestFor}
-                  </p>
-                </article>
+                <div key={s.name} className="flex items-center gap-3 rounded-2xl border border-white/[0.08] px-4 py-3">
+                  <span className="w-9 h-9 shrink-0 rounded-xl gradient-bg-extended flex items-center justify-center text-white">
+                    <Icon className="h-4 w-4" />
+                  </span>
+                  <span>
+                    <span className="block text-sm font-heading font-semibold">{s.name}</span>
+                    <span className="block text-xs text-muted-foreground">{s.line}</span>
+                  </span>
+                </div>
               )
             })}
           </div>
 
-          <div className="mt-12 text-center">
-            <Link
-              href={Routes.REGISTER}
-              className="gradient-bg-premium h-12 px-8 rounded-2xl font-heading font-semibold text-white inline-flex items-center justify-center gap-2 hover:opacity-90 transition-all"
-            >
-              Pick your mode <ArrowRight className="h-4 w-4" />
-            </Link>
+          <div id="simulator" className="mt-12 scroll-mt-24">
+            <RoundSimulator />
           </div>
 
           <div className="mt-12">
@@ -108,16 +72,25 @@ export default function PayoutModesPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {modes.map((m) => (
-                    <tr key={m.id} className="border-b border-white/[0.04] last:border-0">
-                      <td className="px-5 py-3 font-heading font-semibold">{m.name}</td>
-                      <td className="px-5 py-3 text-muted-foreground">{m.how}</td>
-                      <td className="px-5 py-3 text-muted-foreground">{m.bestFor}</td>
+                  {glossary.map(([name, how, best]) => (
+                    <tr key={name} className="border-b border-white/[0.04] last:border-0">
+                      <td className="px-5 py-3 font-heading font-semibold">{name}</td>
+                      <td className="px-5 py-3 text-muted-foreground">{how}</td>
+                      <td className="px-5 py-3 text-muted-foreground">{best}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
+          </div>
+
+          <div className="mt-12 text-center">
+            <Link
+              href={Routes.REGISTER}
+              className="gradient-bg-premium h-12 px-8 rounded-2xl font-heading font-semibold text-white inline-flex items-center justify-center gap-2 hover:opacity-90 transition-all"
+            >
+              Pick your mode <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
         </main>
       </div>

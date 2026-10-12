@@ -79,6 +79,7 @@ const config: Config = {
       },
       fontFamily: {
         heading: ["var(--font-space-grotesk)", "system-ui", "sans-serif"],
+        display: ["var(--font-dm-sans)", "var(--font-space-grotesk)", "system-ui", "sans-serif"],
         body: ["var(--font-inter)", "system-ui", "sans-serif"],
         mono: ["var(--font-jetbrains-mono)", "monospace"],
       },
