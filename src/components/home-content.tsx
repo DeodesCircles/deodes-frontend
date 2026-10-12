@@ -2,11 +2,9 @@
 
 import dynamic from "next/dynamic"
 import { useAuthStore } from "@/stores/auth-store"
-
-const PublicLayout = dynamic(
-  () => import("@/components/layout/public-layout").then((m) => m.PublicLayout),
-  { ssr: true }
-)
+import { PublicLayout } from "@/components/layout/public-layout"
+import { LandingHeroSkeleton } from "@/components/skeletons"
+import { DashboardSkeleton } from "@/components/skeletons"
 
 const LandingContent = dynamic(
   () => import("@/components/landing/landing-content").then((m) => m.LandingContent),
@@ -28,8 +26,16 @@ export function HomeContent() {
   const isLoading = useAuthStore((s) => s.isLoading)
   const token = useAuthStore((s) => s.token)
 
-  // If we have a token but auth hasn't resolved yet, show nothing (not the landing page)
-  if (token && isLoading) return null
+  // If we have a token but auth hasn't resolved yet, hold the dashboard-shaped
+  // shell instead of nothing — collapsing to zero height is what flashed the
+  // footer to the top of the viewport on slow loads.
+  if (token && isLoading) {
+    return (
+      <DashboardLayout>
+        <DashboardSkeleton />
+      </DashboardLayout>
+    )
+  }
 
   // Auth resolved and user is authenticated
   if (isAuthenticated) {
@@ -49,6 +55,11 @@ export function HomeContent() {
     )
   }
 
-  // Still loading with no token — wait
-  return null
+  // Still loading with no token — hold the hero-shaped shell so the footer
+  // stays below the fold instead of jumping to the top.
+  return (
+    <PublicLayout>
+      <LandingHeroSkeleton />
+    </PublicLayout>
+  )
 }

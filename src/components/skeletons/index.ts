@@ -1,4 +1,5 @@
 export { CircleCardSkeleton } from "./circle-card-skeleton"
+export { LandingHeroSkeleton } from "./landing-hero-skeleton"
 export { CirclesPageSkeleton } from "./circles-page-skeleton"
 export { WalletSkeleton } from "./wallet-skeleton"
 export { PayoutSkeleton } from "./payout-skeleton"
