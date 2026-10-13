@@ -88,6 +88,34 @@ const defaultProps = {
 describe("WalletConnectQR", () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    // jsdom canvases have no 2d context, so the real `qrcode` draw would
+    // throw and the component would (correctly) show its draw-error panel.
+    // Real browsers always have 2d — mock it so jsdom exercises the QR path.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(HTMLCanvasElement.prototype as any).getContext = () => ({
+      fillRect: vi.fn(),
+      clearRect: vi.fn(),
+      drawImage: vi.fn(),
+      fillText: vi.fn(),
+      measureText: () => ({ width: 0 }),
+      beginPath: vi.fn(),
+      moveTo: vi.fn(),
+      lineTo: vi.fn(),
+      stroke: vi.fn(),
+      arc: vi.fn(),
+      fill: vi.fn(),
+      save: vi.fn(),
+      restore: vi.fn(),
+      scale: vi.fn(),
+      rotate: vi.fn(),
+      translate: vi.fn(),
+      setTransform: vi.fn(),
+      createImageData: (w: number, h: number) => ({ width: w, height: h, data: new Uint8ClampedArray(w * h * 4) }),
+      getImageData: (x: number, y: number, w: number, h: number) => ({ width: w, height: h, data: new Uint8ClampedArray(w * h * 4) }),
+      putImageData: vi.fn(),
+      createLinearGradient: () => ({ addColorStop: vi.fn() }),
+      createPattern: () => null,
+    })
   })
 
   describe("loading state", () => {

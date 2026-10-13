@@ -41,6 +41,14 @@ export function WalletConnectQR({
   const [copied, setCopied] = useState(false)
   const [downloaded, setDownloaded] = useState(false)
   const [countdown, setCountdown] = useState(120)
+  // Tracks whether the on-screen canvas has actually been painted: the
+  // qrcode chunk loads lazily, so on slow networks there is a visible gap
+  // between the URI arriving and the modules being drawn.
+  const [drawn, setDrawn] = useState(false)
+  // If the on-screen draw fails the canvas stays blank with no other
+  // signal — surface it so the user gets a retry instead of an empty box.
+  // (The qrcode lib only accepts hex colors; a non-hex `light` throws.)
+  const [drawError, setDrawError] = useState<string | null>(null)
 
   const generateQR = useCallback(async (text: string) => {
     if (!canvasRef.current) return
@@ -51,16 +59,20 @@ export function WalletConnectQR({
         margin: 2,
         color: {
           dark: "#ffffff",
-          light: "transparent",
+          light: "#00000000",
         },
       })
+      setDrawError(null)
+      setDrawn(true)
     } catch (e) {
       logger.warn("[wc-qr] QR generation failed:", e)
+      setDrawError("QR code failed to render on this device. Generate a new code or use the download below.")
     }
   }, [])
 
   useEffect(() => {
     if (uri) {
+      setDrawn(false)
       generateQR(uri)
       setCountdown(120)
       setCopied(false)
@@ -162,7 +174,7 @@ export function WalletConnectQR({
     )
   }
 
-  if (error || countdown === 0 || pairingState === "timeout") {
+  if (error || drawError || countdown === 0 || pairingState === "timeout") {
     return (
       <div className={cn("flex flex-col items-center gap-3 py-4", className)}>
         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-500/20">
@@ -172,7 +184,7 @@ export function WalletConnectQR({
           {countdown === 0 || pairingState === "timeout" ? "Connection Timed Out" : "Connection Error"}
         </p>
         <p className="text-xs text-muted-foreground text-center">
-          {error || (pairingState === "timeout" ? "The QR code expired. Generate a new one to try again." : "Scan the QR code within 120 seconds.")}
+          {drawError || error || (pairingState === "timeout" ? "The QR code expired. Generate a new one to try again." : "Scan the QR code within 120 seconds.")}
         </p>
         <button
           type="button"
@@ -197,7 +209,7 @@ export function WalletConnectQR({
 
   return (
     <div className={cn("flex flex-col items-center gap-4 py-2", className)}>
-      <div className="rounded-2xl bg-black/40 p-3 ring-1 ring-white/10">
+      <div className="relative rounded-2xl bg-black/40 p-3 ring-1 ring-white/10">
         <canvas
           ref={canvasRef}
           width={CANVAS_SIZE}
@@ -206,6 +218,12 @@ export function WalletConnectQR({
           role="img"
           aria-label="QR code for wallet connection"
         />
+        {!drawn && !drawError && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-2xl bg-black/40">
+            <LoaderCircle className="h-8 w-8 animate-spin text-aurora-violet" />
+            <p className="text-xs text-muted-foreground">Drawing QR code…</p>
+          </div>
+        )}
       </div>
 
       <p className="text-sm text-foreground font-medium">Scan with your wallet app</p>

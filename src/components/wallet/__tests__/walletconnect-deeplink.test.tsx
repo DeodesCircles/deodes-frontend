@@ -13,6 +13,33 @@ describe("WalletConnectDeepLink", () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    // WalletConnectQR draws to a real canvas on mount; jsdom has no 2d
+    // context, so mock it (same shape as the QR suite's mock).
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(HTMLCanvasElement.prototype as any).getContext = () => ({
+      fillRect: vi.fn(),
+      clearRect: vi.fn(),
+      drawImage: vi.fn(),
+      fillText: vi.fn(),
+      measureText: () => ({ width: 0 }),
+      beginPath: vi.fn(),
+      moveTo: vi.fn(),
+      lineTo: vi.fn(),
+      stroke: vi.fn(),
+      arc: vi.fn(),
+      fill: vi.fn(),
+      save: vi.fn(),
+      restore: vi.fn(),
+      scale: vi.fn(),
+      rotate: vi.fn(),
+      translate: vi.fn(),
+      setTransform: vi.fn(),
+      createImageData: (w: number, h: number) => ({ width: w, height: h, data: new Uint8ClampedArray(w * h * 4) }),
+      getImageData: (x: number, y: number, w: number, h: number) => ({ width: w, height: h, data: new Uint8ClampedArray(w * h * 4) }),
+      putImageData: vi.fn(),
+      createLinearGradient: () => ({ addColorStop: vi.fn() }),
+      createPattern: () => null,
+    })
   })
 
   describe("loading state", () => {
@@ -44,8 +71,7 @@ describe("WalletConnectDeepLink", () => {
       expect(screen.getByText("Open Wallet App")).toBeDefined()
     })
 
-    it("shows EVM install links on mobile", () => {
-      Object.defineProperty(navigator, "userAgent", {
+    it("shows EVM install links on mobile", () => {      Object.defineProperty(navigator, "userAgent", {
         value: "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15",
         configurable: true,
       })
@@ -231,6 +257,43 @@ describe("WalletConnectDeepLink", () => {
         />,
       )
       expect(screen.getByText("Connected!")).toBeDefined()
+    })
+  })
+
+  describe("mobile QR option", () => {
+    const mobileProps = {
+      uri: "wc:abc123@2",
+      pairingState: "pairing",
+      error: null,
+      onRetry: vi.fn(),
+    }
+
+    beforeEach(() => {
+      Object.defineProperty(navigator, "userAgent", {
+        value: "Mozilla/5.0 (Android 13; Mobile) AppleWebKit/537.36",
+        configurable: true,
+      })
+    })
+
+    it("offers a QR toggle alongside Open Wallet App", () => {
+      render(<WalletConnectDeepLink {...mobileProps} />)
+      expect(screen.getByText("Open Wallet App")).toBeDefined()
+      expect(
+        screen.getByRole("button", { name: "Show QR code instead" }),
+      ).toBeDefined()
+    })
+
+    it("swaps to the QR view and back", async () => {
+      render(<WalletConnectDeepLink {...mobileProps} />)
+      fireEvent.click(screen.getByRole("button", { name: "Show QR code instead" }))
+      expect(
+        await screen.findByRole("img", { name: "QR code for wallet connection" }),
+      ).toBeDefined()
+      expect(screen.queryByText("Open Wallet App")).toBeNull()
+      fireEvent.click(
+        screen.getByRole("button", { name: /back to open wallet app/i }),
+      )
+      expect(screen.getByText("Open Wallet App")).toBeDefined()
     })
   })
 })

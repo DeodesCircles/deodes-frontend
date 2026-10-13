@@ -1,9 +1,10 @@
 "use client"
 
 import { useEffect, useState, useCallback } from "react"
-import { ExternalLink, Copy, Check, Smartphone, LoaderCircle, CircleAlert } from "lucide-react"
+import { ExternalLink, Copy, Check, Smartphone, LoaderCircle, CircleAlert, QrCode } from "lucide-react"
 import { cn } from "@/lib/cn"
 import { copyToClipboard } from "@/lib/clipboard"
+import { WalletConnectQR } from "./walletconnect-qr"
 
 interface WalletConnectDeepLinkProps {
   uri: string | null
@@ -27,6 +28,9 @@ export function WalletConnectDeepLink({
 }: WalletConnectDeepLinkProps) {
   const [copied, setCopied] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  // Even with the wallet on this phone, some users prefer scanning with a
+  // second device (or their wallet ignores deeplinks) — offer the QR too.
+  const [showQr, setShowQr] = useState(false)
 
   useEffect(() => {
     setIsMobile(detectMobileBrowser())
@@ -122,6 +126,25 @@ export function WalletConnectDeepLink({
         <Smartphone className="h-7 w-7 text-aurora-violet" />
       </div>
 
+      {isMobile && showQr ? (
+        <>
+          <WalletConnectQR
+            uri={uri}
+            pairingState={pairingState}
+            error={error}
+            onRetry={onRetry}
+            onCancel={() => setShowQr(false)}
+          />
+          <button
+            type="button"
+            onClick={() => setShowQr(false)}
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            ← Back to Open Wallet App
+          </button>
+        </>
+      ) : (
+      <>
       {isMobile ? (
         <>
           <p className="text-sm font-medium text-foreground text-center">
@@ -134,6 +157,14 @@ export function WalletConnectDeepLink({
           >
             <ExternalLink className="h-4 w-4" />
             Open Wallet App
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowQr(true)}
+            className="w-full max-w-xs h-11 rounded-xl flex items-center justify-center gap-2 text-sm font-heading font-medium text-foreground glass-strong hover:bg-white/[0.06] transition-all"
+          >
+            <QrCode className="h-4 w-4 text-aurora-violet" />
+            Show QR code instead
           </button>
           <p className="text-xs text-muted-foreground text-center">
             Don&apos;t have a wallet?{" "}
@@ -179,6 +210,8 @@ export function WalletConnectDeepLink({
             Open WalletConnect
           </button>
         </>
+      )}
+      </>
       )}
 
       <div className="w-full max-w-xs">
