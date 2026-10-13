@@ -217,6 +217,22 @@ function LedgerDivider({ caption }: { caption: string }) {
   )
 }
 
+// ── Section rule: hard demarcation between landing sections ─────────────────
+// A visible gradient hairline (violet core fading to transparent) with a
+// center diamond. LedgerDivider stays the captioned motif for payout-adjacent
+// breaks; SectionRule is the plain full stop everywhere else.
+function SectionRule() {
+  return (
+    <div className="relative z-10" aria-hidden="true">
+      <div className="container-premium flex items-center gap-3 py-2">
+        <span className="h-px flex-1 bg-gradient-to-r from-transparent via-aurora-violet/50 to-aurora-violet/10" />
+        <span className="h-1.5 w-1.5 rotate-45 bg-aurora-violet/70" />
+        <span className="h-px flex-1 bg-gradient-to-l from-transparent via-aurora-violet/50 to-aurora-violet/10" />
+      </div>
+    </div>
+  )
+}
+
 const STRIP_MODES = [
   { id: "random", icon: Dices, name: "Random", order: [2, 5, 0, 3], note: "VRF draw" },
   { id: "fixed", icon: ListOrdered, name: "Fixed", order: [0, 1, 2, 3], note: "Locked seats" },
@@ -363,7 +379,7 @@ export function LandingContent() {
                 {t("landing.saveTogether")}
               </span>
               <RotatingGrow />
-              <span className="font-serif italic font-light text-5xl md:text-7xl xl:text-8xl tracking-tight block gradient-text">
+              <span className="font-display text-5xl md:text-7xl xl:text-8xl font-black tracking-tighter block gradient-text">
                 {t("landing.together")}
               </span>
             </h1>
@@ -437,9 +453,10 @@ export function LandingContent() {
           </div>
         </section>
 
+        <SectionRule />
+
         {/* ═══ TRUST STRIP (agentsdb stat-band pattern) ═══ */}
-        <section className="relative z-10 border-y border-white/[0.06]">
-          <div className="container-premium grid grid-cols-2 gap-6 py-12 text-center sm:grid-cols-4">
+        <section className="relative z-10 border-y border-white/[0.06]">          <div className="container-premium grid grid-cols-2 gap-6 py-12 text-center sm:grid-cols-4">
             {stats.map((s) => (
               <div key={s.label}>
                 <p className="font-heading text-3xl md:text-4xl font-black tracking-tight gradient-text">
@@ -450,6 +467,8 @@ export function LandingContent() {
             ))}
           </div>
         </section>
+
+        <SectionRule />
 
         {/* ═══ CIRCLE TYPES — numbered index rows ═══ */}
         <section className="relative z-10 py-24 md:py-32 overflow-hidden">
@@ -552,6 +571,8 @@ export function LandingContent() {
           </div>
         </section>
 
+        <SectionRule />
+
         {/* ═══ TRUST — alternating Z rows (no cards) ═══ */}
         <section className="relative z-10 py-24 border-t border-white/[0.06]">
           <div className="container-premium">
@@ -608,6 +629,8 @@ export function LandingContent() {
             </div>
           </div>
         </section>
+
+        <SectionRule />
 
         {/* ═══ FINAL CTA — sckoll "simple by design" pattern, DEODES phrase ═══ */}
         <section className="relative z-10 py-24 text-center border-t border-white/[0.06]">
