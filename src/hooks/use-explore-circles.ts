@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { get } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
 import type { Circle } from "@/types";
-import { MOCK_CIRCLES } from "@/lib/circles/mock-circles";
+import { getDynamicMockCircles } from "@/lib/circles/mock-circles";
 
 export type ExploreSource = "live" | "mock";
 
@@ -46,7 +46,9 @@ export function useExploreCircles(search = "", type = "all") {
   const live = query.data ?? [];
   const useMock = forced === "mock" || (forced !== "live" && live.length === 0);
   const source: ExploreSource = useMock ? "mock" : "live";
-  const base = useMock ? MOCK_CIRCLES : live;
+  // Mock showcase stays dynamic (rounds advance, order rotates) so the page
+  // never looks frozen while no real circles exist yet.
+  const base = useMock ? getDynamicMockCircles() : live;
 
   const q = search.trim().toLowerCase();
   const circles = base.filter((c) => {

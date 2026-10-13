@@ -1,4 +1,4 @@
-import type { Circle } from "@/types";
+import type { Circle, Frequency } from "@/types";
 
 /**
  * Sample circles for the public Explore page. Shown only when the live API
@@ -146,3 +146,52 @@ export const MOCK_CIRCLES: Circle[] = [
     createdAt: "2026-09-20T00:00:00.000Z",
   },
 ];
+
+const FREQUENCY_MS: Record<Frequency, number> = {
+  daily: 86_400_000,
+  weekly: 7 * 86_400_000,
+  biweekly: 14 * 86_400_000,
+  monthly: 30 * 86_400_000,
+};
+
+/** Tiny deterministic hash — stable pseudo-randomness per (circle, day). */
+function hashStr(s: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return Math.abs(h);
+}
+
+/**
+ * Makes the showcase feel alive without a backend: rounds advance with real
+ * time from each circle's start date, membership drifts toward full, and the
+ * display order rotates daily. Fully deterministic for a given timestamp —
+ * no randomness between renders. Still labeled Preview in the UI.
+ */
+export function getDynamicMockCircles(now: number = Date.now()): Circle[] {
+  const daySeed = Math.floor(now / 86_400_000);
+  return MOCK_CIRCLES.map((base, i) => {
+    if (base.status !== "active") return base;
+    const started = Date.parse(base.createdAt);
+    const elapsedRounds = Number.isFinite(started)
+      ? Math.max(0, Math.floor((now - started) / FREQUENCY_MS[base.frequency]))
+      : 0;
+    const roundSpan = Math.max(1, base.maxMembers);
+    const currentRound = Math.min(
+      base.maxMembers,
+      base.currentRound + (elapsedRounds % (roundSpan + 1)),
+    );
+    const seatsLeft = Math.max(0, base.maxMembers - (base.memberCount ?? 0));
+    const joiners =
+      seatsLeft === 0 ? 0 : hashStr(`${base.id}:${daySeed}`) % (seatsLeft + 1);
+    const memberCount = Math.min(
+      base.maxMembers,
+      (base.memberCount ?? 0) + joiners,
+    );
+    const totalContributions =
+      base.contributionAmount * Math.max(0, currentRound) * Math.max(0, memberCount);
+    return { ...base, currentRound, memberCount, totalContributions };
+  }).sort((a, b) => hashStr(`${a.id}:${daySeed}`) - hashStr(`${b.id}:${daySeed}`));
+}
