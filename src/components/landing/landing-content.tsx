@@ -449,7 +449,6 @@ export function LandingContent() {
               <h2 className="font-heading text-4xl md:text-5xl gradient-text-extended max-w-xl">
                 Every kind of saver has a circle here.
               </h2>
-          </Reveal>
               <Link
                 href="/explore"
                 className="inline-flex items-center gap-2 text-sm font-heading font-semibold hover:opacity-80 transition-all"
@@ -457,6 +456,7 @@ export function LandingContent() {
                 Browse all circles <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
+          </Reveal>
           </div>
           <CircleTypeList />
         </section>
