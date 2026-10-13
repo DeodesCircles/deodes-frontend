@@ -339,6 +339,17 @@ export function LandingContent() {
       <div className="auroral-mesh min-h-screen">
         {/* ═══ HERO — left-aligned, zero-lag rotating word ═══ */}
         <section className="relative z-10 min-h-[92vh] flex flex-col justify-center overflow-hidden">
+          {/* Compressed aurora backdrop (1280px, <3KB): plain <img> so it
+              paints on first paint with zero JS cost. object-cover lets the
+              720p file fill any viewport — pure blur upscales invisibly. */}
+          <img
+            src="/images/hero-bg.webp"
+            alt=""
+            aria-hidden="true"
+            fetchPriority="high"
+            decoding="async"
+            className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+          />
           <div
             aria-hidden="true"
             className="grain-overlay pointer-events-none absolute inset-0"
