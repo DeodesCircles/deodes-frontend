@@ -81,8 +81,8 @@ const circleTypes = [
 const steps = [
   {
     n: "01",
-    title: "Create your signal",
-    desc: "Sign in with a passkey — Face ID or fingerprint. Your Arc wallet is created automatically. No email, no seed phrase, no KYC.",
+    title: "Bring any identity",
+    desc: "Google, email, Face ID or your own wallet. DEODES meets you where you are — no seed phrases, no KYC.",
   },
   {
     n: "02",

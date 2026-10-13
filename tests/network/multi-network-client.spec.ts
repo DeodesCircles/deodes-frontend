@@ -29,7 +29,7 @@ describe("MultiNetworkClient", () => {
       initialNetwork: "testnet",
       createAdapter: () => ({
         getNetwork: async () => ({
-          passphrase: configs.testnet.networkPassphrase,
+          passphrase: configs.testnet.networkPassphrase ?? "test-passphrase",
         }),
       }),
     });
@@ -42,7 +42,7 @@ describe("MultiNetworkClient", () => {
       initialNetwork: "testnet",
       createAdapter: () => ({
         getNetwork: async () => ({
-          passphrase: configs.testnet.networkPassphrase,
+          passphrase: configs.testnet.networkPassphrase ?? "test-passphrase",
         }),
       }),
     });
@@ -57,7 +57,7 @@ describe("MultiNetworkClient", () => {
       initialNetwork: selected,
       createAdapter: (config) => ({
         getNetwork: async () => ({
-          passphrase: config.networkPassphrase,
+          passphrase: config.networkPassphrase ?? "test-passphrase",
         }),
       }),
     });

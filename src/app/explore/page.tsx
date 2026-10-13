@@ -3,6 +3,7 @@ import Link from "next/link"
 import { ArrowRight, CirclePlus, Compass, Crown, Globe, Lock, Users } from "lucide-react"
 import { buildRouteMetadata } from "@/lib/seo/route-metadata"
 import { PublicLayout } from "@/components/layout/public-layout"
+import { ExploreLive } from "@/components/explore/explore-live"
 import { Routes } from "@/lib/constants"
 
 export const metadata: Metadata = buildRouteMetadata("/explore")
@@ -76,6 +77,8 @@ export default function ExplorePage() {
               How circles work
             </Link>
           </div>
+
+          <ExploreLive />
 
           <div id="types" className="mt-16 grid gap-4 md:grid-cols-2 scroll-mt-24">
             {types.map((c) => {
