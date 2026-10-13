@@ -192,7 +192,7 @@ export default function ProfilePage() {
                   {formatAddress(user.walletAddress)}
                 </span>
                 <Badge variant="premium" size="sm">
-                  MoiScore {user.moiScore}
+                  DeoScore {user.moiScore}
                 </Badge>
               </div>
 

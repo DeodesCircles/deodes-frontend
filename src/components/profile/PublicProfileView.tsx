@@ -55,7 +55,7 @@ export function PublicProfileView({ profile, className }: PublicProfileViewProps
         <div className="relative mt-5 flex flex-wrap items-center justify-center gap-2">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-aurora-violet/30 bg-aurora-violet/10 px-3 py-1 text-xs text-aurora-violet">
             <Sparkles className="h-3 w-3" aria-hidden="true" />
-            MoiScore {profile.moiScore}
+            DeoScore {profile.moiScore}
           </span>
 
           {profile.walletAddressPreview && (

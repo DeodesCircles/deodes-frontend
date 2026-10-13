@@ -104,7 +104,7 @@ export default function PersonProfilePage() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="border border-white/10 rounded-xl p-5 bg-white/[0.02]">
           <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
-            <span>MoiScore Reputation</span>
+            <span>DeoScore Reputation</span>
             <Zap className="h-4 w-4 text-aurora-violet" />
           </div>
           <p className="text-3xl font-bold font-heading text-aurora-violet">{person.moiScore}</p>

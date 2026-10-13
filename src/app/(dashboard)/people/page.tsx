@@ -325,7 +325,7 @@ export default function PeopleDirectoryPage() {
               {/* Stats pill bar */}
               <div className="grid grid-cols-3 gap-2 bg-white/5 rounded-lg p-3 text-center">
                 <div>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">MoiScore</p>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">DeoScore</p>
                   <p className="text-sm font-bold text-aurora-violet font-heading">{person.moiScore}</p>
                 </div>
                 <div>

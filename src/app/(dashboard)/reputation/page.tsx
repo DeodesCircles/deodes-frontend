@@ -79,7 +79,7 @@ export default function ReputationPage() {
           </span>
         </div>
         <h1 className="font-heading text-5xl font-bold tracking-tight md:text-7xl">
-          Your <span className="holo-text">MoiScore</span>
+          Your <span className="holo-text">DeoScore</span>
         </h1>
         <p className="mt-4 max-w-2xl text-base text-muted-foreground md:text-lg">
           A living record of reliability, consistency, and participation across your savings circles.

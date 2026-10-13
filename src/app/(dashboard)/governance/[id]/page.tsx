@@ -318,7 +318,7 @@ export default function ProposalDetailPage() {
             <ul className="text-xs text-muted-foreground space-y-2">
               <li className="flex items-center gap-2">
                 <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
-                Min MoiScore: 100
+                Min DeoScore: 100
               </li>
               <li className="space-y-1.5">
                 <div className="flex items-center gap-2">

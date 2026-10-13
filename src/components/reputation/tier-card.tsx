@@ -220,7 +220,7 @@ export function TierCard({ score }: TierCardProps) {
               <Badge variant={visuals.badgeVariant} size="md">{formatNumber(score)}</Badge>
             </div>
             <p className="text-sm text-muted-foreground mt-1">
-              MoiScore: {formatNumber(score)} / 1,000
+              DeoScore: {formatNumber(score)} / 1,000
             </p>
           </div>
 

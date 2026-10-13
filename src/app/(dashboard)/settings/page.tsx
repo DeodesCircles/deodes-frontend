@@ -55,7 +55,7 @@ export default function SettingsHubPage() {
             </Link>
           </div>
           <div className="text-right shrink-0">
-            <p className="text-xs text-muted-foreground">MoiScore</p>
+            <p className="text-xs text-muted-foreground">DeoScore</p>
             <p className="font-heading text-lg font-bold gradient-text">{user?.moiScore ?? 0}</p>
           </div>
         </div>

@@ -21,7 +21,7 @@ export function MoiScoreGauge({ score, className }: MoiScoreGaugeProps) {
         "relative isolate overflow-hidden border border-aurora-violet/25 bg-card/60 px-6 py-8",
         className,
       )}
-      aria-label={`MoiScore ${normalizedScore} out of 1000`}
+      aria-label={`DeoScore ${normalizedScore} out of 1000`}
       data-testid="moi-score-gauge"
     >
       <div
