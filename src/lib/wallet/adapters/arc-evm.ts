@@ -132,13 +132,27 @@ export function createArcEvmAdapter(): WalletAdapter {
     },
 
     async getPublicKey() {
-      if (cachedAddress) return cachedAddress
+      // Always re-query the provider: the user can switch accounts in the
+      // wallet at any time, and a cached (stale) address makes the backend
+      // recover a different signer than the nonce was issued for -> 401
+      // loop with no way out except reconnect. Fall back to cache only if
+      // the provider stops responding.
       const provider = getEthereumProvider()
-      if (!provider) throw { adapter: "arc-evm" as const, code: "not_installed" as const, message: "EVM wallet not installed" }
-      const accounts = (await provider.request({ method: "eth_accounts" })) as string[]
-      if (!accounts?.[0]) throw { adapter: "arc-evm" as const, code: "internal" as const, message: "No accounts", cause: "empty" }
-      cachedAddress = accounts[0]
-      return accounts[0]
+      if (!provider) {
+        if (cachedAddress) return cachedAddress
+        throw { adapter: "arc-evm" as const, code: "not_installed" as const, message: "EVM wallet not installed" }
+      }
+      try {
+        const accounts = (await provider.request({ method: "eth_accounts" })) as string[]
+        if (accounts?.[0] && isArcAddress(accounts[0])) {
+          cachedAddress = accounts[0]
+          return accounts[0]
+        }
+      } catch {
+        // fall through to cache below
+      }
+      if (cachedAddress) return cachedAddress
+      throw { adapter: "arc-evm" as const, code: "internal" as const, message: "No accounts", cause: "empty" }
     },
 
     async signMessage(message: string) {

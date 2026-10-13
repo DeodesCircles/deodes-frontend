@@ -45,6 +45,9 @@ export function toFriendlyWalletAuthError(raw: string | null | undefined): strin
   if (isUserRejectionMessage(raw)) {
     return "Signature request was rejected. Reconnect and approve the signature to continue."
   }
+  if (/401|unauthorized|not recognized|verification failed|does not match|expired/i.test(raw)) {
+    return "This signature wasn't recognized. Make sure your wallet is on the same account you connected with, then retry signing."
+  }
   return raw
 }
 

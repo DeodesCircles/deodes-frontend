@@ -202,10 +202,10 @@ describe("useWalletAuth bridge", () => {
     })
 
     await waitFor(() => {
-      expect(result.current.error).toContain("signature verification failed")
+      expect(result.current.error).toContain("wasn't recognized")
     })
     expect(useMultiWalletStore.getState().loginError).toContain(
-      "signature verification failed",
+      "same account you connected with",
     )
     expect(useMultiWalletStore.getState().registerError).toBeNull()
     expect(mockReplace).not.toHaveBeenCalled()

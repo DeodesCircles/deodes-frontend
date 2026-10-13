@@ -394,7 +394,7 @@ export const useAuthFlowStore = create<AuthFlowStore>()(
           try {
             const initialState = get();
             const mode = initialState.mode;
-            const address = initialState.connection.address;
+            let address = initialState.connection.address;
             const walletId = initialState.connection.walletId;
 
             if (!address || !walletId) {
@@ -410,6 +410,27 @@ export const useAuthFlowStore = create<AuthFlowStore>()(
                 error: { code: "internal_error", message: msg },
               });
               return;
+            }
+
+            // Re-resolve the address from the live adapter BEFORE requesting
+            // the nonce. Restored sessions (and mid-visit account switches)
+            // can hold a stale address while the wallet signs with the
+            // current one — backend then recovers a different signer and the
+            // user spins on 401s with no way out. The fresh address wins for
+            // this whole attempt (nonce + sign + verify stay consistent).
+            try {
+              const liveAdapter =
+                useMultiWalletStore.getState().wallets[walletId]?.adapter;
+              const fresh = await liveAdapter?.getPublicKey?.();
+              if (typeof fresh === "string" && fresh && fresh !== address) {
+                address = fresh;
+                set((s) => ({
+                  connection: { ...s.connection, address: fresh },
+                }));
+              }
+            } catch {
+              // Provider hiccup — proceed with the stored address; the sign
+              // step will surface a actionable error if it is wrong.
             }
 
             recordMetric("wallet.sign.attempt", 1, { mode, walletId });
@@ -573,11 +594,24 @@ export const useAuthFlowStore = create<AuthFlowStore>()(
             if (abortController.signal.aborted) return;
 
             const axiosErr = err as {
-              response?: { status?: number; data?: { error?: string } };
+              response?: {
+                status?: number;
+                data?: { error?: string; message?: string };
+              };
             };
-            const errorMessage =
+            // The backend envelope carries the message in `message` (RFC 9457
+            // style), not `error` — read both so users never see axios'
+            // raw "Request failed with status code 401".
+            const serverMessage =
               axiosErr?.response?.data?.error ??
-              (err instanceof Error ? err.message : "Signing failed");
+              axiosErr?.response?.data?.message;
+            const errorMessage =
+              serverMessage ??
+              (axiosErr?.response?.status === 401
+                ? "This signature wasn't recognized. Make sure your wallet is on the account you connected, then retry signing."
+                : err instanceof Error
+                  ? err.message
+                  : "Signing failed");
 
             const currentState = get();
             captureAuthError(err, {
