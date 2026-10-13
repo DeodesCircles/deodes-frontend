@@ -104,7 +104,7 @@ export default function WalletSettingsPage() {
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <WalletIcon className="h-4 w-4 text-aurora-violet" />
-                <span className="text-xs font-heading font-semibold text-muted-foreground uppercase tracking-wider">Auto-Created Wallet</span>
+                <span className="text-xs font-heading font-semibold text-muted-foreground uppercase tracking-wider">Hosted Wallet</span>
               </div>
               <div className="flex items-center gap-2">
                 {editingNickname ? (
@@ -142,13 +142,13 @@ export default function WalletSettingsPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="border border-white/10 rounded-xl p-5 space-y-2">
           <Shield className="h-5 w-5 text-aurora-violet" />
-          <h3 className="font-heading text-sm font-semibold text-foreground">Passkey Secured</h3>
-          <p className="text-xs text-muted-foreground leading-relaxed">Your wallet is secured by your device biometrics. No private keys leave your device.</p>
+          <h3 className="font-heading text-sm font-semibold text-foreground">Custodial Hosting</h3>
+          <p className="text-xs text-muted-foreground leading-relaxed">Your wallet is hosted by Deodes. We hold the keys on your behalf — it is not self-custodial.</p>
         </div>
         <div className="border border-white/10 rounded-xl p-5 space-y-2">
           <WalletIcon className="h-5 w-5 text-emerald-400" />
-          <h3 className="font-heading text-sm font-semibold text-foreground">Auto-Funded</h3>
-          <p className="text-xs text-muted-foreground leading-relaxed">Your wallet was automatically funded with XLM. No manual setup needed.</p>
+          <h3 className="font-heading text-sm font-semibold text-foreground">Ready to Use</h3>
+          <p className="text-xs text-muted-foreground leading-relaxed">Your wallet was created automatically. No manual setup needed.</p>
         </div>
       </div>
 

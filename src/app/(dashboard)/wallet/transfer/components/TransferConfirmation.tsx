@@ -13,8 +13,8 @@ import {
 } from "lucide-react"
 import { ButtonLink } from "@/components/ui/button"
 import { copyToClipboard } from "@/lib/clipboard"
-import { getExplorerTxUrl } from "@/lib/explorer"
-import { STELLAR_NETWORK } from "@/lib/constants"
+import { getArcExplorerTxUrl } from "@/lib/explorer"
+import { ARC_NETWORK } from "@/lib/constants"
 import { formatAddress } from "@/lib/formatters"
 import { cn } from "@/lib/cn"
 import { useTransferPoll, type TxStatus } from "../hooks/useTransferPoll"
@@ -73,7 +73,7 @@ export function TransferConfirmation({
 }: TransferConfirmationProps) {
   const { status, attempts } = useTransferPoll(txnHash)
   const meta = STATUS_META[status]
-  const explorerUrl = getExplorerTxUrl(txnHash, STELLAR_NETWORK)
+  const explorerUrl = getArcExplorerTxUrl(txnHash)
   const [copied, setCopied] = useState(false)
 
   const handleCopy = async () => {
@@ -84,7 +84,7 @@ export function TransferConfirmation({
     }
   }
 
-  const networkLabel = STELLAR_NETWORK === "mainnet" ? "Mainnet" : "Testnet"
+  const networkLabel = ARC_NETWORK === "mainnet" ? "Arc Mainnet" : "Arc Testnet"
 
   return (
     <div
@@ -105,7 +105,7 @@ export function TransferConfirmation({
           <span
             className={cn(
               "h-1.5 w-1.5 rounded-full",
-              STELLAR_NETWORK === "mainnet" ? "bg-emerald-400" : "bg-amber-400",
+              ARC_NETWORK === "mainnet" ? "bg-emerald-400" : "bg-amber-400",
             )}
           />
           {networkLabel}
@@ -217,7 +217,7 @@ export function TransferConfirmation({
           rel="noopener noreferrer"
           className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border/60 bg-card px-4 py-3 text-sm font-medium text-foreground transition-colors hover:border-aurora-violet/40 hover:text-aurora-violet"
         >
-          View on Stellar Explorer
+          View on Arc Explorer
           <ExternalLink className="h-4 w-4" />
         </a>
 

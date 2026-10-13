@@ -46,7 +46,12 @@ export const ARC_MIN_MAX_FEE_GWEI = 20
 export const DEODES_CONTRACT_ID =
   process.env.NEXT_PUBLIC_DEODES_CONTRACT_ID || ""
 
-/** LEGACY Stellar network — kept for migration reference. DEODES builds on Arc, not Stellar. */
+/**
+ * LEGACY Stellar network — NOT user-facing. The wallet UI is Arc-only.
+ * These exports are kept ONLY because non-UI modules still import them
+ * (balance API route, transfer polling/confirmation, passkey adapter).
+ * Do not reference them from any wallet UI component; use ARC_* above.
+ */
 export const STELLAR_NETWORK: "testnet" | "mainnet" =
   (process.env.NEXT_PUBLIC_STELLAR_NETWORK as "testnet" | "mainnet") ?? "testnet"
 
@@ -60,13 +65,10 @@ export const STELLAR_RPC_URL =
     ? "https://soroban.stellar.org"
     : "https://soroban-testnet.stellar.org"
 
-export const USDC_CONTRACT_ID =
-  process.env.NEXT_PUBLIC_USDC_CONTRACT_ID ||
-  "CAWQBY6LQ6TUKH4H6RDRSFPSZZMEQH7HURB5X4AFTYLA3T4R7SCAORR6"
-
 export const APP_NAME = "Deodes"
 export const APP_CHAIN = "Arc" as const
 
+/** Arc-only product: wallet UI shows USDC on Arc. No legacy tokens. */
 export const SUPPORTED_CURRENCIES = [
   {
     code: "USDC",
@@ -75,22 +77,6 @@ export const SUPPORTED_CURRENCIES = [
     decimals: 18,
     chain: "arc",
     isNativeGas: true,
-  },
-  {
-    code: "USDC-LEGACY",
-    name: "USD Coin (Stellar legacy)",
-    icon: "/icons/usdc.svg",
-    decimals: 7,
-    issuer: "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5",
-    chain: "stellar-legacy",
-  },
-  {
-    code: "XLM-LEGACY",
-    name: "Stellar Lumens (legacy)",
-    icon: "/icons/xlm.svg",
-    decimals: 7,
-    isNative: false,
-    chain: "stellar-legacy",
   },
 ] as const
 
@@ -189,6 +175,7 @@ export const Routes = {
   WALLET_WITHDRAW: "/wallet/withdraw",
   WALLET_TRANSFER: "/wallet/transfer",
   WALLET_TRANSACTIONS: "/wallet/transactions",
+  WALLET_AUTO_DEBIT: "/wallet/auto-debit",
   WALLET_TRANSACTION_DETAIL: (id: string) => `/wallet/transactions/${id}`,
   WALLET_ADDRESSES: "/wallet/addresses",
   WALLET_SETTINGS: "/wallet/settings",

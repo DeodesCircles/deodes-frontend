@@ -3,7 +3,7 @@
 import { logger } from "@/lib/logger"
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { ArrowLeft, Copy, Check, Plus, Trash2, Wallet as WalletIcon, Star, ExternalLink, Send, Download, Upload } from "lucide-react"
+import { ArrowLeft, Copy, Check, Plus, Trash2, Wallet as WalletIcon, ExternalLink, Send, Download, Upload } from "lucide-react"
 import { exportAddressBookToCSV, importAddressBookFromCSV, mergeAddressBook } from "@/lib/wallet/address-book-csv"
 import { PageHeader } from "@/components/shared/page-header"
 import { Button } from "@/components/ui/button"
@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input"
 import { get } from "@/lib/api-client"
 import { useUIStore } from "@/stores/ui-store"
 import { formatAddress } from "@/lib/formatters"
-import { getSmartExplorerAddressUrl } from "@/lib/explorer"
+import { getArcExplorerAddressUrl } from "@/lib/explorer"
 import { copyToClipboard } from "@/lib/clipboard"
 
 interface StoredWallet {
@@ -126,7 +126,7 @@ export default function AddressesPage() {
     e.target.value = ""
   }
 
-  const autoWallet = wallets.find((w) => w.walletType === "hosted" || w.walletType === "auto" || w.walletType === "passkey")
+  const primaryWallet = wallets.find((w) => w.walletType === "hosted" || w.walletType === "auto" || w.walletType === "passkey")
 
   return (
     <div className="space-y-8">
@@ -139,23 +139,23 @@ export default function AddressesPage() {
       ) : (
         <>
           {/* Primary wallet — accent bar */}
-          {autoWallet && (
+          {primaryWallet && (
             <div className="relative">
               <div className="absolute left-0 top-3 bottom-3 w-0.5 bg-gradient-to-b from-aurora-violet to-aurora-indigo rounded-full" />
               <div className="pl-6 py-1">
                 <div className="flex items-center gap-2 mb-2">
                   <WalletIcon className="h-4 w-4 text-aurora-violet" />
                   <span className="text-xs font-heading font-semibold text-muted-foreground uppercase tracking-wider">Primary Wallet</span>
-                  <span className="inline-flex items-center gap-1 text-[10px] text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full">
-                    <Star className="h-2.5 w-2.5" /> Auto
+                  <span className="inline-flex items-center gap-1 text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                    Hosted
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <code className="text-sm font-mono text-foreground bg-white/5 px-2 py-1 rounded">{formatAddress(autoWallet.publicKey)}</code>
-                  <button type="button" onClick={() => copyAddr(autoWallet.publicKey)} className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Copy primary wallet public key">
-                    {copiedKey === autoWallet.publicKey ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
+                  <code className="text-sm font-mono text-foreground bg-white/5 px-2 py-1 rounded">{formatAddress(primaryWallet.publicKey)}</code>
+                  <button type="button" onClick={() => copyAddr(primaryWallet.publicKey)} className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Copy primary wallet address">
+                    {copiedKey === primaryWallet.publicKey ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
                   </button>
-                  <a href={getSmartExplorerAddressUrl(autoWallet.publicKey)} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-aurora-cyan transition-colors" aria-label="Open primary wallet in Arc Explorer">
+                  <a href={getArcExplorerAddressUrl(primaryWallet.publicKey)} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-aurora-cyan transition-colors" aria-label="Open primary wallet in Arc Explorer">
                     <ExternalLink className="h-3.5 w-3.5" />
                   </a>
                 </div>
@@ -212,7 +212,7 @@ export default function AddressesPage() {
               <div className="mt-4 border border-white/10 rounded-xl p-5 space-y-3">
                 <h4 className="text-sm font-medium text-foreground">New Address</h4>
                 <Input label="Label" value={newLabel} onChange={(e) => setNewLabel(e.target.value)} placeholder="e.g. My Savings" />
-                <Input label="Arc Public Key" value={newKey} onChange={(e) => setNewKey(e.target.value)} placeholder="G..." />
+                <Input label="Arc address" value={newKey} onChange={(e) => setNewKey(e.target.value)} placeholder="0x..." />
                 <div className="flex gap-2 justify-end">
                   <Button variant="outline" size="sm" onClick={() => setShowForm(false)}>Cancel</Button>
                   <Button variant="primary" size="sm" onClick={addAddress} disabled={!newLabel.trim() || !newKey.trim()}>Save</Button>

@@ -5,13 +5,15 @@ import { TransferConfirmation } from "../components/TransferConfirmation"
 // ── Module mocks ────────────────────────────────────────────────────────────
 
 vi.mock("@/lib/constants", () => ({
-  STELLAR_NETWORK: "testnet",
+  ARC_NETWORK: "testnet",
+  ARC_RPC_URL: "https://rpc.testnet.arc.io",
+  // Legacy Stellar RPC still imported by useTransferPoll (mocked client ignores it)
   STELLAR_RPC_URL: "https://soroban-testnet.stellar.org",
 }))
 
 vi.mock("@/lib/explorer", () => ({
-  getExplorerTxUrl: (_hash: string, network: string) =>
-    `https://stellar.expert/explorer/${network === "mainnet" ? "public" : "testnet"}/tx/${_hash}`,
+  getArcExplorerTxUrl: (_hash: string) =>
+    `https://explorer.testnet.arc.io/tx/${_hash}`,
 }))
 
 vi.mock("@/lib/clipboard", () => ({
@@ -66,7 +68,7 @@ describe("TransferConfirmation", () => {
     expect(screen.getByText("USDC")).toBeDefined()
 
     // Shows pending label
-    expect(screen.getByText(/Confirming on Stellar/i)).toBeDefined()
+    expect(screen.getByText(/Confirming on Arc/i)).toBeDefined()
   })
 
   it("shows destination address in the detail rows", () => {
@@ -91,17 +93,15 @@ describe("TransferConfirmation", () => {
 
     // Explorer anchor
     const explorerLink = screen.getByRole("link", {
-      name: /view transaction on stellar explorer/i,
+      name: /view transaction on arc explorer/i,
     }) as HTMLAnchorElement
-    expect(explorerLink.href).toContain("stellar.expert")
-    expect(explorerLink.href).toContain("testnet")
     expect(explorerLink.href).toContain(DEFAULT_PROPS.txnHash)
     expect(explorerLink.target).toBe("_blank")
   })
 
   it("renders the network badge with correct label", () => {
     render(<TransferConfirmation {...DEFAULT_PROPS} />)
-    expect(screen.getByText("Testnet")).toBeDefined()
+    expect(screen.getByText("Arc Testnet")).toBeDefined()
   })
 
   it("transitions to finalized state when RPC returns SUCCESS", async () => {
@@ -109,10 +109,9 @@ describe("TransferConfirmation", () => {
 
     render(<TransferConfirmation {...DEFAULT_PROPS} />)
 
-    // Advance past the initial delay
+    // Advance past the initial delay (async flush so the mocked RPC resolves)
     await act(async () => {
-      vi.advanceTimersByTime(2_000)
-      await Promise.resolve()
+      await vi.advanceTimersByTimeAsync(2_000)
     })
 
     expect(screen.getByText("Transfer Confirmed")).toBeDefined()
@@ -129,8 +128,7 @@ describe("TransferConfirmation", () => {
     render(<TransferConfirmation {...DEFAULT_PROPS} />)
 
     await act(async () => {
-      vi.advanceTimersByTime(2_000)
-      await Promise.resolve()
+      await vi.advanceTimersByTimeAsync(2_000)
     })
 
     expect(screen.getByText("Transaction Failed")).toBeDefined()
