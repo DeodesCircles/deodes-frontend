@@ -22,6 +22,7 @@
     "test:visual:update": "playwright test -c playwright.storybook.config.ts --update-snapshots"
   },
   "dependencies": {
+    "@base-org/account": "^2.5.13",
     "@circle-fin/app-kit": "^1.16.0",
     "@fontsource-variable/dm-sans": "^5.2.8",
     "@fontsource-variable/fraunces": "^5.3.0",
@@ -38,9 +39,13 @@
     "@stellar/freighter-api": "^6.0.1",
     "@stellar/stellar-base": "^15.0.0",
     "@tanstack/react-query": "^5.100.9",
+    "@wagmi/connectors": "^7.2.1",
     "@walletconnect/core": "2.19.2",
     "@walletconnect/modal": "2.7.0",
     "@walletconnect/sign-client": "2.19.2",
+    "@x402/core": "^2.28.0",
+    "@x402/evm": "^2.28.0",
+    "@x402/svm": "^2.28.0",
     "axios": "^1.16.0",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
