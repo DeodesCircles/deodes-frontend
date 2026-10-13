@@ -77,7 +77,7 @@ function ScreenContent({ screen, address, amount, asset, destination, operationT
     case "arc_logo":
       return (
         <div className="text-center">
-          <div className="text-[10px] text-white font-bold">Stellar</div>
+          <div className="text-[10px] text-white font-bold">Arc</div>
           <div className="text-[6px] text-gray-400 mt-1">Opening<AnimatedDots /></div>
         </div>
       )
@@ -85,7 +85,7 @@ function ScreenContent({ screen, address, amount, asset, destination, operationT
     case "waiting_commands":
       return (
         <div className="text-center">
-          <div className="text-[8px] text-green-400">Stellar</div>
+          <div className="text-[8px] text-green-400">Arc</div>
           <div className="text-[5px] text-gray-400 mt-1">Waiting for<br />commands...</div>
         </div>
       )
@@ -126,7 +126,7 @@ function ScreenContent({ screen, address, amount, asset, destination, operationT
             {operationType ? `${operationType}` : "Payment"}
             <br />
             <span className="text-gray-400">
-              {amount || "100"} {asset || "XLM"}
+              {amount || "100"} {asset || "USDC"}
             </span>
           </div>
         </div>
@@ -139,9 +139,9 @@ function ScreenContent({ screen, address, amount, asset, destination, operationT
           <div className="text-[4px] text-gray-300 text-left leading-tight">
             Dest: {destination ? `${destination.slice(0, 8)}...` : "GABC..."}
             <br />
-            Amt: {amount || "100"} {asset || "XLM"}
+            Amt: {amount || "100"} {asset || "USDC"}
             <br />
-            Fee: 0.00001 XLM
+            Fee: 0.01 USDC
           </div>
           <div className="flex justify-center gap-2 mt-1">
             <span className="text-[5px] text-green-400">✓ Sign</span>
@@ -193,7 +193,7 @@ function ScreenContent({ screen, address, amount, asset, destination, operationT
       return (
         <div className="text-center">
           <div className="text-[6px] text-blue-400">Pair with</div>
-          <div className="text-[5px] text-white">Moistello?</div>
+          <div className="text-[5px] text-white">Deodes?</div>
           <div className="flex justify-center gap-2 mt-1">
             <span className="text-[5px] text-green-400">✓</span>
             <span className="text-[5px] text-red-400">✗</span>

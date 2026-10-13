@@ -22,7 +22,7 @@ import { useTransferPoll, type TxStatus } from "../hooks/useTransferPoll"
 interface TransferConfirmationProps {
   txnHash: string
   amount: string
-  currency: "USDC" | "XLM"
+  currency: "USDC"
   recipient: string
   networkFee: number
 }

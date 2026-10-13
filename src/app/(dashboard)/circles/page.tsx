@@ -50,7 +50,7 @@ const SORT_OPTIONS = [
   { value: "members-desc", label: "Members (Most)", sortBy: "members", sortOrder: "desc" as const },
 ]
 
-const CURRENCIES: Currency[] = ["USDC", "XLM"]
+const CURRENCIES: Currency[] = ["USDC"]
 
 const typeAccentColors: Record<CircleType, string> = {
   public: "from-emerald-500 to-aurora-cyan",

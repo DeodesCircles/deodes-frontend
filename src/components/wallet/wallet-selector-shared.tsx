@@ -25,6 +25,7 @@ export interface WalletDescriptor {
   status: "detected" | "not_detected"
   category?: string
   description?: string
+  installUrl?: string
 }
 
 const walletIcons: Record<string, string> = {
@@ -100,6 +101,7 @@ interface WalletItemProps {
   activeId: WalletId | null
   onSelect: (id: WalletId) => void
   description?: string
+  installUrl?: string
   isOnline?: boolean
 }
 
@@ -111,12 +113,38 @@ export function WalletItem({
   activeId,
   onSelect,
   description,
+  installUrl,
   isOnline = true,
 }: WalletItemProps) {
   const isWC = id === "walletconnect"
   const isPasskey = id === "passkey"
   const available = isWC || isPasskey || status === "detected"
   const isBusy = isConnecting && activeId === id
+  const showInstall = !available && !isWC && !isPasskey && !!installUrl
+
+  if (showInstall) {
+    return (
+      <a
+        href={installUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={`Install ${name}`}
+        className={cn(
+          "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all",
+          "border border-dashed border-aurora-violet/40 hover:border-aurora-violet hover:bg-white/[0.04]",
+        )}
+      >
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold bg-white/10 text-aurora-cyan">
+          {walletIcons[id] ?? id.charAt(0).toUpperCase()}
+        </span>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-foreground">{name}</p>
+          <p className="text-2xs text-muted-foreground mt-0.5">Not installed — get the extension to connect</p>
+        </div>
+        <span className="text-xs text-aurora-violet font-medium shrink-0">Install</span>
+      </a>
+    )
+  }
 
   return (
     <button
@@ -265,6 +293,7 @@ export function WalletList({
           name={w.name}
           status={w.status}
           description={w.description}
+          installUrl={w.installUrl}
           isConnecting={isConnecting}
           activeId={activeWalletId}
           onSelect={onSelect}

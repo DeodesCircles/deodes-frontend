@@ -2,7 +2,7 @@
 
 import React from "react"
 
-import { DollarSign, Clock, TriangleAlert } from "lucide-react"
+import { DollarSign, Clock, TriangleAlert, Zap, HandCoins } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/cn"
 import type { CircleFormData, Frequency, Currency } from "@/types"
@@ -14,8 +14,7 @@ interface CreateStepFinancialsProps {
 }
 
 const CURRENCIES: { value: Currency; label: string }[] = [
-  { value: "USDC", label: "USDC" },
-  { value: "XLM", label: "XLM" },
+  { value: "USDC", label: "USDC on Arc" },
 ]
 
 const FREQUENCIES: { value: Frequency; label: string; icon: React.ReactNode }[] = [
@@ -27,7 +26,7 @@ const FREQUENCIES: { value: Frequency; label: string; icon: React.ReactNode }[] 
 
 export function CreateStepFinancials({ formData, setFormData, errors }: CreateStepFinancialsProps) {
   const isPremium = formData.circleType === "premium"
-  const minContribution = isPremium ? (formData.currency === "USDC" ? 50 : formData.currency === "XLM" ? 100 : 1) : 1
+  const minContribution = isPremium ? 50 : 1
   const belowMin = isPremium && formData.contributionAmount < minContribution
 
   return (
@@ -116,6 +115,50 @@ export function CreateStepFinancials({ formData, setFormData, errors }: CreateSt
               </span>
             </button>
           ))}
+        </div>
+      </div>
+
+      <div>
+        <p id="contribution-mode-label" className="mb-2 block font-heading text-sm text-muted-foreground">
+          Contribution Mode
+        </p>
+        <div role="group" aria-labelledby="contribution-mode-label" className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <button
+            type="button"
+            aria-pressed={formData.autoDebit === true}
+            onClick={() => setFormData((prev) => ({ ...prev, autoDebit: true }))}
+            className={cn(
+              "rounded-xl p-4 text-left transition-all duration-300 border-l-4",
+              formData.autoDebit === true
+                ? "glass-strong holo-border border-l-aurora-violet"
+                : "glass hover:glass-strong border-l-white/10",
+            )}
+          >
+            <span className="flex items-center gap-2 font-heading text-sm font-semibold text-foreground dark:text-white">
+              <Zap className="h-4 w-4 text-aurora-violet" aria-hidden="true" /> Auto
+            </span>
+            <span className="mt-1 block text-xs text-muted-foreground">
+              Members consent once; contributions pull automatically each round. Highest trust.
+            </span>
+          </button>
+          <button
+            type="button"
+            aria-pressed={formData.autoDebit !== true}
+            onClick={() => setFormData((prev) => ({ ...prev, autoDebit: false }))}
+            className={cn(
+              "rounded-xl p-4 text-left transition-all duration-300 border-l-4",
+              formData.autoDebit !== true
+                ? "glass-strong holo-border border-l-emerald-400"
+                : "glass hover:glass-strong border-l-white/10",
+            )}
+          >
+            <span className="flex items-center gap-2 font-heading text-sm font-semibold text-foreground dark:text-white">
+              <HandCoins className="h-4 w-4 text-emerald-400" aria-hidden="true" /> Flexible
+            </span>
+            <span className="mt-1 block text-xs text-muted-foreground">
+              Members pay manually each round. Classic savings-circle style.
+            </span>
+          </button>
         </div>
       </div>
 

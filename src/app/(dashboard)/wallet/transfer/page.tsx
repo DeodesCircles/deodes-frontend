@@ -19,7 +19,8 @@ function WalletTransferContent() {
 
   const [recipient, setRecipient] = useState(initialRecipient)
   const [amount, setAmount] = useState("")
-  const [currency, setCurrency] = useState<"USDC" | "XLM">("USDC")
+  // Arc-only: USDC is the sole transfer asset (native gas + ERC-20 are one balance).
+  const currency = "USDC" as const
   const [memo, setMemo] = useState("")
   const [step, setStep] = useState<"form" | "confirm" | "success">("form")
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -28,9 +29,8 @@ function WalletTransferContent() {
 
   // Balances
   const usdcBalance = 1250.0
-  const xlmBalance = 450.75
-  const maxAvailable = currency === "USDC" ? usdcBalance : xlmBalance
-  const networkFee = currency === "USDC" ? 0.01 : 0.0001
+  const maxAvailable = usdcBalance
+  const networkFee = 0.01
 
   const handleValidate = () => {
     setError(null)
@@ -38,8 +38,8 @@ function WalletTransferContent() {
       setError("Please enter a valid Arc recipient address.")
       return false
     }
-    if (!recipient.startsWith("G") || recipient.length < 20) {
-      setError("Invalid Arc public key format (must start with G).")
+    if (!/^0x[0-9a-fA-F]{40}$/.test(recipient.trim())) {
+      setError("Invalid Arc address format (must be 0x + 40 hex characters).")
       return false
     }
     const numAmount = parseFloat(amount)
@@ -86,7 +86,7 @@ function WalletTransferContent() {
     <div data-testid="wallet-transfer-page" className="max-w-2xl mx-auto space-y-8 pb-12">
       <PageHeader
         title="Transfer Assets"
-        description="Send USDC or XLM instantly across the Arc network."
+        description="Send USDC instantly on the Arc network."
         action={
           <ButtonLink href="/wallet" variant="ghost" size="sm" leftIcon={<ArrowLeft className="w-4 h-4" />}>
             Back to Wallet
@@ -111,7 +111,7 @@ function WalletTransferContent() {
               data-testid="recipient-input"
               value={recipient}
               onChange={(e) => setRecipient(e.target.value)}
-              placeholder="G... (Arc Public Key)"
+              placeholder="0x... (Arc address)"
             />
           </div>
 
@@ -128,19 +128,12 @@ function WalletTransferContent() {
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0.00"
               />
-              <select
-                aria-label="Transfer currency"
-                value={currency}
-                onChange={(e) => {
-                  if (e.target.value === "USDC" || e.target.value === "XLM") {
-                    setCurrency(e.target.value)
-                  }
-                }}
-                className="bg-background border border-border rounded-xl px-4 py-2 font-medium text-foreground"
+              <span
+                aria-label="Transfer currency: USDC"
+                className="bg-background border border-border rounded-xl px-4 py-2 font-medium text-foreground inline-flex items-center"
               >
-                <option value="USDC">USDC</option>
-                <option value="XLM">XLM</option>
-              </select>
+                USDC
+              </span>
             </div>
             <p className="text-xs text-muted-foreground mt-2">
               Available: {maxAvailable} {currency}

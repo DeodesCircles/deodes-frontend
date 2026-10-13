@@ -35,8 +35,8 @@ import {
 
 export const metadata: Metadata = {
   title: "Deodes — Arc Savings Circles",
-  description: "Decentralized rotating savings and credit circles on Arc. Join trustless ROSCAs with USDC/XLM, build DeoScore reputation, and achieve financial freedom.",
-  keywords: "deodes, arc, blockchain, savings circles, defi, decentralized finance, rotating credit, USDC, XLM, smart contracts, arc",
+  description: "Decentralized rotating savings and credit circles on Arc. Join trustless ROSCAs with USDC, build DeoScore reputation, and achieve financial freedom.",
+  keywords: "deodes, arc, blockchain, savings circles, defi, decentralized finance, rotating credit, USDC, smart contracts, arc",
   authors: [{ name: AUTHOR_NAME }],
   creator: "Deodes",
   publisher: "Deodes",
@@ -70,7 +70,7 @@ export const metadata: Metadata = {
     site: TWITTER_SITE,
     creator: TWITTER_CREATOR,
     title: "Deodes — Arc Savings Circles",
-    description: "Build trustless savings circles on Arc. Join rotating credit groups with USDC/XLM, earn on-chain reputation, and achieve financial sovereignty.",
+    description: "Build trustless savings circles on Arc. Join rotating credit groups with USDC, earn on-chain reputation, and achieve financial sovereignty.",
     images: [OG_IMAGE.url],
   },
   icons: {

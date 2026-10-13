@@ -174,8 +174,7 @@ describe("WalletSelector — inline variant (default)", () => {
     expect(setSelectorOpen).toHaveBeenCalledWith(false)
   })
 
-  it("shows Connecting... loading state when isConnecting is true", async () => {
-    vi.doMock("@/hooks/use-multi-wallet", () => ({
+  it("shows Connecting... loading state when isConnecting is true", async () => {    vi.doMock("@/hooks/use-multi-wallet", () => ({
       useMultiWalletConnection: () => ({
         isConnected: false,
         isConnecting: true,
@@ -191,6 +190,28 @@ describe("WalletSelector — inline variant (default)", () => {
       .closest("button") ?? screen.queryByRole("button", { name: /Connect/ })
     // Either disabled or shows spinner variant
     expect(btn).toBeDefined()
+  })
+})
+
+describe("WalletSelector — undetected extension wallet offers Install", () => {
+  beforeEach(resetStores)
+
+  it("renders a working Install link instead of a dead button", () => {
+    mockMultiWalletStore.detectedWallets = [
+      { id: "walletconnect", name: "WalletConnect", status: "detected", category: "mobile" },
+      {
+        id: "arc-evm",
+        name: "Arc Wallet (MetaMask / Rabby / Coinbase)",
+        status: "not_detected",
+        category: "extension",
+        installUrl: "https://metamask.io/download/",
+      },
+    ]
+    mockMultiWalletStore.isSelectorOpen = true
+    render(<WalletSelector />)
+    const install = screen.getByRole("link", { name: /install arc wallet/i })
+    expect(install.getAttribute("href")).toBe("https://metamask.io/download/")
+    expect(install.getAttribute("target")).toBe("_blank")
   })
 })
 

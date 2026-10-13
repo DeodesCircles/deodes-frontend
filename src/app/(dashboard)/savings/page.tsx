@@ -5,11 +5,22 @@ import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Wallet, CircleAlert } from "lucide-react";
+import { useUIStore } from "@/stores/ui-store";
 
 export default function SavingsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
   const [goals, setGoals] = useState<any[]>([]);
+  const addToast = useUIStore((s) => s.addToast);
+
+  const handleCreateVault = () => {
+    // Personal vaults are not open yet — respond loudly instead of dead-click.
+    addToast({
+      type: "info",
+      title: "Savings vaults coming soon",
+      description: "Personal USDC vaults open here first. Circles already work on-chain today.",
+    });
+  };
 
   if (isLoading) {
     return (
@@ -45,10 +56,10 @@ export default function SavingsPage() {
         <EmptyState
           icon={<Wallet />}
           title="No savings vaults created"
-          description="Start a dedicated savings vault to lock USDC or XLM towards personal financial milestones."
+          description="Start a dedicated savings vault to lock USDC towards personal financial milestones."
           action={{
             label: "Create Vault",
-            onClick: () => {},
+            onClick: handleCreateVault,
           }}
           className="border border-dashed border-aurora-violet/30"
         />

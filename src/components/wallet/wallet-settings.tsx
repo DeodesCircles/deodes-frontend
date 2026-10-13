@@ -177,11 +177,8 @@ export function WalletSettings() {
                   </div>
                 </div>
 
-                {/* Balance row */}
+                {/* Balance row — USDC on Arc only */}
                 <div className="flex gap-4 mt-2 ml-[22px]">
-                  <span className="text-[10px] text-muted-foreground">
-                    XLM: <span className="text-foreground">{w.balance?.xlm || "—"}</span>
-                  </span>
                   <span className="text-[10px] text-muted-foreground">
                     USDC: <span className="text-foreground">{w.balance?.usdc || "—"}</span>
                   </span>
@@ -233,7 +230,7 @@ export function WalletSettings() {
             <h3 className="font-heading text-sm text-red-400">Danger Zone</h3>
             <p className="text-xs text-muted-foreground mt-1">
               Disconnect all wallets and clear session data. You will need to reconnect to use
-              Moistello.
+              Deodes.
             </p>
           </div>
         </div>
