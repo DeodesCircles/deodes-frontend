@@ -12,6 +12,7 @@ import "@fontsource-variable/fraunces"
 import "@fontsource-variable/fraunces/full-italic.css"
 import "./globals.css"
 import { QueryProvider } from "@/providers/query-provider"
+import { AppKitProvider } from "@/providers/appkit-provider"
 import { WsProvider } from "@/providers/ws-provider"
 import { ThemeProvider } from "@/providers/theme-provider"
 import { MotionProvider } from "@/providers/motion-provider"
@@ -109,6 +110,9 @@ export default function RootLayout({
   const requestHeaders = headers()
   const nonce = requestHeaders.get("x-nonce") ?? undefined
   const csrfToken = requestHeaders.get("x-csrf-token") ?? undefined
+  // Wagmi SSR: hydrate the AppKit connection state from the request cookies.
+  // Optional — AppKitProvider starts disconnected when absent.
+  const cookieHeader = requestHeaders.get("cookie") ?? undefined
   
   // #211: Get locale from headers/cookies for lang attribute
   const locale = resolveLocale(requestHeaders.get("x-locale"))
@@ -220,6 +224,7 @@ export default function RootLayout({
       >
         <PwaRegister />
         <ScrollManager />
+        <AppKitProvider cookies={cookieHeader}>
         <QueryProvider>
           <WsProvider>
           <ThemeProvider>
@@ -239,6 +244,7 @@ export default function RootLayout({
           </ThemeProvider>
           </WsProvider>
         </QueryProvider>
+        </AppKitProvider>
       </body>
     </html>
   )

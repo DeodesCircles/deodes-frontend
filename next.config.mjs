@@ -114,6 +114,31 @@ const nextConfig = {
         reuseExistingChunk: true,
       }
 
+      // Reown AppKit foundation (additive — existing groups untouched).
+      cacheGroups.wagmi = {
+        test: /[\\/]node_modules[\\/](wagmi|@wagmi)[\\/]/,
+        name: "wagmi-vendor",
+        chunks: "all",
+        priority: 40,
+        reuseExistingChunk: true,
+      }
+
+      cacheGroups.viem = {
+        test: /[\\/]node_modules[\\/]viem[\\/]/,
+        name: "viem-vendor",
+        chunks: "all",
+        priority: 40,
+        reuseExistingChunk: true,
+      }
+
+      cacheGroups.reown = {
+        test: /[\\/]node_modules[\\/]@reown[\\/]/,
+        name: "reown-vendor",
+        chunks: "all",
+        priority: 40,
+        reuseExistingChunk: true,
+      }
+
       cacheGroups.framerMotion = {
         test: /[\\/]node_modules[\\/]framer-motion[\\/]/,
         name: "framer-motion-vendor",

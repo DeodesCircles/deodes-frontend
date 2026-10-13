@@ -43,6 +43,22 @@ const WALLETCONNECT_ENDPOINTS = [
   "wss://*.walletconnect.org",
 ]
 
+// Reown AppKit foundation (additive coexistence — removes nothing).
+// api.reown.com: AppKit API + Cloud metadata; secure.reown.com: AppKit
+// secure iframe (auth/embed); relay: WalletConnect relay for pairing.
+// The wss://*.walletconnect.com wildcard above already covers the relay,
+// the explicit host below keeps it working even if the wildcard is narrowed.
+const REOWN_CONNECT_SRC = [
+  "https://api.reown.com",
+  "https://secure.reown.com",
+  "wss://relay.walletconnect.com",
+]
+
+const REOWN_FRAME_SRC = [
+  "https://api.reown.com",
+  "https://secure.reown.com",
+]
+
 const CAPTCHA_HOSTS = ["https://*.hcaptcha.com", "https://challenges.cloudflare.com"]
 
 const ANALYTICS_HOSTS = ["https://mc.yandex.ru", "https://mc.yandex.com"]
@@ -50,8 +66,15 @@ const ANALYTICS_HOSTS = ["https://mc.yandex.ru", "https://mc.yandex.com"]
 // Circle App Kit Onramp widget + API (docs.arc.io hosting requirements).
 // The iframe loads from onramp.arc.io; its XHRs hit onramp.arc.io and
 // api.circle.com. Session minting itself is same-origin (/api/onramp/*).
+// Sandbox twins (TEST keys) live on onramp-sandbox.arc.io + api-test.circle.com.
 const ONRAMP_WIDGET_HOST = "https://onramp.arc.io";
-const ONRAMP_HOSTS = [ONRAMP_WIDGET_HOST, "https://api.circle.com"]
+const ONRAMP_SANDBOX_WIDGET_HOST = "https://onramp-sandbox.arc.io";
+const ONRAMP_HOSTS = [
+  ONRAMP_WIDGET_HOST,
+  ONRAMP_SANDBOX_WIDGET_HOST,
+  "https://api.circle.com",
+  "https://api-test.circle.com",
+]
 
 /**
  * Where the browser POSTs violation reports, and the Reporting-Endpoints group
@@ -147,6 +170,7 @@ export function buildCsp(
     ...toOrigin(process.env.NEXT_PUBLIC_ARC_RPC_URL),
     ...ARC_ENDPOINTS,
     ...WALLETCONNECT_ENDPOINTS,
+    ...REOWN_CONNECT_SRC,
     ...ONRAMP_HOSTS,
     ...CAPTCHA_HOSTS,
     ...ANALYTICS_HOSTS,
@@ -163,7 +187,7 @@ export function buildCsp(
     ["img-src", ["'self'", "data:", "blob:", "https:"]],
     ["font-src", ["'self'", "data:"]],
     ["connect-src", connectSrc],
-    ["frame-src", ["'self'", ...CAPTCHA_HOSTS, ...ANALYTICS_HOSTS, ONRAMP_WIDGET_HOST, "https://verify.walletconnect.com", "https://verify.walletconnect.org"]],
+    ["frame-src", ["'self'", ...CAPTCHA_HOSTS, ...ANALYTICS_HOSTS, ONRAMP_WIDGET_HOST, ONRAMP_SANDBOX_WIDGET_HOST, ...REOWN_FRAME_SRC, "https://verify.walletconnect.com", "https://verify.walletconnect.org"]],
     ["worker-src", ["'self'", "blob:"]],
     ["manifest-src", ["'self'"]],
     ["object-src", ["'none'"]],
