@@ -4,15 +4,11 @@ import { memo, useMemo } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  House,
-  PiggyBank,
-  CircleDot,
   CircleArrowUp,
   CircleArrowDown,
-  Award,
   Bell,
   Settings,
-  Wallet,
+  User,
   LogOut,
   X,
   BookOpen,
@@ -43,18 +39,14 @@ function MobileMenuComponent({ isOpen, onClose }: MobileMenuProps) {
   const menuRef = useFocusTrap<HTMLDivElement>(isOpen, onClose);
 
   const navLinks = useMemo(() => [
-    { label: t("nav.dashboard"), href: Routes.DASHBOARD, icon: <House className="h-4 w-4" /> },
-    { label: t("nav.savings"), href: Routes.SAVINGS, icon: <PiggyBank className="h-4 w-4" /> },
-    { label: t("nav.circles"), href: Routes.CIRCLES, icon: <CircleDot className="h-4 w-4" /> },
     { label: t("nav.contributions"), href: Routes.CONTRIBUTIONS, icon: <CircleArrowUp className="h-4 w-4" /> },
     { label: t("nav.payouts"), href: Routes.PAYOUTS, icon: <CircleArrowDown className="h-4 w-4" /> },
-    { label: t("nav.communities"), href: Routes.COMMUNITIES, icon: <Award className="h-4 w-4" /> },
   ], [t]);
 
   const accountLinks = useMemo(() => [
     { label: t("nav.notifications"), href: Routes.NOTIFICATIONS, icon: <Bell className="h-4 w-4" /> },
     { label: t("nav.settings"), href: Routes.PROFILE_SETTINGS, icon: <Settings className="h-4 w-4" /> },
-    { label: t("nav.wallet"), href: Routes.WALLET, icon: <Wallet className="h-4 w-4" /> },
+    { label: t("nav.profile"), href: Routes.PROFILE, icon: <User className="h-4 w-4" /> },
   ], [t]);
 
   const docsLinks = useMemo(() => [

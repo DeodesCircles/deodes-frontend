@@ -3,7 +3,7 @@
 import { memo, useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, PiggyBank, CircleDot, Users, User } from "lucide-react";
+import { LayoutDashboard, PiggyBank, CircleDot, Users, Wallet } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Routes } from "@/lib/constants";
 import { isRouteActive } from "@/lib/navigation";
@@ -24,7 +24,7 @@ function MobileNavComponent() {
     { label: t("nav.savings"), href: Routes.SAVINGS, icon: <PiggyBank className="h-5 w-5" /> },
     { label: t("nav.circles"), href: Routes.CIRCLES, icon: <CircleDot className="h-5 w-5" /> },
     { label: t("nav.communities"), href: Routes.COMMUNITIES, icon: <Users className="h-5 w-5" /> },
-    { label: t("nav.profile"), href: Routes.PROFILE, icon: <User className="h-5 w-5" /> },
+    { label: t("nav.wallet"), href: Routes.WALLET, icon: <Wallet className="h-5 w-5" /> },
   ], [t]);
 
   const isActive = (href: string) => isRouteActive(pathname, href);

@@ -1,19 +1,21 @@
 import { getWalletRegistry } from "../registry"
-import { isPasskeyEnabled, isHardwareWalletEnabled, isWalletConnectEnabled, isExtensionWalletsEnabled } from "../features"
+import { isPasskeyEnabled, isWalletConnectEnabled } from "../features"
 
 export { createWalletConnectAdapter } from "./walletconnect"
 export { createPasskeyAdapter } from "./passkey"
-export { createFreighterAdapter } from "./freighter"
-export { createXBullAdapter } from "./xbull"
-export { createRabetAdapter } from "./rabet"
-export { createAlbedoAdapter } from "./albedo"
-export { createLedgerAdapter } from "./ledger"
+export { createArcEvmAdapter } from "./arc-evm"
+// LEGACY Stellar adapters kept on disk but no longer registered (Arc-only).
+// import "./freighter" "./xbull" "./rabet" "./albedo" "./ledger" removed per product decision.
 
 let initialized = false
 
 export async function initializeWalletAdapters(): Promise<void> {
   if (initialized) return
   const registry = getWalletRegistry()
+
+  // Arc EVM (MetaMask/Rabby/Coinbase) — always registered, primary rail.
+  const { createArcEvmAdapter } = await import("./arc-evm")
+  registry.register(createArcEvmAdapter())
 
 // WalletConnect: gated by feature flag
    if (isWalletConnectEnabled()) {
@@ -27,25 +29,7 @@ export async function initializeWalletAdapters(): Promise<void> {
     registry.register(createPasskeyAdapter())
   }
 
-  // Freighter always available
-  const { createFreighterAdapter } = await import("./freighter")
-  registry.register(createFreighterAdapter())
-
-  // xBull, Rabet, Albedo: gated by feature flag
-  if (isExtensionWalletsEnabled()) {
-    const { createXBullAdapter } = await import("./xbull")
-    registry.register(createXBullAdapter())
-    const { createRabetAdapter } = await import("./rabet")
-    registry.register(createRabetAdapter())
-    const { createAlbedoAdapter } = await import("./albedo")
-    registry.register(createAlbedoAdapter())
-  }
-
-  // Hardware wallet: gated by feature flag
-  if (isHardwareWalletEnabled()) {
-    const { createLedgerAdapter } = await import("./ledger")
-    registry.register(createLedgerAdapter())
-  }
+  // Arc-only: Stellar extension + Ledger rails removed (freighter/xbull/rabet/albedo/ledger).
 
   initialized = true
 }

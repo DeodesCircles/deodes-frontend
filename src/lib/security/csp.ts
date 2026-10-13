@@ -27,11 +27,13 @@
  * cspMode() below and the middleware that consumes it.
  */
 
-const STELLAR_ENDPOINTS = [
-  "https://horizon.stellar.org",
-  "https://horizon-testnet.stellar.org",
-  "https://soroban.stellar.org",
-  "https://soroban-testnet.stellar.org",
+const ARC_ENDPOINTS = [
+  "https://rpc.testnet.arc.io",
+  "https://rpc.mainnet.arc.io",
+  "wss://rpc.testnet.arc.io",
+  "wss://rpc.mainnet.arc.io",
+  "https://explorer.testnet.arc.io",
+  "https://explorer.arc.io",
 ]
 
 const WALLETCONNECT_ENDPOINTS = [
@@ -44,6 +46,12 @@ const WALLETCONNECT_ENDPOINTS = [
 const CAPTCHA_HOSTS = ["https://*.hcaptcha.com", "https://challenges.cloudflare.com"]
 
 const ANALYTICS_HOSTS = ["https://mc.yandex.ru", "https://mc.yandex.com"]
+
+// Circle App Kit Onramp widget + API (docs.arc.io hosting requirements).
+// The iframe loads from onramp.arc.io; its XHRs hit onramp.arc.io and
+// api.circle.com. Session minting itself is same-origin (/api/onramp/*).
+const ONRAMP_WIDGET_HOST = "https://onramp.arc.io";
+const ONRAMP_HOSTS = [ONRAMP_WIDGET_HOST, "https://api.circle.com"]
 
 /**
  * Where the browser POSTs violation reports, and the Reporting-Endpoints group
@@ -136,8 +144,10 @@ export function buildCsp(
   const connectSrc = [
     "'self'",
     ...configuredOrigins(),
-    ...STELLAR_ENDPOINTS,
+    ...toOrigin(process.env.NEXT_PUBLIC_ARC_RPC_URL),
+    ...ARC_ENDPOINTS,
     ...WALLETCONNECT_ENDPOINTS,
+    ...ONRAMP_HOSTS,
     ...CAPTCHA_HOSTS,
     ...ANALYTICS_HOSTS,
     // HMR websocket.
@@ -153,7 +163,7 @@ export function buildCsp(
     ["img-src", ["'self'", "data:", "blob:", "https:"]],
     ["font-src", ["'self'", "data:"]],
     ["connect-src", connectSrc],
-    ["frame-src", ["'self'", ...CAPTCHA_HOSTS, ...ANALYTICS_HOSTS, "https://verify.walletconnect.com", "https://verify.walletconnect.org"]],
+    ["frame-src", ["'self'", ...CAPTCHA_HOSTS, ...ANALYTICS_HOSTS, ONRAMP_WIDGET_HOST, "https://verify.walletconnect.com", "https://verify.walletconnect.org"]],
     ["worker-src", ["'self'", "blob:"]],
     ["manifest-src", ["'self'"]],
     ["object-src", ["'none'"]],

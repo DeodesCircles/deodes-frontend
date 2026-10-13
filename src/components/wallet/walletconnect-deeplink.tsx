@@ -36,7 +36,8 @@ export function WalletConnectDeepLink({
     if (!uri) return
 
     if (isMobile) {
-      const deepLink = `wc:${uri}`
+      // uri already starts with wc:... — do not double-prefix
+      const deepLink = uri.startsWith("wc:") ? uri : `wc:${uri}`
       window.location.href = deepLink
     } else {
       window.open(`https://walletconnect.com/wc?uri=${encodeURIComponent(uri)}`, "_blank")

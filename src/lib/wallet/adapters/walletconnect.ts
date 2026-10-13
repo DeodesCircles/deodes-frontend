@@ -31,7 +31,15 @@ import { logger } from "@/lib/logger"
 import { WalletAdapter, WalletMeta, NetworkType } from "../types"
 import { getRelayMonitor } from "../wc2-relay"
 import { getWC2SessionStore } from "../wc2-session-store"
-import { validateStellarAddress } from "@/lib/stellar/validate-address"
+import { ARC_CHAIN_ID } from "@/lib/constants"
+
+function isArcAddress(address: string): boolean {
+  return /^0x[0-9a-fA-F]{40}$/.test(address)
+}
+
+function arcChainRef(chainId: number): string {
+  return `eip155:${chainId}`
+}
 
 // ---------------------------------------------------------------------------
 // Module-level singletons (intentional — one client, one WebSocket)
@@ -46,20 +54,25 @@ async function getOrInitSignClient(): Promise<any> {
 
   initPromise = (async () => {
     const { SignClient } = await import("@walletconnect/sign-client")
-    const projectId =
-      process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "demo-project-id"
+    const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || ""
+
+    if (!projectId || projectId === "demo-project-id") {
+      throw new Error(
+        "Missing NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID — set a real Cloud project ID to use WalletConnect."
+      )
+    }
 
     signClientInstance = await SignClient.init({
       projectId,
       relayUrl: "wss://relay.walletconnect.com",
       metadata: {
-        name: "Moistello",
-        description: "Decentralized ROSCA platform on Stellar",
+        name: "Deodes",
+        description: "Decentralized savings circles (ROSCA) on Arc",
         url:
           typeof window !== "undefined"
             ? window.location.origin
-            : "https://moistello.com",
-        icons: ["https://moistello.com/icon.png"],
+            : "https://deodes.com",
+        icons: ["https://deodes.com/icon.png"],
       },
     })
     return signClientInstance
@@ -200,7 +213,7 @@ export function createWalletConnectAdapter(): WalletAdapter & {
     priority: 0,
     installUrl: "",
     description:
-      "Connect with Lobstr, xBull, and 200+ mobile Stellar wallets",
+      "Connect 500+ mobile EVM wallets on Arc via QR",
     icon: "/icons/walletconnect.svg",
     isAvailable: () => typeof window !== "undefined",
   }
@@ -256,10 +269,11 @@ export function createWalletConnectAdapter(): WalletAdapter & {
         const sessions = client.session.getAll()
         if (sessions.length > 0) {
           const active = sessions[sessions.length - 1]
-          const accounts = active.namespaces?.stellar?.accounts || []
-          if (accounts.length > 0) {
-            const [, network, address] = accounts[0].split(":")
-            if (address && validateStellarAddress(address)) {
+          const eipAccounts: string[] = active.namespaces?.eip155?.accounts || []
+          if (eipAccounts.length > 0) {
+            const parts = eipAccounts[0].split(":")
+            const address = parts[parts.length - 1]
+            if (address && isArcAddress(address)) {
               currentPublicKey = address
               currentSession = active
               ctx.state = "approved"
@@ -268,7 +282,7 @@ export function createWalletConnectAdapter(): WalletAdapter & {
               relay.recordOutcome(true, Date.now() - connectStartedAt)
               return {
                 publicKey: address,
-                network: network === "testnet" ? "testnet" : "mainnet",
+                network: "testnet",
               }
             }
           }
@@ -277,17 +291,14 @@ export function createWalletConnectAdapter(): WalletAdapter & {
         // ── Initiate new pairing ──────────────────────────────────────────
         const { uri, approval } = await client.connect({
           requiredNamespaces: {
-            stellar: {
+            eip155: {
               methods: [
-                "stellar_signTransaction",
-                "stellar_signMessage",
+                "personal_sign",
+                "eth_sendTransaction",
+                "eth_signTypedData",
               ],
-              chains: [
-                options?.network === "mainnet"
-                  ? "stellar:pubnet"
-                  : "stellar:testnet",
-              ],
-              events: ["session_event", "session_delete"],
+              chains: [arcChainRef(options?.network === "mainnet" ? 5042 : ARC_CHAIN_ID)],
+              events: ["chainChanged", "accountsChanged"],
             },
           },
         })
@@ -327,17 +338,19 @@ export function createWalletConnectAdapter(): WalletAdapter & {
         _currentContext = null
         notifyContextChange()
 
-        const accounts = session.namespaces?.stellar?.accounts || []
+        const accounts = session.namespaces?.eip155?.accounts || []
         if (accounts.length === 0) {
           throw new Error(
-            "No Stellar accounts found in WalletConnect session"
+            "No Arc (EVM) accounts found in WalletConnect session"
           )
         }
 
-        const [, network, address] = accounts[0].split(":")
-        if (!address || !validateStellarAddress(address)) {
+        const split = accounts[0].split(":")
+        const address = split[split.length - 1]
+        const network = "testnet"
+        if (!address || !isArcAddress(address)) {
           throw new Error(
-            "Invalid Stellar address returned from WalletConnect session"
+            "Invalid Arc 0x address returned from WalletConnect session"
           )
         }
 
@@ -427,13 +440,13 @@ export function createWalletConnectAdapter(): WalletAdapter & {
       try {
         const client = await getOrInitSignClient()
         const chainId =
-          currentSession.namespaces?.stellar?.chains?.[0] || "stellar:testnet"
+          currentSession.namespaces?.eip155?.chains?.[0] || arcChainRef(ARC_CHAIN_ID)
 
         const result = await client.request({
           chainId,
           request: {
-            method: "stellar_signTransaction",
-            params: { xdr, accountId: currentPublicKey },
+            method: "personal_sign",
+            params: [xdr, currentPublicKey],
           },
         })
         relay.recordOutcome(true, Date.now() - signStartedAt)
@@ -459,13 +472,13 @@ export function createWalletConnectAdapter(): WalletAdapter & {
       try {
         const client = await getOrInitSignClient()
         const chainId =
-          currentSession.namespaces?.stellar?.chains?.[0] || "stellar:testnet"
+          currentSession.namespaces?.eip155?.chains?.[0] || arcChainRef(ARC_CHAIN_ID)
 
         const result = await client.request({
           chainId,
           request: {
-            method: "stellar_signMessage",
-            params: { message, accountId: currentPublicKey },
+            method: "personal_sign",
+            params: [message, currentPublicKey],
           },
         })
         return (result as any)?.signedMessage || (result as string)
@@ -492,8 +505,8 @@ export function createWalletConnectAdapter(): WalletAdapter & {
     async getNetwork(): Promise<NetworkType> {
       if (!currentSession) return "testnet"
       const chainId =
-        currentSession.namespaces?.stellar?.chains?.[0] || ""
-      return chainId.includes("pubnet") || chainId.includes("public")
+        currentSession.namespaces?.eip155?.chains?.[0] || ""
+      return chainId.includes("5042") && !chainId.includes("5042002")
         ? "mainnet"
         : "testnet"
     },

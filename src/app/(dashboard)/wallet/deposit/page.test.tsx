@@ -1,71 +1,68 @@
 import React from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import DepositPage from "./page";
 
-const mockAddToast = vi.fn();
-const mockPost = vi.fn();
-const mockGet = vi.fn();
-
-vi.mock("@/stores/ui-store", () => ({
-  useUIStore: (selector: (state: { addToast: typeof mockAddToast }) => unknown) =>
-    selector({ addToast: mockAddToast }),
-}));
-
-vi.mock("@/lib/api-client", () => ({
-  post: (...args: unknown[]) => mockPost(...args),
-  get: (...args: unknown[]) => mockGet(...args),
-}));
-
-describe("DepositPage", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mockAddToast.mockReset();
+describe("DepositPage (coming soon)", () => {
+  it("announces fiat deposits as coming soon", () => {
+    render(<DepositPage />);
+    expect(screen.getAllByText(/coming soon/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/made simple/i)).toBeInTheDocument();
   });
 
-  it("disables the action when the amount is below the minimum deposit", () => {
+  it("lists the upcoming local-currency rails", () => {
     render(<DepositPage />);
-
-    fireEvent.change(screen.getByPlaceholderText("0.00"), { target: { value: "50" } });
-
-    expect(screen.getByRole("button", { name: /get payment details/i })).toBeDisabled();
-    expect(mockPost).not.toHaveBeenCalled();
+    expect(screen.getByText("NGN")).toBeInTheDocument();
+    expect(screen.getByText("KES")).toBeInTheDocument();
+    expect(screen.getByText("GHS")).toBeInTheDocument();
   });
 
-  it("creates payment instructions and shows the bank transfer details on success", async () => {
-    mockPost.mockResolvedValue({
-      depositId: "dep-123",
-      bankName: "Access Bank",
-      accountNumber: "0123456789",
-      accountName: "Moistello Payments",
-      amountNgn: 10000,
-      reference: "MOIST-123",
-      quote: {
-        estimatedUsdc: 6.45,
-        rate: 1550,
-        spread: 1.3,
-        expiresAt: new Date(Date.now() + 60_000).toISOString(),
-      },
-    });
-
+  it("states Deodes charges nothing on deposits", () => {
     render(<DepositPage />);
-
-    fireEvent.change(screen.getByPlaceholderText("0.00"), { target: { value: "10000" } });
-    fireEvent.click(screen.getByRole("button", { name: /get payment details/i }));
-
-    expect(await screen.findByText("Transfer to")).toBeInTheDocument();
-    expect(screen.getByText("Access Bank")).toBeInTheDocument();
-    expect(screen.getByText(/MOIST-123/i)).toBeInTheDocument();
+    expect(screen.getByText(/charges nothing on deposits/i)).toBeInTheDocument();
   });
 
-  it("surfaces the backend error when the quote request fails", async () => {
-    mockPost.mockRejectedValue(new Error("Service unavailable"));
+  it("makes no network calls on render", () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch");
+    try {
+      render(<DepositPage />);
+      expect(fetchSpy).not.toHaveBeenCalled();
+    } finally {
+      fetchSpy.mockRestore();
+    }
+  });
 
+  it("renders two long buttons: live Circle rail + coming-soon local rail", () => {
     render(<DepositPage />);
+    // Local/bank button is always present but disabled (coming soon).
+    expect(screen.getByRole("button", { name: /local bank transfer, coming soon/i })).toBeInTheDocument();
+  });
 
-    fireEvent.change(screen.getByPlaceholderText("0.00"), { target: { value: "10000" } });
-    fireEvent.click(screen.getByRole("button", { name: /get payment details/i }));
+  it("hides the Circle card rail when disabled", () => {
+    vi.stubEnv("NEXT_PUBLIC_ONRAMP_ENABLED", "false");
+    try {
+      render(<DepositPage />);
+      expect(screen.queryByRole("button", { name: /buy usdc with card via circle/i })).not.toBeInTheDocument();
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
 
-    expect(await screen.findAllByText("Service unavailable")).toHaveLength(2);
+  it("offers the Circle rail with a testnet badge when enabled", async () => {
+    vi.stubEnv("NEXT_PUBLIC_ONRAMP_ENABLED", "true");
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ env: "sandbox", configured: false }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    try {
+      render(<DepositPage />);
+      fireEvent.click(screen.getByRole("button", { name: /buy usdc with card via circle/i }));
+      expect(await screen.findByText(/testnet · play money/i)).toBeInTheDocument();
+    } finally {
+      fetchSpy.mockRestore();
+      vi.unstubAllEnvs();
+    }
   });
 });

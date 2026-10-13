@@ -21,6 +21,7 @@ interface RegisterEnvelope {
     message?: string
     token?: string
     refreshToken?: string
+    hostedWallet?: string
   }
   error?: string
   message?: string
@@ -98,8 +99,16 @@ export default function RegisterPage() {
       // setTokens persists the HttpOnly session cookie the middleware gates
       // on, so navigation must wait for it to resolve.
       await setTokens(token, res.data?.refreshToken ?? token)
-      toast.success("Account created successfully!")
-      router.replace("/passkey-setup")
+      const hosted = res.data?.hostedWallet
+      if (hosted && /^0x[0-9a-fA-F]{40}$/.test(hosted)) {
+        try {
+          sessionStorage.setItem("deodes_hosted_wallet", hosted)
+        } catch {}
+        toast.success(`Hosted Arc wallet created: ${hosted.slice(0, 6)}…${hosted.slice(-4)}`)
+      } else {
+        toast.success("Account created successfully!")
+      }
+      router.replace("/wallet?fresh=1")
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Verification failed"
       setCodeError(msg)

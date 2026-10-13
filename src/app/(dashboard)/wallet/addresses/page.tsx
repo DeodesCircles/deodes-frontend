@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input"
 import { get } from "@/lib/api-client"
 import { useUIStore } from "@/stores/ui-store"
 import { formatAddress } from "@/lib/formatters"
+import { getSmartExplorerAddressUrl } from "@/lib/explorer"
 import { copyToClipboard } from "@/lib/clipboard"
 
 interface StoredWallet {
@@ -125,7 +126,7 @@ export default function AddressesPage() {
     e.target.value = ""
   }
 
-  const autoWallet = wallets.find((w) => w.walletType === "auto" || w.walletType === "passkey")
+  const autoWallet = wallets.find((w) => w.walletType === "hosted" || w.walletType === "auto" || w.walletType === "passkey")
 
   return (
     <div className="space-y-8">
@@ -154,7 +155,7 @@ export default function AddressesPage() {
                   <button type="button" onClick={() => copyAddr(autoWallet.publicKey)} className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Copy primary wallet public key">
                     {copiedKey === autoWallet.publicKey ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
                   </button>
-                  <a href={`https://stellar.expert/explorer/testnet/account/${autoWallet.publicKey}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-aurora-cyan transition-colors" aria-label="Open primary wallet in Arc Explorer">
+                  <a href={getSmartExplorerAddressUrl(autoWallet.publicKey)} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-aurora-cyan transition-colors" aria-label="Open primary wallet in Arc Explorer">
                     <ExternalLink className="h-3.5 w-3.5" />
                   </a>
                 </div>
@@ -181,7 +182,7 @@ export default function AddressesPage() {
             {savedAddresses.length === 0 && !showForm ? (
               <div className="border border-white/10 rounded-xl py-8 text-center">
                 <p className="text-sm text-muted-foreground">No saved addresses.</p>
-                <p className="text-xs text-muted-foreground/60 mt-1">Save external Stellar addresses for quick access.</p>
+                <p className="text-xs text-muted-foreground/60 mt-1">Save external wallet addresses for quick access.</p>
               </div>
             ) : (
               <div className="space-y-2">
