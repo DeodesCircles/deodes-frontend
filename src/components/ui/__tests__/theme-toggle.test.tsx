@@ -26,11 +26,11 @@ describe("ThemeToggle Component", () => {
   });
 
   it("renders with accessible label indicating current theme and action", () => {
-    useUIStore.setState({ theme: "system" });
+    useUIStore.setState({ theme: "light" });
     render(<ThemeToggle />);
 
     const button = screen.getByRole("button", {
-      name: /Theme: System \(light\)\. Click to switch to light mode/i,
+      name: /Theme: Light\. Click to switch to dark mode/i,
     });
     expect(button).toBeInTheDocument();
   });
@@ -66,17 +66,16 @@ describe("ThemeToggle Component", () => {
 
     const lightBtn = screen.getByRole("button", { name: /^Light$/i });
     const darkBtn = screen.getByRole("button", { name: /^Dark$/i });
-    const systemBtn = screen.getByRole("button", { name: /^System$/i });
+    expect(screen.queryByRole("button", { name: /^System$/i })).toBeNull();
 
     expect(lightBtn).toHaveAttribute("aria-pressed", "true");
     expect(darkBtn).toHaveAttribute("aria-pressed", "false");
-    expect(systemBtn).toHaveAttribute("aria-pressed", "false");
 
     fireEvent.click(darkBtn);
     expect(useUIStore.getState().theme).toBe("dark");
 
-    fireEvent.click(systemBtn);
-    expect(useUIStore.getState().theme).toBe("system");
+    fireEvent.click(lightBtn);
+    expect(useUIStore.getState().theme).toBe("light");
   });
 
   it("renders dropdown variant and selects theme from menu", () => {

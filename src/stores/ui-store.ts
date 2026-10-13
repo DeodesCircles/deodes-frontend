@@ -84,22 +84,18 @@ type UIStore = UIState & UIActions;
 export const useUIStore = create<UIStore>()(
   persist(
     (set, get) => ({
-      theme: "system",
+      theme: "light",
       density: "comfortable",
       fontSize: "medium",
       sidebarOpen: false,
       commandPaletteOpen: false,
       toasts: [],
 
+      // Binary toggle only (light <-> dark). The old "system" cycle is
+      // gone by product decision: light is the default, no monitor icon.
       toggleTheme: () => {
         const { theme } = get();
-        if (theme === "light") {
-          set({ theme: "dark" });
-        } else if (theme === "dark") {
-          set({ theme: "system" });
-        } else {
-          set({ theme: "light" });
-        }
+        set({ theme: theme === "light" ? "dark" : "light" });
       },
 
       setTheme: (theme: Theme) => set({ theme }),

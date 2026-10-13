@@ -4,7 +4,6 @@ import {
   Bell,
   BookOpen,
   CircleDot,
-  Contrast,
   FileText,
   Gauge,
   CircleQuestionMark,
@@ -20,6 +19,7 @@ import {
   User,
   Users,
   Wallet,
+  Zap,
 } from "lucide-react";
 
 import { Routes } from "@/lib/constants";
@@ -82,6 +82,7 @@ export const NAVIGATION_COMMANDS: readonly NavigationCommand[] = [
   { id: "page.wallet.deposit", label: "Deposit", group: "page", href: Routes.WALLET_DEPOSIT, icon: ArrowLeftRight, keywords: "add funds top up" },
   { id: "page.wallet.transfer", label: "Transfer", group: "page", href: Routes.WALLET_TRANSFER, icon: ArrowLeftRight, keywords: "send money" },
   { id: "page.wallet.transactions", label: "Transactions", group: "page", href: Routes.WALLET_TRANSACTIONS, icon: FileText, keywords: "history ledger" },
+  { id: "page.wallet.auto-debit", label: "Auto-debits", group: "page", href: Routes.WALLET_AUTO_DEBIT, icon: Zap, keywords: "subscriptions schedule recurring" },
   { id: "page.wallet.addresses", label: "Wallet addresses", group: "page", href: Routes.WALLET_ADDRESSES, icon: Wallet, keywords: "address book" },
   { id: "page.contributions", label: "Contributions", group: "page", href: Routes.CONTRIBUTIONS, icon: CircleDot, keywords: "history payments" },
   { id: "page.payouts", label: "Payouts", group: "page", href: Routes.PAYOUTS, icon: PiggyBank, keywords: "winnings receive" },
@@ -108,7 +109,6 @@ export const NAVIGATION_COMMANDS: readonly NavigationCommand[] = [
 export const ACTION_COMMANDS: readonly ActionCommandSpec[] = [
   { id: "action.theme.light", label: "Theme: Light", group: "action", icon: Sun, keywords: "bright day", apply: (api) => api.setTheme("light") },
   { id: "action.theme.dark", label: "Theme: Dark", group: "action", icon: Moon, keywords: "night", apply: (api) => api.setTheme("dark") },
-  { id: "action.theme.system", label: "Theme: Match system", group: "action", icon: Contrast, keywords: "auto os", apply: (api) => api.setTheme("system") },
   { id: "action.density.comfortable", label: "Density: Comfortable", group: "action", icon: SlidersHorizontal, keywords: "spacing roomy", apply: (api) => api.setDensity("comfortable") },
   { id: "action.density.compact", label: "Density: Compact", group: "action", icon: SlidersHorizontal, keywords: "spacing tight dense", apply: (api) => api.setDensity("compact") },
   { id: "action.font.small", label: "Text size: Small", group: "action", icon: Type, keywords: "font a11y", apply: (api) => api.setFontSize("small") },

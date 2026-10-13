@@ -1,13 +1,13 @@
 "use client"
 
 import Link from "next/link"
-import { ArrowLeft, Sun, Moon, Monitor, Check } from "lucide-react"
+import { ArrowLeft, Sun, Moon, Check } from "lucide-react"
 import { useTheme } from "@/hooks/use-theme"
 import { useUIStore } from "@/stores/ui-store"
 import { useTranslate } from "@/lib/locale/context"
 import { cn } from "@/lib/cn"
 
-type ThemeOption = "light" | "dark" | "system"
+type ThemeOption = "light" | "dark"
 
 function translateWithFallback(t: (key: string) => string, key: string, fallback: string): string {
   const value = t(key)
@@ -18,13 +18,12 @@ function getThemeOptions(t: (key: string) => string) {
   return [
     { value: "light" as ThemeOption, icon: <Sun className="h-5 w-5" />, label: translateWithFallback(t, "theme.light", "Light"), desc: translateWithFallback(t, "theme.lightDesc", "Light mode") },
     { value: "dark" as ThemeOption, icon: <Moon className="h-5 w-5" />, label: translateWithFallback(t, "theme.dark", "Dark"), desc: translateWithFallback(t, "theme.darkDesc", "Dark mode") },
-    { value: "system" as ThemeOption, icon: <Monitor className="h-5 w-5" />, label: translateWithFallback(t, "theme.system", "System"), desc: translateWithFallback(t, "theme.systemDesc", "Follow your device setting") },
   ]
 }
 
 export default function ThemeSettingsPage() {
   const { t } = useTranslate()
-  const { theme, setTheme, systemTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const density = useUIStore((s) => s.density);
   const setDensity = useUIStore((s) => s.setDensity);
   const fontSize = useUIStore((s) => s.fontSize);
@@ -45,7 +44,7 @@ export default function ThemeSettingsPage() {
       {/* Theme */}
       <div className="glass-premium rounded-2xl p-6 space-y-4">
         <h3 className="font-heading text-sm font-semibold text-foreground">{t("theme.section")}</h3>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           {getThemeOptions(t).map((opt) => (
             <button
               type="button"
@@ -70,11 +69,6 @@ export default function ThemeSettingsPage() {
               <div className="text-center">
                 <p className="text-sm font-medium text-foreground">{opt.label}</p>
                 <p className="text-2xs text-muted-foreground mt-0.5">{opt.desc}</p>
-                {opt.value === "system" && (
-                  <span className="inline-block mt-1 px-1.5 py-0.5 rounded text-[10px] bg-white/[0.08] text-muted-foreground font-mono">
-                    {translateWithFallback(t, "theme.detected", "Detected")}: {systemTheme === "dark" ? translateWithFallback(t, "theme.dark", "Dark") : translateWithFallback(t, "theme.light", "Light")}
-                  </span>
-                )}
               </div>
               {theme === opt.value && (
                 <span className="absolute top-2 right-2">

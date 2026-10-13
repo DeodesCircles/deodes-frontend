@@ -131,7 +131,7 @@ describe("useTheme hook", () => {
     expect(result.current.isDark).toBe(false);
   });
 
-  it("toggles through the theme cycle light -> dark -> system", () => {
+  it("toggles through the binary theme cycle light -> dark -> light", () => {
     const { result } = renderHook(() => useTheme());
 
     act(() => {
@@ -143,11 +143,6 @@ describe("useTheme hook", () => {
       result.current.toggleTheme();
     });
     expect(result.current.theme).toBe("dark");
-
-    act(() => {
-      result.current.toggleTheme();
-    });
-    expect(result.current.theme).toBe("system");
 
     act(() => {
       result.current.toggleTheme();

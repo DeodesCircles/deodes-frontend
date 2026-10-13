@@ -18,12 +18,12 @@ export interface UseThemeReturn {
   mounted: boolean;
   /** Set the theme manually to light, dark, or system */
   setTheme: (theme: Theme) => void;
-  /** Cycle through themes: light -> dark -> system */
+  /** Toggle theme: light <-> dark */
   toggleTheme: () => void;
 }
 
 export function useTheme(): UseThemeReturn {
-  const theme = useUIStore((s) => s?.theme) ?? "system";
+  const theme = useUIStore((s) => s?.theme) ?? "light";
   const storeSetTheme = useUIStore((s) => s?.setTheme);
   const storeToggleTheme = useUIStore((s) => s?.toggleTheme);
 
@@ -63,9 +63,7 @@ export function useTheme(): UseThemeReturn {
     if (storeToggleTheme) {
       storeToggleTheme();
     } else if (storeSetTheme) {
-      if (theme === "light") storeSetTheme("dark");
-      else if (theme === "dark") storeSetTheme("system");
-      else storeSetTheme("light");
+      storeSetTheme(theme === "light" ? "dark" : "light");
     }
   }, [storeToggleTheme, storeSetTheme, theme]);
 

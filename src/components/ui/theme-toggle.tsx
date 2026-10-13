@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Sun, Moon, Monitor, Check } from "lucide-react";
+import { Sun, Moon, Check } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import type { Theme } from "@/stores/ui-store";
 import { cn } from "@/lib/cn";
@@ -25,7 +25,7 @@ export function ThemeToggle({
   size = "md",
   showLabel = false,
 }: ThemeToggleProps) {
-  const { theme, systemTheme, isDark, mounted, setTheme, toggleTheme } = useTheme();
+  const { theme, mounted, setTheme, toggleTheme } = useTheme();
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -48,17 +48,14 @@ export function ThemeToggle({
   const sizes = sizeClasses[size];
 
   const renderIcon = (t: Theme, cls = sizes.icon) => {
-    if (t === "light") return <Sun className={cn(cls, "text-amber-400")} />;
     if (t === "dark") return <Moon className={cn(cls, "text-indigo-400")} />;
-    return <Monitor className={cn(cls, "text-aurora-cyan")} />;
+    return <Sun className={cn(cls, "text-amber-400")} />;
   };
 
   const label =
-    theme === "system"
-      ? `Theme: System (${systemTheme}). Click to switch to light mode`
-      : theme === "light"
-        ? "Theme: Light. Click to switch to dark mode"
-        : "Theme: Dark. Click to switch to system theme";
+    theme === "light"
+      ? "Theme: Light. Click to switch to dark mode"
+      : "Theme: Dark. Click to switch to light mode";
 
   if (!mounted) {
     return (
@@ -67,16 +64,15 @@ export function ThemeToggle({
         className={cn("inline-flex items-center justify-center rounded-xl text-muted-foreground", sizes.btn, className)}
         aria-label="Toggle theme"
       >
-        <Monitor className={sizes.icon} />
+        <Sun className={sizes.icon} />
       </button>
     );
   }
 
   if (variant === "segmented") {
-    const opts: { value: Theme; label: string }[] = [
+    const opts: { value: Exclude<Theme, "system">; label: string }[] = [
       { value: "light", label: "Light" },
       { value: "dark", label: "Dark" },
-      { value: "system", label: "System" },
     ];
     return (
       <div role="group" aria-label="Theme selector" className={cn("inline-flex rounded-xl p-1 bg-white/[0.04] border border-white/[0.08]", className)}>
@@ -87,7 +83,7 @@ export function ThemeToggle({
             aria-pressed={theme === opt.value}
             onClick={() => setTheme(opt.value)}
             className={cn(
-              "inline-flex items-center gap-1.5 rounded-lg font-medium transition-all",
+              "inline-flex items-center gap-1.5 rounded-lg font-medium",
               sizes.seg,
               theme === opt.value ? "bg-aurora-violet/20 text-aurora-violet shadow-sm" : "text-muted-foreground hover:text-foreground"
             )}
@@ -101,17 +97,16 @@ export function ThemeToggle({
   }
 
   if (variant === "dropdown") {
-    const opts: { value: Theme; label: string }[] = [
+    const opts: { value: Exclude<Theme, "system">; label: string }[] = [
       { value: "light", label: "Light" },
       { value: "dark", label: "Dark" },
-      { value: "system", label: `System (${systemTheme})` },
     ];
     return (
       <div className="relative inline-block" ref={menuRef}>
         <button
           type="button"
           onClick={() => setOpen((prev) => !prev)}
-          className={cn("inline-flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground transition-all", sizes.btn, className)}
+          className={cn("inline-flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground", sizes.btn, className)}
           aria-label={label}
           aria-expanded={open}
           aria-haspopup="menu"
@@ -146,7 +141,7 @@ export function ThemeToggle({
       type="button"
       onClick={toggleTheme}
       className={cn(
-        "inline-flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground transition-all relative",
+        "inline-flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground relative",
         sizes.btn,
         showLabel && "w-auto px-3 gap-2",
         className
@@ -154,13 +149,10 @@ export function ThemeToggle({
       aria-label={label}
       title={label}
     >
-      {renderIcon(theme)}
-      {theme === "system" && (
-        <span className={cn("absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full", isDark ? "bg-indigo-400" : "bg-amber-400")} aria-hidden="true" />
-      )}
+      {renderIcon(theme === "system" ? "light" : theme)}
       {showLabel && (
         <span className="text-xs font-medium">
-          {theme === "system" ? `System (${systemTheme})` : theme === "dark" ? "Dark" : "Light"}
+          {theme === "dark" ? "Dark" : "Light"}
         </span>
       )}
     </button>
