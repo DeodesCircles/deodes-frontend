@@ -10,6 +10,7 @@ import { useUIStore } from "@/stores/ui-store"
 import { useWalletOverview } from "./hooks/useWalletOverview"
 import { PortfolioHero } from "./components/PortfolioHero"
 import { CustodyBadge } from "./components/CustodyBadge"
+import { WalletLinkButton } from "./components/WalletLinkButton"
 import { WalletActions } from "./components/WalletActions"
 import { ReceiveModal } from "./components/ReceiveModal"
 import { ActivityList } from "./components/ActivityList"
@@ -83,6 +84,7 @@ export default function WalletPage() {
             onCopied={handleCopied}
             onCopyError={handleCopyError}
           />
+          <WalletLinkButton />
           <PortfolioHero usdc={balance?.usdc} loading={loading} locale={locale} />
           <WalletActions onReceive={() => setShowReceive(true)} />
           <div

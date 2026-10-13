@@ -75,6 +75,47 @@ function networkFromSession(session: any): NetworkType {
   return ARC_NETWORK
 }
 
+/**
+ * True when the session actually carries the requested Arc chain — either in
+ * `chains` (`eip155:<id>`) or as an `accounts` prefix (`eip155:<id>:0x…`).
+ * Mobile wallets that lack Arc Testnet approve (or reuse) a session scoped to
+ * some other chain, and approval/signing then dies mysteriously downstream.
+ */
+function sessionHasArcChain(session: any, chainId: number): boolean {
+  const want = `eip155:${chainId}`
+  const chains: unknown = session?.namespaces?.eip155?.chains
+  if (Array.isArray(chains) && chains.some((c) => String(c) === want)) {
+    return true
+  }
+  const accounts: unknown = session?.namespaces?.eip155?.accounts
+  if (
+    Array.isArray(accounts) &&
+    accounts.some((a) => String(a).startsWith(`${want}:`))
+  ) {
+    return true
+  }
+  return false
+}
+
+/**
+ * Friendly, actionable error for a session that skipped the Arc chain. Names
+ * the fix (switch/add the Arc chain in the mobile wallet) instead of leaving
+ * the user at a silent signing failure.
+ */
+function arcChainGuardError(chainId: number): Error {
+  const label =
+    chainId === ARC_MAINNET_CHAIN_ID
+      ? `Arc Mainnet (chain ${chainId})`
+      : `Arc Testnet (chain ${chainId})`
+  return Object.assign(
+    new Error(
+      `Wallet approved the connection but did not include ${label}. ` +
+        `In your mobile wallet, switch to or add ${label}, then try again.`
+    ),
+    { code: "network_mismatch" }
+  )
+}
+
 // ---------------------------------------------------------------------------
 // Module-level singletons (intentional — one client, one WebSocket)
 // ---------------------------------------------------------------------------
@@ -310,6 +351,10 @@ export function createWalletConnectAdapter(): WalletAdapter & {
       notifyContextChange()
 
       const connectStartedAt = Date.now()
+      // The chain requested in requiredNamespaces — derived from ARC_CHAIN_ID
+      // (testnet default) unless the caller explicitly asked for mainnet.
+      const expectedChainId =
+        options?.network === "mainnet" ? ARC_MAINNET_CHAIN_ID : ARC_CHAIN_ID
 
       try {
         const client = await getOrInitSignClient()
@@ -328,6 +373,11 @@ export function createWalletConnectAdapter(): WalletAdapter & {
             const parts = eipAccounts[0].split(":")
             const address = parts[parts.length - 1]
             if (address && isArcAddress(address)) {
+              // A live session scoped to another chain (mobile wallet without
+              // Arc) must fail here with the chain fix, not downstream at sign.
+              if (!sessionHasArcChain(active, expectedChainId)) {
+                throw arcChainGuardError(expectedChainId)
+              }
               currentPublicKey = address
               currentSession = active
               ctx.state = "approved"
@@ -351,7 +401,7 @@ export function createWalletConnectAdapter(): WalletAdapter & {
                 "eth_sendTransaction",
                 "eth_signTypedData",
               ],
-              chains: [arcChainRef(options?.network === "mainnet" ? 5042 : ARC_CHAIN_ID)],
+              chains: [arcChainRef(expectedChainId)],
               events: ["chainChanged", "accountsChanged"],
             },
           },
@@ -386,6 +436,12 @@ export function createWalletConnectAdapter(): WalletAdapter & {
             })
           }),
         ])
+
+        // Guard BEFORE clearing the pairing context so the friendly chain
+        // error surfaces in the pairing UI instead of failing at first sign.
+        if (!sessionHasArcChain(session, expectedChainId)) {
+          throw arcChainGuardError(expectedChainId)
+        }
 
         ctx.uri = null
         ctx.state = "approved"

@@ -5,6 +5,7 @@ import { LoaderCircle, CircleAlert, QrCode, Shield, Usb, WifiOff, X } from "luci
 import { cn } from "@/lib/cn"
 import dynamic from "next/dynamic"
 import type { WalletId } from "@/lib/wallet/types"
+import { ARC_CHAIN_ID, ARC_NETWORK } from "@/lib/constants"
 import { WalletConnectDeepLink } from "./walletconnect-deeplink"
 
 const WalletConnectQR = dynamic(
@@ -383,13 +384,18 @@ export function Wc2ConnectPanel({
   onRetry,
   onCancel,
 }: Wc2ConnectPanelProps) {
-  if (isMobileBrowser) {
-    return (
-      <WalletConnectDeepLink uri={uri} pairingState={pairingState} error={error} onRetry={onRetry} />
-    )
-  }
+  // Remind mobile users of the Arc chain requirement while they approve:
+  // wallets without the chain approve a session we must reject (see the
+  // Arc-chain guard in the WalletConnect adapter).
+  const showArcHint = pairingState === "awaiting_approval" && !error
+  const arcHint =
+    ARC_NETWORK === "mainnet"
+      ? `Your mobile wallet must support Arc Mainnet (chain ${ARC_CHAIN_ID})`
+      : `Your mobile wallet must support Arc Testnet (chain ${ARC_CHAIN_ID})`
 
-  return (
+  const panel = isMobileBrowser ? (
+    <WalletConnectDeepLink uri={uri} pairingState={pairingState} error={error} onRetry={onRetry} />
+  ) : (
     <WalletConnectQR
       uri={uri}
       pairingState={pairingState}
@@ -397,5 +403,16 @@ export function Wc2ConnectPanel({
       onRetry={onRetry}
       onCancel={onCancel ?? (() => {})}
     />
+  )
+
+  return (
+    <>
+      {showArcHint && (
+        <p className="rounded-lg border border-aurora-violet/20 bg-aurora-violet/10 px-3 py-2 text-center text-xs text-muted-foreground">
+          {arcHint}
+        </p>
+      )}
+      {panel}
+    </>
   )
 }
