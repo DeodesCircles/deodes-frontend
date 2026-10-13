@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server"
-import crypto from "crypto"
 import {
   ACCESS_TOKEN_COOKIE,
   ACCESS_TOKEN_MAX_AGE,
@@ -29,10 +28,6 @@ import {
 export const runtime = "nodejs"
 
 /** Milliseconds remaining on a JWT, or null if it carries no readable `exp`. */
-function generateCsrfToken(): string {
-  return crypto.randomBytes(32).toString("base64url")
-}
-
 function readExpiry(token: string): number | null {
   const parts = token.split(".")
   if (parts.length !== 3) return null
@@ -65,7 +60,7 @@ export async function GET(request: NextRequest) {
 
 /** Store a freshly issued token pair. */
 export async function POST(request: NextRequest) {
-  let body: { token?: unknown; refreshToken?: unknown }
+  let body: { token?: unknown; refreshToken?: unknown; csrfToken?: unknown }
 
   try {
     body = await request.json()
@@ -73,7 +68,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
   }
 
-  const { token, refreshToken } = body
+  const { token, refreshToken, csrfToken } = body
 
   if (typeof token !== "string" || token.length === 0) {
     return NextResponse.json({ error: "Token required" }, { status: 400 })
@@ -87,11 +82,18 @@ export async function POST(request: NextRequest) {
     maxAge: ACCESS_TOKEN_MAX_AGE,
   })
 
-  response.cookies.set(CSRF_TOKEN_COOKIE, generateCsrfToken(), {
-    ...SESSION_COOKIE_OPTIONS,
-    httpOnly: false,
-    maxAge: CSRF_TOKEN_MAX_AGE,
-  })
+  // The readable CSRF cookie MUST be the backend-issued token bound to this
+  // access token (csrf:sha256(token) in Redis). A locally minted random value
+  // looks fine but fails every backend mutation with "invalid CSRF token",
+  // so when the caller has none we set nothing and let the backend say
+  // "missing" loudly instead of mismatching silently.
+  if (typeof csrfToken === "string" && csrfToken.length > 0) {
+    response.cookies.set(CSRF_TOKEN_COOKIE, csrfToken, {
+      ...SESSION_COOKIE_OPTIONS,
+      httpOnly: false,
+      maxAge: CSRF_TOKEN_MAX_AGE,
+    })
+  }
 
   if (typeof refreshToken === "string" && refreshToken.length > 0) {
     response.cookies.set(REFRESH_TOKEN_COOKIE, refreshToken, {

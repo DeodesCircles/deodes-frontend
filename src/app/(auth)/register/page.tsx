@@ -28,6 +28,7 @@ interface RegisterEnvelope {
     message?: string
     token?: string
     refreshToken?: string
+    csrfToken?: string
     hostedWallet?: string
   }
   error?: string
@@ -111,7 +112,7 @@ export default function RegisterPage() {
       }
       // setTokens persists the HttpOnly session cookie the middleware gates
       // on, so navigation must wait for it to resolve.
-      await setTokens(token, res.data?.refreshToken ?? token)
+      await setTokens(token, res.data?.refreshToken ?? token, undefined, res.data?.csrfToken)
       const hosted = res.data?.hostedWallet
       if (hosted && /^0x[0-9a-fA-F]{40}$/.test(hosted)) {
         try {

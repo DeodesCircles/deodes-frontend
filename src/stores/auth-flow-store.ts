@@ -540,6 +540,7 @@ export const useAuthFlowStore = create<AuthFlowStore>()(
               data: {
                 token: string;
                 refreshToken?: string;
+                csrfToken?: string;
                 user: Record<string, unknown>;
                 expectedPasskeyVersion?: number;
               };
@@ -581,6 +582,7 @@ export const useAuthFlowStore = create<AuthFlowStore>()(
                 token,
                 refreshToken,
                 d.user as unknown as User | undefined,
+                d.csrfToken,
               );
 
             recordMetric("auth.sign.completed", 1, { mode: get().mode });

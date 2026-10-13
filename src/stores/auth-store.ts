@@ -5,6 +5,7 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { ApiResponse, User } from "@/types";
 import { post, clearApiClientState } from "@/lib/api-client";
+import { ensureHostedArcWallet } from "@/lib/wallet/ensure-hosted";
 import { getCsrfHeaders } from "@/lib/auth/csrf";
 import {
   clearAccessToken,
@@ -42,13 +43,14 @@ interface UserStoreWithHmac {
 async function persistSession(
   token: string,
   refreshToken: string,
+  csrfToken?: string,
 ): Promise<boolean> {
   if (typeof window === "undefined") return false;
   try {
     const response = await fetch("/api/auth/session", {
       method: "POST",
       headers: { "Content-Type": "application/json", ...getCsrfHeaders() },
-      body: JSON.stringify({ token, refreshToken }),
+      body: JSON.stringify({ token, refreshToken, csrfToken }),
     });
     if (!response.ok) {
       logger.warn("[auth] Session cookie endpoint rejected the token pair", { status: response.status });
@@ -257,6 +259,7 @@ interface AuthActions {
     accessToken: string,
     refreshToken: string,
     user?: User,
+    csrfToken?: string,
   ) => Promise<void>;
   /** Refreshes the cached profile without touching the session. */
   updateUser: (user: User) => void;
@@ -329,6 +332,8 @@ const baseStore = (
         tokenExpiresAt: exp,
         user: storedUser ?? getStoredUser(),
       });
+      // New users from before hosted wallets existed get one now.
+      void ensureHostedArcWallet();
       return;
     }
 
@@ -351,17 +356,18 @@ const baseStore = (
         tokenExpiresAt: updatedExp ?? Date.now() + 15 * 60 * 1000,
         isLoading: false,
       });
+      void ensureHostedArcWallet();
     } catch (e) {
       logger.warn("[auth] Token refresh failed, logging out:", e);
       get().logout();
     }
   },
 
-  setTokens: async (accessToken: string, refreshToken: string, user?: User) => {
+  setTokens: async (accessToken: string, refreshToken: string, user?: User, csrfToken?: string) => {
     clearApiClientState();
     setAccessToken(accessToken);
     const exp = extractTokenExpiry(accessToken);
-    const persisted = await persistSession(accessToken, refreshToken);
+    const persisted = await persistSession(accessToken, refreshToken, csrfToken);
     if (!persisted) {
       clearAccessToken();
       throw new Error("Failed to persist session cookies");
@@ -374,6 +380,9 @@ const baseStore = (
       isAuthenticated: true,
       user: user ?? getStoredUser(),
     });
+    // First login ever: provision the hosted Arc wallet now so the user
+    // immediately has an address to receive crypto.
+    void ensureHostedArcWallet();
   },
 
   updateUser: (user: User) => {

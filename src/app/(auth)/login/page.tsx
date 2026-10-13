@@ -26,10 +26,12 @@ interface LoginEnvelope {
   data?: {
     token?: string
     refreshToken?: string
+    csrfToken?: string
     user?: User
   }
   token?: string
   refreshToken?: string
+  csrfToken?: string
   user?: User
   error?: string
   message?: string
@@ -65,7 +67,7 @@ export default function LoginPage() {
         if (token) {
           // setTokens persists the HttpOnly session cookie the middleware gates
           // on, so navigation must wait for it to resolve.
-          await setTokens(token, data?.refreshToken ?? token, data?.user)
+          await setTokens(token, data?.refreshToken ?? token, data?.user, data?.csrfToken)
           toast.success("Welcome back!")
           router.replace("/")
         } else {

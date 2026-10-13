@@ -3,6 +3,8 @@ import { API_BASE_URL } from "@/lib/constants"
 import {
   ACCESS_TOKEN_COOKIE,
   ACCESS_TOKEN_MAX_AGE,
+  CSRF_TOKEN_COOKIE,
+  CSRF_TOKEN_MAX_AGE,
   REFRESH_TOKEN_COOKIE,
   REFRESH_TOKEN_MAX_AGE,
   SESSION_COOKIE_OPTIONS,
@@ -71,6 +73,18 @@ export async function POST(request: NextRequest) {
     response.cookies.set(REFRESH_TOKEN_COOKIE, rotated, {
       ...SESSION_COOKIE_OPTIONS,
       maxAge: REFRESH_TOKEN_MAX_AGE,
+    })
+  }
+
+  // Access rotation also re-binds the CSRF token server-side
+  // (csrf:sha256(new token)), so the readable cookie must follow or every
+  // subsequent mutation 403s with "invalid CSRF token".
+  const rotatedCsrf: unknown = payload?.data?.csrfToken ?? payload?.csrfToken
+  if (typeof rotatedCsrf === "string" && rotatedCsrf.length > 0) {
+    response.cookies.set(CSRF_TOKEN_COOKIE, rotatedCsrf, {
+      ...SESSION_COOKIE_OPTIONS,
+      httpOnly: false,
+      maxAge: CSRF_TOKEN_MAX_AGE,
     })
   }
 
