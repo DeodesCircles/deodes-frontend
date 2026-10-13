@@ -27,6 +27,7 @@ import {
 import { Routes } from "@/lib/constants"
 import { useTranslate } from "@/lib/locale/context"
 import { MemberDot } from "@/components/payouts/round-simulator"
+import { Reveal } from "@/components/shared/reveal"
 
 // ── DEODES landing: dense marketplace-style page ─────────────────────────────
 // Structure references: sckoll.com (two-sided paths, search, stats strip,
@@ -337,8 +338,12 @@ export function LandingContent() {
     <>
       <div className="auroral-mesh min-h-screen">
         {/* ═══ HERO — left-aligned, zero-lag rotating word ═══ */}
-        <section className="relative z-10 min-h-[92vh] flex flex-col justify-center">
-          <div className="container-premium">
+        <section className="relative z-10 min-h-[92vh] flex flex-col justify-center overflow-hidden">
+          <div
+            aria-hidden="true"
+            className="grain-overlay pointer-events-none absolute inset-0"
+          />
+          <div className="container-premium relative">
             <p className="font-heading text-xs tracking-[0.3em] uppercase text-muted-foreground mb-6">
               {t("landing.badge")}
             </p>
@@ -347,7 +352,7 @@ export function LandingContent() {
                 {t("landing.saveTogether")}
               </span>
               <RotatingGrow />
-              <span className="font-display text-5xl md:text-7xl xl:text-8xl font-black tracking-tighter block">
+              <span className="font-serif italic font-light text-5xl md:text-7xl xl:text-8xl tracking-tight block gradient-text">
                 {t("landing.together")}
               </span>
             </h1>
@@ -435,14 +440,16 @@ export function LandingContent() {
           </div>
         </section>
 
-        {/* ═══ CIRCLE TYPES — auto-drift rail (no grid) ═══ */}
+        {/* ═══ CIRCLE TYPES — numbered index rows ═══ */}
         <section className="relative z-10 py-24 md:py-32 overflow-hidden">
           <div className="container-premium">
+          <Reveal>
             <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">Find your circle</p>
             <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
               <h2 className="font-heading text-4xl md:text-5xl gradient-text-extended max-w-xl">
                 Every kind of saver has a circle here.
               </h2>
+          </Reveal>
               <Link
                 href="/explore"
                 className="inline-flex items-center gap-2 text-sm font-heading font-semibold hover:opacity-80 transition-all"
@@ -459,10 +466,12 @@ export function LandingContent() {
         {/* ═══ PAYOUT — interactive round strip (no cards) ═══ */}
         <section className="relative z-10 border-t border-white/[0.06]">
           <div className="container-premium py-16 md:py-24">
+          <Reveal>
             <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">Payout modes</p>
             <h2 className="mt-2 font-heading text-3xl md:text-4xl font-semibold tracking-tight max-w-2xl">
               Four rules. One ledger. Pick a mode, watch the rounds.
             </h2>
+          </Reveal>
             <div className="mt-8">
               <RoundStrip />
             </div>
@@ -474,10 +483,12 @@ export function LandingContent() {
         {/* ═══ HOW IT WORKS — numbered flow (sckoll 01–05 pattern) ═══ */}
         <section className="relative z-10 py-24 md:py-32 border-t border-white/[0.06]">
           <div className="container-premium">
+          <Reveal>
             <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">How DEODES works</p>
             <h2 className="mt-2 font-heading text-4xl md:text-5xl gradient-text-extended max-w-3xl">
               From passkey to payout in five moves.
             </h2>
+          </Reveal>
             <div className="mt-12 grid gap-px overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.06] md:grid-cols-5">
               {steps.map((s) => (
                 <div key={s.n} className="bg-[rgb(var(--background))] p-6">
@@ -493,6 +504,7 @@ export function LandingContent() {
         {/* ═══ DEOSCORE BAND ═══ */}
         <section className="relative z-10 py-24 md:py-32 border-t border-white/[0.06]">
           <div className="container-premium grid gap-12 lg:grid-cols-2 lg:items-center">
+            <Reveal>
             <div>
               <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">DeoScore reputation</p>
               <h2 className="mt-2 font-heading text-4xl md:text-5xl font-black tracking-tight">
@@ -509,6 +521,7 @@ export function LandingContent() {
                 <Trophy className="h-4 w-4" /> Check your DeoScore
               </Link>
             </div>
+            </Reveal>
             <div className="space-y-4">
               {scoreWeights.map((w) => (
                 <div key={w.label} className="glass-premium rounded-2xl p-5">
@@ -531,12 +544,14 @@ export function LandingContent() {
         {/* ═══ TRUST — alternating Z rows (no cards) ═══ */}
         <section className="relative z-10 py-24 border-t border-white/[0.06]">
           <div className="container-premium">
-            <p className="text-center font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
+          <Reveal className="text-center">
+            <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
               The trust layer
             </p>
-            <h2 className="mt-2 text-center font-heading text-3xl md:text-4xl font-semibold tracking-tight">
+            <h2 className="mt-2 font-heading text-3xl md:text-4xl font-semibold tracking-tight">
               Move money without stepping into the dark.
             </h2>
+          </Reveal>
             <div className="mt-12 space-y-10 max-w-4xl mx-auto">
               {trustItems.map((item, i) => {
                 const Icon = item.icon
@@ -586,10 +601,12 @@ export function LandingContent() {
         {/* ═══ FINAL CTA — sckoll "simple by design" pattern, DEODES phrase ═══ */}
         <section className="relative z-10 py-24 text-center border-t border-white/[0.06]">
           <div className="container-premium">
+          <Reveal>
             <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">Simple by design</p>
             <h2 className="mt-3 font-heading text-4xl md:text-6xl gradient-text-extended max-w-4xl mx-auto">
               Start with the circle. Stay for the momentum.
             </h2>
+          </Reveal>
             <p className="text-muted-foreground mt-4 max-w-2xl mx-auto">
               Join your first round, skip the bank queue, or organize savers without becoming a
               treasurer.
