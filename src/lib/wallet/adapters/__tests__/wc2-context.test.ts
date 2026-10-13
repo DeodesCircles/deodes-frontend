@@ -76,10 +76,20 @@ import {
   type PairingContext,
 } from "../walletconnect"
 
+// The adapter fails closed without a Cloud project ID, so every test that
+// drives connect() through SignClient.init needs a stubbed value. (The real
+// SignClient.init stays mocked — any non-empty ID passes the guard.)
+beforeEach(() => {
+  vi.stubEnv("NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID", "test-project-id")
+})
+
+afterEach(() => {
+  vi.unstubAllEnvs()
+})
+
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function makeSession(address = "GAXI4RFQHLT2OVXZWRLGE6YFAJILKM576FKGSEDPMHPXWKBHDPXUIYJ") {
-  return {
+function makeSession(address = "GAXI4RFQHLT2OVXZWRLGE6YFAJILKM576FKGSEDPMHPXWKBHDPXUIYJ") {  return {
     topic: "test-topic",
     namespaces: {
       stellar: {

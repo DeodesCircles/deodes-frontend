@@ -23,6 +23,7 @@ export function AuthFlowProvider({ children }: { children: ReactNode }) {
 
       if (status === "connected" && prevStatus !== "connected" && state.connection.walletId && address) {
         useMultiWalletStore.getState().setLoginError(null)
+        useMultiWalletStore.getState().setRegisterError(null)
       }
 
       prevStatusRef.current = status

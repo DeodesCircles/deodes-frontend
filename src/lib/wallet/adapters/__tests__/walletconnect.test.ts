@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
+import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from "vitest"
 
 const mockSignClient = {
   on: vi.fn(),
@@ -45,13 +45,29 @@ vi.mock("../../wc2-session-store", () => ({
   WC2SessionStore: vi.fn(),
 }))
 
-import { createWalletConnectAdapter, setOnPairingUri, resetWcState } from "../walletconnect"
+import { createWalletConnectAdapter, setOnPairingUri, resetWcState, __resetSignClientForTests } from "../walletconnect"
+
+const TEST_ADDRESS = "0x1234567890abcdef1234567890abcdef12345678"
+
+function makeArcSession(chainRef = "eip155:5042002", topic = "test-topic") {
+  return {
+    topic,
+    namespaces: {
+      eip155: {
+        accounts: [`${chainRef}:${TEST_ADDRESS}`],
+        chains: [chainRef],
+      },
+    },
+  }
+}
 
 describe("WalletConnect Adapter", () => {
   let adapter: ReturnType<typeof createWalletConnectAdapter>
 
   beforeEach(() => {
     vi.clearAllMocks()
+    __resetSignClientForTests()
+    vi.stubEnv("NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID", "test-project-id")
     adapter = createWalletConnectAdapter()
     mockRelay.status = "healthy"
     setOnPairingUri(null)
@@ -64,6 +80,7 @@ describe("WalletConnect Adapter", () => {
 
   afterEach(() => {
     setOnPairingUri(null)
+    vi.unstubAllEnvs()
   })
 
   describe("factory", () => {
@@ -459,21 +476,16 @@ describe("WalletConnect signTransaction — failure paths (with mocked session)"
 
   beforeEach(async () => {
     vi.clearAllMocks()
+    __resetSignClientForTests()
+    vi.stubEnv("NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID", "test-project-id")
     connectedAdapter = createWalletConnectAdapter()
     mockRelay.status = "healthy"
     setOnPairingUri(null)
     // A real WalletConnect session carries a `topic`, and `session.getAll()`
     // returns the live sessions keyed by that same topic. `isConnected()`
     // matches on the topic, so the mock has to mirror that shape.
-    const mockSession = {
-      topic: "test-topic",
-      namespaces: {
-        stellar: {
-          accounts: ["stellar:testnet:GAX23V3WWDPPR5WRER3KTEUTDLSCGZYMSJY5FDRRKKCIQ4JADF5T27RC"],
-          chains: ["stellar:testnet"],
-        },
-      },
-    }
+    // connect() reuses this live Arc (eip155) session via the reuse path.
+    const mockSession = makeArcSession()
     mockSignClient.connect.mockResolvedValue({
       uri: "wc:test",
       approval: vi.fn().mockResolvedValue(mockSession),
@@ -491,6 +503,7 @@ describe("WalletConnect signTransaction — failure paths (with mocked session)"
 
   afterEach(() => {
     setOnPairingUri(null)
+    vi.unstubAllEnvs()
   })
 
   it("returns user_rejected when user cancels signing", async () => {
@@ -513,14 +526,7 @@ describe("WalletConnect signTransaction — failure paths (with mocked session)"
     // The adapter uses the session's chainId, so we simulate a mainnet session
     // but the adapter should still use the session's network
     mockSignClient.session.getAll.mockReturnValue([
-      {
-        namespaces: {
-          stellar: {
-            accounts: ["stellar:public:GAX23V3WWDPPR5WRER3KTEUTDLSCGZYMSJY5FDRRKKCIQ4JADF5T27RC"],
-            chains: ["stellar:public"],
-          },
-        },
-      },
+      makeArcSession("eip155:5042", "mainnet-topic"),
     ])
 
     // Create a new adapter that will pick up the mainnet session
@@ -575,5 +581,115 @@ describe("WalletConnect signTransaction — failure paths (with mocked session)"
     expect(unhandledRejections.length).toBe(0)
 
     process.on = originalOnUnhandledRejection
+  })
+})
+
+describe("WalletConnect Arc (eip155) rail fixes", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    __resetSignClientForTests()
+    vi.stubEnv("NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID", "test-project-id")
+    mockRelay.status = "healthy"
+    setOnPairingUri(null)
+    mockSignClient.session.getAll.mockReturnValue([])
+    mockSignClient.disconnect.mockResolvedValue(undefined)
+  })
+
+  afterEach(() => {
+    setOnPairingUri(null)
+    vi.unstubAllEnvs()
+  })
+
+  async function connectWithSession(chainRef: string) {
+    const session = makeArcSession(chainRef, `topic-${chainRef}`)
+    mockSignClient.connect.mockResolvedValue({
+      uri: "wc:test",
+      approval: vi.fn().mockResolvedValue(session),
+    })
+    const adapter = createWalletConnectAdapter()
+    const result = await adapter.connect()
+    return { adapter, session, result }
+  }
+
+  it("signMessage returns { signature, publicKey } for a string result", async () => {
+    const { adapter } = await connectWithSession("eip155:5042002")
+    mockSignClient.request.mockResolvedValue("0xdeadbeefsignature")
+
+    const result = await adapter.signMessage("hello arc")
+
+    expect(result).toEqual({ signature: "0xdeadbeefsignature", publicKey: TEST_ADDRESS })
+  })
+
+  it("signMessage wraps object-shaped results into { signature, publicKey }", async () => {
+    const { adapter } = await connectWithSession("eip155:5042002")
+    mockSignClient.request.mockResolvedValue({ signature: "0xabc123" })
+
+    const result = await adapter.signMessage("hello arc")
+
+    expect(result).toEqual({ signature: "0xabc123", publicKey: TEST_ADDRESS })
+  })
+
+  it("signTransaction returns { signedXdr } for object and string results", async () => {
+    const { adapter } = await connectWithSession("eip155:5042002")
+
+    mockSignClient.request.mockResolvedValue({ signedXdr: "mockxdr" })
+    await expect(adapter.signTransaction("payload")).resolves.toEqual({ signedXdr: "mockxdr" })
+
+    mockSignClient.request.mockResolvedValue("0xsig")
+    await expect(adapter.signTransaction("payload")).resolves.toEqual({ signedXdr: "0xsig" })
+  })
+
+  it("clears init state on SignClient.init failure so Retry re-inits", async () => {
+    // Dynamic import: a static import of the mocked specifier would break
+    // vi.mock hoisting (factory references top-level mockSignClient).
+    const { SignClient } = await import("@walletconnect/sign-client")
+    const mockInit = SignClient.init as unknown as Mock
+    mockInit.mockRejectedValueOnce(new Error("relay exploded"))
+    // (falls back to the default mockResolvedValue(mockSignClient) after)
+    mockSignClient.session.getAll.mockReturnValue([])
+    const session = makeArcSession()
+    mockSignClient.connect.mockResolvedValue({
+      uri: "wc:retry",
+      approval: vi.fn().mockResolvedValue(session),
+    })
+
+    const adapter = createWalletConnectAdapter()
+    await expect(adapter.connect()).rejects.toMatchObject({ adapter: "walletconnect" })
+
+    // Retry must attempt init again instead of re-awaiting the dead promise.
+    const result = await adapter.connect()
+    expect(result.publicKey).toBe(TEST_ADDRESS)
+    expect(mockInit.mock.calls.length).toBeGreaterThanOrEqual(2)
+  })
+
+  it("fails closed when NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID is missing", async () => {
+    vi.stubEnv("NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID", "")
+    const adapter = createWalletConnectAdapter()
+
+    await expect(adapter.connect()).rejects.toMatchObject({ adapter: "walletconnect" })
+  })
+
+  it("getNetwork derives testnet from the eip155:5042002 chain", async () => {
+    const { adapter, result } = await connectWithSession("eip155:5042002")
+    // connect() is typed as { publicKey } by the base interface, but the
+    // implementation also returns the derived network — assert via toEqual.
+    expect(result).toEqual({ publicKey: TEST_ADDRESS, network: "testnet" })
+    await expect(adapter.getNetwork()).resolves.toBe("testnet")
+  })
+
+  it("getNetwork derives mainnet from the eip155:5042 chain", async () => {
+    const { adapter, result } = await connectWithSession("eip155:5042")
+    expect(result).toEqual({ publicKey: TEST_ADDRESS, network: "mainnet" })
+    await expect(adapter.getNetwork()).resolves.toBe("mainnet")
+  })
+
+  it("connect reuses a live session and reports its chain-derived network", async () => {
+    mockSignClient.session.getAll.mockReturnValue([makeArcSession("eip155:5042", "live-topic")])
+    const adapter = createWalletConnectAdapter()
+
+    const result = await adapter.connect()
+
+    expect(result).toEqual({ publicKey: TEST_ADDRESS, network: "mainnet" })
+    await expect(adapter.getNetwork()).resolves.toBe("mainnet")
   })
 })

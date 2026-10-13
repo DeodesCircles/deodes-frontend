@@ -75,7 +75,7 @@ test.describe("Moistello core journeys", () => {
     await page.getByRole("button", { name: "Connect Wallet" }).click()
 
     await expect(page.getByRole("button", { name: /WalletConnect/ })).toBeVisible()
-    await expect(page.getByText("Lobstr, Coinbase Wallet, Trust Wallet, MetaMask")).toBeVisible()
+    await expect(page.getByText("MetaMask, Rabby, Coinbase Wallet & 200+")).toBeVisible()
   })
 
   test("creates a new circle and lands on its detail page", async ({ page, context }) => {

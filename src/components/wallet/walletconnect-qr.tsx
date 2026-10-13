@@ -211,7 +211,7 @@ export function WalletConnectQR({
       <p className="text-sm text-foreground font-medium">Scan with your wallet app</p>
 
       <ol className="space-y-1 text-xs text-muted-foreground text-center">
-        <li>1. Open Lobstr, Coinbase Wallet, or Trust Wallet on your phone</li>
+        <li>1. Open MetaMask, Rabby, or Coinbase Wallet on your phone</li>
         <li>2. Tap the QR scanner icon</li>
         <li>3. Scan this code to connect</li>
       </ol>

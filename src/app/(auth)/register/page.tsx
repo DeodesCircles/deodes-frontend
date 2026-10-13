@@ -11,6 +11,13 @@ import { PasswordStrengthMeter } from "@/components/auth/password-strength-meter
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { OTPInput } from "@/components/ui/otp-input"
+import dynamic from "next/dynamic"
+import { useWalletAuth } from "@/hooks/use-wallet-auth"
+
+const WalletSelector = dynamic(
+  () => import("@/components/wallet/wallet-selector").then((m) => m.WalletSelector),
+  { ssr: false },
+)
 import { useAuthStore } from "@/stores/auth-store"
 import { useToast } from "@/hooks/use-toast"
 import { post } from "@/lib/api-client"
@@ -37,6 +44,12 @@ export default function RegisterPage() {
   const [code, setCode] = useState("")
   const [codeError, setCodeError] = useState("")
   const [cooldown, setCooldown] = useState(0)
+  const [authTab, setAuthTab] = useState<"email" | "wallet">("email")
+  // Bridge: wallet tab connects -> sign + verify -> "/wallet?fresh=1".
+  const walletAuth = useWalletAuth({
+    mode: "register",
+    enabled: authTab === "wallet" && step === "credentials",
+  })
 
   const {
     register,
@@ -188,6 +201,22 @@ export default function RegisterPage() {
   return (
     <AuthLayout title="Create an Account">
       <div className="space-y-6">
+        <div role="tablist" aria-label="Registration method" className="flex gap-6 border-b border-white/10">
+          {(["email", "wallet"] as const).map((tab) => (
+            <button key={tab} role="tab" type="button" aria-selected={authTab === tab} onClick={() => setAuthTab(tab)}
+              className={`pb-2 text-sm font-medium transition-colors ${
+                authTab === tab
+                  ? "text-foreground border-b-2 border-aurora-violet -mb-px"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {tab === "email" ? "Email" : "Wallet"}
+            </button>
+          ))}
+        </div>
+
+        {authTab === "email" ? (
+        <>
         <form onSubmit={handleSubmit(startRegistration)} className="space-y-4" noValidate aria-label="Registration form">
           <Input
             id="name"
@@ -232,6 +261,35 @@ export default function RegisterPage() {
             Sign In
           </Link>
         </p>
+        </>
+        ) : (
+        <div className="space-y-4">
+          <WalletSelector />
+          <div aria-live="polite" className="space-y-2 text-center">
+            {walletAuth.isAuthenticating && (
+              <p className="text-sm text-muted-foreground">Wallet connected — creating your account…</p>
+            )}
+            {walletAuth.error && !walletAuth.isAuthenticating && (
+              <>
+                <p role="alert" className="text-sm text-red-400">{walletAuth.error}</p>
+                <button
+                  type="button"
+                  onClick={() => void walletAuth.retry()}
+                  className="text-sm text-aurora-violet hover:underline focus:outline-none focus:ring-2 focus:ring-foreground"
+                >
+                  Retry signing
+                </button>
+              </>
+            )}
+          </div>
+          <p className="text-center text-sm text-muted-foreground">
+            Already have an account?{" "}
+            <Link href="/login" className="text-aurora-violet hover:underline focus:outline-none focus:ring-2 focus:ring-foreground">
+              Sign In
+            </Link>
+          </p>
+        </div>
+        )}
       </div>
     </AuthLayout>
   )

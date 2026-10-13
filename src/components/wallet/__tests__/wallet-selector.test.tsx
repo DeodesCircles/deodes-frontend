@@ -12,7 +12,7 @@
  */
 
 import React from "react"
-import { describe, it, expect, vi, beforeEach } from "vitest"
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import { WalletSelector } from "../wallet-selector"
 
@@ -350,6 +350,48 @@ describe("WalletSelector — error display", () => {
       />
     )
     expect(screen.getByText("Connection refused")).toBeDefined()
+  })
+})
+
+describe("WalletSelector — WalletConnect error passthrough", () => {
+  beforeEach(() => {
+    resetStores()
+    mockMultiWalletStore.isSelectorOpen = true
+  })
+
+  afterEach(() => {
+    mockMultiWalletStore.connect = vi.fn().mockResolvedValue(undefined)
+    resetStores()
+  })
+
+  it("surfaces the real adapter error message (not generic text)", async () => {
+    mockMultiWalletStore.connect = vi.fn().mockRejectedValue({
+      adapter: "walletconnect",
+      code: "user_rejected",
+      message: "QR expired before approval.",
+    })
+    const setPairingError = vi.fn()
+    mockWcStore.setPairingError = setPairingError
+
+    render(<WalletSelector />)
+    fireEvent.click(screen.getByText("WalletConnect"))
+
+    await waitFor(() => {
+      expect(setPairingError).toHaveBeenCalledWith("QR expired before approval.")
+    })
+  })
+
+  it("falls back to generic text when the rejection carries no message", async () => {
+    mockMultiWalletStore.connect = vi.fn().mockRejectedValue(undefined)
+    const setPairingError = vi.fn()
+    mockWcStore.setPairingError = setPairingError
+
+    render(<WalletSelector />)
+    fireEvent.click(screen.getByText("WalletConnect"))
+
+    await waitFor(() => {
+      expect(setPairingError).toHaveBeenCalledWith("Connection failed or was cancelled.")
+    })
   })
 })
 

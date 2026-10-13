@@ -255,10 +255,19 @@ export function WalletSelector({ className, variant = "inline" }: WalletSelector
       if (walletId === "walletconnect") {
         setWc2PairingState("approved")
       }
-    } catch (e) {
+    } catch (e: unknown) {
       logger.error("[wallet-selector] Connection failed:", e)
       if (walletId === "walletconnect") {
-        setWc2PairingError(address || "Connection failed or was cancelled.")
+        // Surface the REAL adapter error message. The previous code read the
+        // render-scope `address` here (stale closure — null at failure time),
+        // which discarded the actual reason and always showed generic text.
+        const message =
+          e instanceof Error
+            ? e.message
+            : typeof e === "object" && e !== null && "message" in e
+              ? String((e as { message: unknown }).message)
+              : "Connection failed or was cancelled."
+        setWc2PairingError(message || "Connection failed or was cancelled.")
       }
     } finally {
       if (walletId === "walletconnect") {

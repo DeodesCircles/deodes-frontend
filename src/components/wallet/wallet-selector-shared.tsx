@@ -165,7 +165,7 @@ export function WalletItem({
         </div>
         {isWC && (
           <p className="text-2xs text-muted-foreground mt-0.5">
-            Lobstr, Coinbase, Trust Wallet, MetaMask &amp; 200+
+            MetaMask, Rabby, Coinbase Wallet &amp; 200+
           </p>
         )}
         {isPasskey && description && (
@@ -284,7 +284,7 @@ export function WalletList({
 
       {standardWallets.length === 0 && hardwareWallets.length === 0 && (
         <p className="text-sm text-muted-foreground text-center py-2">
-          No wallets detected. Install a Stellar wallet or use WalletConnect to scan and connect.
+          No wallets detected. Install a supported wallet or use WalletConnect to scan and connect.
         </p>
       )}
 

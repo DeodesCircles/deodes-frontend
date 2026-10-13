@@ -44,7 +44,7 @@ describe("WalletConnectDeepLink", () => {
       expect(screen.getByText("Open Wallet App")).toBeDefined()
     })
 
-    it("shows install link on mobile", () => {
+    it("shows EVM install links on mobile", () => {
       Object.defineProperty(navigator, "userAgent", {
         value: "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15",
         configurable: true,
@@ -57,7 +57,9 @@ describe("WalletConnectDeepLink", () => {
           pairingState="pairing"
         />,
       )
-      expect(screen.getByText("Install Lobstr")).toBeDefined()
+      expect(screen.getByText("Install MetaMask")).toBeDefined()
+      expect(screen.getByText("Install Rabby")).toBeDefined()
+      expect(screen.getByText("Install Coinbase Wallet")).toBeDefined()
     })
   })
 

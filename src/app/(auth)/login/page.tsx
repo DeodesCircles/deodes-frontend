@@ -14,6 +14,7 @@ import { AuthLayout } from "@/components/auth/auth-layout"
 import { GoogleButton } from "@/components/auth/google-button"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { useWalletAuth } from "@/hooks/use-wallet-auth"
 
 const WalletSelector = dynamic(
   () => import("@/components/wallet/wallet-selector").then((m) => m.WalletSelector),
@@ -39,6 +40,8 @@ export default function LoginPage() {
   const setTokens = useAuthStore((s) => s.setTokens)
   const toast = useToast()
   const [loading, setLoading] = useState(false)
+  // Bridge: once WalletSelector connects, sign + verify and redirect to "/".
+  const walletAuth = useWalletAuth({ mode: "login" })
 
   const {
     register,
@@ -114,6 +117,28 @@ export default function LoginPage() {
         </div>
 
         <WalletSelector />
+
+        <div aria-live="polite" className="space-y-2">
+          {walletAuth.isAuthenticating && (
+            <p className="text-center text-sm text-muted-foreground">
+              Wallet connected — signing you in…
+            </p>
+          )}
+          {walletAuth.error && !walletAuth.isAuthenticating && (
+            <div className="space-y-2 text-center">
+              <p role="alert" className="text-sm text-red-400">
+                {walletAuth.error}
+              </p>
+              <button
+                type="button"
+                onClick={() => void walletAuth.retry()}
+                className="text-sm text-aurora-violet hover:underline focus:outline-none focus:ring-2 focus:ring-foreground"
+              >
+                Retry signing
+              </button>
+            </div>
+          )}
+        </div>
 
         <p className="text-center text-sm text-muted-foreground">
           Don&apos;t have an account?{" "}

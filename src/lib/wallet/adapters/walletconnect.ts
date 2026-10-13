@@ -1,6 +1,6 @@
 import { logger } from "@/lib/logger"
 /**
- * WalletConnect v2 adapter for Stellar wallets.
+ * WalletConnect v2 adapter for EVM wallets on Arc (eip155 namespace).
  *
  * ## Singleton vs per-connect state
  *
@@ -31,7 +31,7 @@ import { logger } from "@/lib/logger"
 import { WalletAdapter, WalletMeta, NetworkType } from "../types"
 import { getRelayMonitor } from "../wc2-relay"
 import { getWC2SessionStore } from "../wc2-session-store"
-import { ARC_CHAIN_ID } from "@/lib/constants"
+import { ARC_CHAIN_ID, ARC_NETWORK } from "@/lib/constants"
 
 function isArcAddress(address: string): boolean {
   return /^0x[0-9a-fA-F]{40}$/.test(address)
@@ -41,12 +41,57 @@ function arcChainRef(chainId: number): string {
   return `eip155:${chainId}`
 }
 
+const ARC_TESTNET_CHAIN_ID = 5042002
+const ARC_MAINNET_CHAIN_ID = 5042
+
+function networkFromChainId(chainId: string | number): NetworkType {
+  const id = String(chainId)
+  if (id === String(ARC_MAINNET_CHAIN_ID)) return "mainnet"
+  if (id === String(ARC_TESTNET_CHAIN_ID)) return "testnet"
+  return ARC_NETWORK
+}
+
+/**
+ * Derive testnet/mainnet from the actual eip155 chain in the session,
+ * checking both `chains` (`eip155:<id>`) and `accounts`
+ * (`eip155:<id>:0x…`). Falls back to the configured ARC_NETWORK —
+ * never a hardcoded literal — when the session carries no parseable chain.
+ */
+function networkFromSession(session: any): NetworkType {
+  const chains: unknown = session?.namespaces?.eip155?.chains
+  if (Array.isArray(chains)) {
+    for (const c of chains) {
+      const m = /^eip155:(\d+)$/.exec(String(c))
+      if (m) return networkFromChainId(m[1])
+    }
+  }
+  const accounts: unknown = session?.namespaces?.eip155?.accounts
+  if (Array.isArray(accounts)) {
+    for (const a of accounts) {
+      const m = /^eip155:(\d+):/.exec(String(a))
+      if (m) return networkFromChainId(m[1])
+    }
+  }
+  return ARC_NETWORK
+}
+
 // ---------------------------------------------------------------------------
 // Module-level singletons (intentional — one client, one WebSocket)
 // ---------------------------------------------------------------------------
 
 let signClientInstance: any = null
 let initPromise: Promise<any> | null = null
+
+/**
+ * Clear the cached SignClient and its init promise (test support).
+ * Production retry does not need this — `getOrInitSignClient` already clears
+ * both on init failure — but tests need a way to return the module-level
+ * singleton to a pristine state between cases.
+ */
+export function __resetSignClientForTests(): void {
+  signClientInstance = null
+  initPromise = null
+}
 
 async function getOrInitSignClient(): Promise<any> {
   if (signClientInstance) return signClientInstance
@@ -78,7 +123,16 @@ async function getOrInitSignClient(): Promise<any> {
     return signClientInstance
   })()
 
-  return initPromise
+  // A failed init must not poison the module singleton: clear both so a
+  // later Retry re-runs SignClient.init instead of re-awaiting the same
+  // rejection forever.
+  try {
+    return await initPromise
+  } catch (err) {
+    initPromise = null
+    signClientInstance = null
+    throw err
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -213,7 +267,7 @@ export function createWalletConnectAdapter(): WalletAdapter & {
     priority: 0,
     installUrl: "",
     description:
-      "Connect 500+ mobile EVM wallets on Arc via QR",
+      "Connect MetaMask, Rabby, Coinbase Wallet & 200+ mobile EVM wallets on Arc via QR",
     icon: "/icons/walletconnect.svg",
     isAvailable: () => typeof window !== "undefined",
   }
@@ -282,7 +336,7 @@ export function createWalletConnectAdapter(): WalletAdapter & {
               relay.recordOutcome(true, Date.now() - connectStartedAt)
               return {
                 publicKey: address,
-                network: "testnet",
+                network: networkFromSession(active),
               }
             }
           }
@@ -347,7 +401,7 @@ export function createWalletConnectAdapter(): WalletAdapter & {
 
         const split = accounts[0].split(":")
         const address = split[split.length - 1]
-        const network = "testnet"
+        const network = networkFromSession(session)
         if (!address || !isArcAddress(address)) {
           throw new Error(
             "Invalid Arc 0x address returned from WalletConnect session"
@@ -363,7 +417,7 @@ export function createWalletConnectAdapter(): WalletAdapter & {
 
         return {
           publicKey: address,
-          network: network === "testnet" ? "testnet" : "mainnet",
+          network,
         }
       } catch (err: any) {
         // Only update ctx if it is still the active one (another connect may
@@ -421,7 +475,7 @@ export function createWalletConnectAdapter(): WalletAdapter & {
     async signTransaction(xdr: string) {
       if (!currentPublicKey || !currentSession) {
         throw {
-          code: "not_connected",
+          code: "not_installed",
           message: "Not connected to WalletConnect",
           adapter: "walletconnect",
         }
@@ -450,7 +504,15 @@ export function createWalletConnectAdapter(): WalletAdapter & {
           },
         })
         relay.recordOutcome(true, Date.now() - signStartedAt)
-        return (result as any)?.signedXdr || (result as string)
+        // WalletAdapter requires { signedXdr } — a bare string would make
+        // callers read .signedXdr as undefined.
+        const signedXdr =
+          typeof result === "string"
+            ? result
+            : String(
+                (result as any)?.signedXdr ?? (result as any)?.signature ?? ""
+              )
+        return { signedXdr }
       } catch (err: any) {
         relay.recordOutcome(false, Date.now() - signStartedAt)
         throw {
@@ -481,7 +543,19 @@ export function createWalletConnectAdapter(): WalletAdapter & {
             params: [message, currentPublicKey],
           },
         })
-        return (result as any)?.signedMessage || (result as string)
+        // WalletAdapter requires { signature, publicKey } — a bare string
+        // would make callers read .signature as undefined and post it to
+        // verify as undefined.
+        const signature =
+          typeof result === "string"
+            ? result
+            : String(
+                (result as any)?.signature ??
+                  (result as any)?.signedMessage ??
+                  (result as any)?.signedXdr ??
+                  ""
+              )
+        return { signature, publicKey: currentPublicKey }
       } catch (err: any) {
         throw {
           code: "user_rejected",
@@ -503,12 +577,8 @@ export function createWalletConnectAdapter(): WalletAdapter & {
     },
 
     async getNetwork(): Promise<NetworkType> {
-      if (!currentSession) return "testnet"
-      const chainId =
-        currentSession.namespaces?.eip155?.chains?.[0] || ""
-      return chainId.includes("5042") && !chainId.includes("5042002")
-        ? "mainnet"
-        : "testnet"
+      if (!currentSession) return ARC_NETWORK
+      return networkFromSession(currentSession)
     },
   }
 }

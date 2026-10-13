@@ -138,12 +138,30 @@ export function WalletConnectDeepLink({
           <p className="text-xs text-muted-foreground text-center">
             Don&apos;t have a wallet?{" "}
             <a
-              href="https://lobstr.co"
+              href="https://metamask.io/download/"
               target="_blank"
               rel="noopener noreferrer"
               className="text-aurora-cyan hover:underline"
             >
-              Install Lobstr
+              Install MetaMask
+            </a>
+            {" · "}
+            <a
+              href="https://rabby.io"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-aurora-cyan hover:underline"
+            >
+              Install Rabby
+            </a>
+            {" · "}
+            <a
+              href="https://www.coinbase.com/wallet/downloads"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-aurora-cyan hover:underline"
+            >
+              Install Coinbase Wallet
             </a>
           </p>
         </>

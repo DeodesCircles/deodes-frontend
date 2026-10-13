@@ -122,7 +122,7 @@ describe("WalletConnectQR", () => {
           pairingState="pairing"
         />,
       )
-      expect(screen.getByText(/Open Lobstr/)).toBeDefined()
+      expect(screen.getByText(/Open MetaMask/)).toBeDefined()
       expect(screen.getByText(/Tap the QR scanner/)).toBeDefined()
       expect(screen.getByText(/Scan this code/)).toBeDefined()
     })
@@ -520,7 +520,7 @@ describe("WalletConnectQR – copy and download affordances", () => {
   it("names the file and hands the browser a PNG data URL", async () => {
     await clickDownload()
 
-    expect(assignedDownload).toBe("moistello-walletconnect-qr.png")
+    expect(assignedDownload).toBe("deodes-walletconnect-qr.png")
     expect(assignedHref.startsWith("data:image/png;base64,")).toBe(true)
   })
 
