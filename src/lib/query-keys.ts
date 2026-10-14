@@ -25,6 +25,11 @@ export const queryKeys = {
      */
     palette: () => ["circles", "palette"] as const,
   },
+  subscriptions: {
+    all: ["subscriptions"] as const,
+    mine: () => ["subscriptions", "mine"] as const,
+    one: (circleId: string) => ["subscription", circleId] as const,
+  },
   payouts: {
     all: ["payouts"] as const,
     list: (filters?: {
@@ -68,5 +73,18 @@ export const queryKeys = {
   notifications: {
     all: ["notifications"] as const,
     archive: ["notifications", "archive"] as const,
+  },
+  admin: {
+    metrics: () => ["admin", "metrics"] as const,
+    users: (filters?: { search?: string; page?: number; limit?: number }) =>
+      ["admin", "users", filters?.search, filters?.page, filters?.limit] as const,
+  },
+  savings: {
+    all: ["savings-goals"] as const,
+    list: () => ["savings-goals", "list"] as const,
+    active: () => ["savings-goals", "active"] as const,
+    summary: () => ["savings-goals", "summary"] as const,
+    obligations: () => ["savings-goals", "obligations"] as const,
+    detail: (id: string) => ["savings-goal", id] as const,
   },
 } as const
