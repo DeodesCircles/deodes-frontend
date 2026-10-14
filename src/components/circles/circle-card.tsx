@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Avatar } from "@/components/ui/avatar";
 import { CircleStatusBadge } from "@/components/circles/circle-status-badge";
+import { CircleJoinBadges } from "@/components/circles/circle-join-badges";
 import { formatCurrency } from "@/lib/formatters";
 import { cn } from "@/lib/cn";
 import type { Circle, CircleType, PayoutType } from "@/types";
@@ -105,6 +106,8 @@ export const CircleCard = memo(function CircleCard({ circle, onClick, className 
             </Badge>
           )}
         </div>
+
+        <CircleJoinBadges circle={circle} />
 
         <div className="space-y-1">
           <div className="flex items-center justify-between text-xs text-gray-500">

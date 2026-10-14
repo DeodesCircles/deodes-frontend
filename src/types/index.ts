@@ -65,6 +65,8 @@ export interface Circle {
   gracePeriodHours: number
   maxStrikes: number
   autoDebit: boolean
+  /** Invite-only gate independent of circleType (backend requiresInvite). */
+  requiresInvite?: boolean | null
   startDate?: string | null
   endDate?: string | null
   status: CircleStatus

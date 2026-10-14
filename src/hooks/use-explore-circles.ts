@@ -5,6 +5,7 @@ import { get } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
 import type { Circle } from "@/types";
 import { getDynamicMockCircles } from "@/lib/circles/mock-circles";
+import { getJoinBlockReason } from "@/lib/circles/joinability";
 
 export type ExploreSource = "live" | "mock";
 
@@ -51,15 +52,25 @@ export function useExploreCircles(search = "", type = "all") {
   const base = useMock ? getDynamicMockCircles() : live;
 
   const q = search.trim().toLowerCase();
-  const circles = base.filter((c) => {
-    if (type !== "all" && c.circleType !== type) return false;
-    if (!q) return true;
-    return (
-      c.name.toLowerCase().includes(q) ||
-      (c.description ?? "").toLowerCase().includes(q) ||
-      (c.organizerName ?? "").toLowerCase().includes(q)
-    );
-  });
+  const circles = base
+    .filter((c) => {
+      if (type !== "all" && c.circleType !== type) return false;
+      if (!q) return true;
+      return (
+        c.name.toLowerCase().includes(q) ||
+        (c.description ?? "").toLowerCase().includes(q) ||
+        (c.organizerName ?? "").toLowerCase().includes(q)
+      );
+    })
+    // Joinable circles first so newcomers see what they can actually join;
+    // invite-only/full/ended rows stay visible below with their badges.
+    .sort((a, b) => {
+      const ra = getJoinBlockReason(a);
+      const rb = getJoinBlockReason(b);
+      const sa = ra === null ? 0 : ra === "invite-only" ? 1 : 2;
+      const sb = rb === null ? 0 : rb === "invite-only" ? 1 : 2;
+      return sa - sb;
+    });
 
   return { circles, source, isLoading: query.isLoading, isError: query.isError };
 }

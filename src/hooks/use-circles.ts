@@ -21,11 +21,13 @@ function extractErrorMessage(err: unknown, fallback: string): string {
   return fallback;
 }
 
-interface CircleFilters {
+export interface CircleFilters {
   search?: string;
   status?: string;
   type?: string;
   currency?: string;
+  /** pending+active only; wins over `status` server-side. */
+  openOnly?: boolean;
   page?: number;
   limit?: number;
   organizerId?: string;
@@ -112,7 +114,11 @@ export function useCircles(filters?: CircleFilters) {
     queryFn: async () => {
       const params = new URLSearchParams();
       if (filters?.search) params.set("search", filters.search);
-      if (filters?.status) params.set("status", filters.status);
+      if (filters?.openOnly) {
+        params.set("openOnly", "true");
+      } else if (filters?.status) {
+        params.set("status", filters.status);
+      }
       if (filters?.type) params.set("type", filters.type);
       if (filters?.currency) params.set("currency", filters.currency);
       if (filters?.page) params.set("page", String(filters.page));
@@ -242,6 +248,35 @@ export function useJoinCircle() {
         title: "Failed to join circle",
         description: extractErrorMessage(err, "Could not join circle. Please try again."),
         requestId: (err as any).requestId,
+      });
+    },
+  });
+}
+
+export function useExitCircle() {
+  const queryClient = useQueryClient();
+  const addToast = useUIStore((s) => s.addToast);
+
+  return useMutation({
+    mutationFn: ({ circleId }: { circleId: string }) =>
+      post<ApiResponse<{ success: boolean }>>(`/circles/${circleId}/exit`, {}),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.circles.detail(variables.circleId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.circles.members(variables.circleId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.circles.all });
+      addToast({
+        type: "success",
+        title: "Withdrawn from circle",
+        description: "You have left the circle.",
+      });
+    },
+    onError: (err) => {
+      logger.error("[useExitCircle] Failed to exit circle:", err);
+      addToast({
+        type: "error",
+        title: "Withdrawal blocked",
+        description: extractErrorMessage(err, "Could not withdraw from this circle. Please try again."),
+        requestId: (err as { requestId?: string }).requestId,
       });
     },
   });

@@ -10,6 +10,7 @@ const mockUseCirclePayouts = vi.fn();
 const mockUseContribute = vi.fn();
 const mockUseJoinCircle = vi.fn();
 const mockUseStartCircle = vi.fn();
+const mockUseExitCircle = vi.fn();
 const mockAddToast = vi.fn();
 
 vi.mock("next/navigation", () => ({
@@ -26,6 +27,7 @@ vi.mock("@/hooks/use-circles", () => ({
   useContribute: () => mockUseContribute(),
   useJoinCircle: () => mockUseJoinCircle(),
   useStartCircle: () => mockUseStartCircle(),
+  useExitCircle: () => mockUseExitCircle(),
 }));
 
 vi.mock("@/hooks/use-payouts", () => ({
@@ -107,6 +109,7 @@ describe("CircleDetailPage", () => {
     mockUseContribute.mockReturnValue({ mutate: vi.fn(), isPending: false });
     mockUseJoinCircle.mockReturnValue({ mutateAsync: joinMutate });
     mockUseStartCircle.mockReturnValue({ mutate: vi.fn(), isPending: false });
+    mockUseExitCircle.mockReturnValue({ mutateAsync: vi.fn(), isPending: false });
   });
 
   it("renders a loaded circle and allows joining", async () => {
@@ -117,7 +120,7 @@ describe("CircleDetailPage", () => {
         description: "A community of disciplined savers.",
         organizerId: "user-1",
         contributionAmount: 25,
-        currency: "USD",
+        currency: "USDC",
         circleType: "public",
         status: "active",
       },

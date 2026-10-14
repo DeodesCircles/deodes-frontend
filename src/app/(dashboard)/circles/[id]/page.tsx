@@ -29,6 +29,11 @@ import {
   validateArcTxHash,
   validateContributeInput,
 } from "@/lib/contributions/validation";
+import {
+  getJoinBlockMessage,
+  getJoinBlockReason,
+  needsInvite,
+} from "@/lib/circles/joinability";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button, ButtonLink } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton";
@@ -42,6 +47,7 @@ import { CircleStatCards } from "./circle-stat-cards";
 import { CircleRoundTimeline } from "./circle-round-timeline";
 import { CirclePayoutsList } from "./circle-payouts-list";
 import { CirclePayoutTrigger } from "./circle-payout-trigger";
+import { CircleExitSection } from "./circle-exit-section";
 import { useInviteGeneration } from "./use-invite-generation";
 
 const CircleContributeModal = dynamic(
@@ -109,13 +115,37 @@ export default function CircleDetailPage() {
   const isOrganizer = user?.id === circle?.organizerId;
   const isMember = members.some((m) => m.userId === user?.id);
   const recentPayouts = payoutData?.payouts ?? [];
-  const canJoin =
-    circle &&
+  // Client-side requirements check mirrors the server's join gates
+  // (status, seats, USDC rail, invite, DeoScore) so the viewer gets a clear
+  // reason instead of a bare failed request.
+  const joinBlock = circle
+    ? getJoinBlockReason(circle, {
+        moiScore: user?.moiScore ?? 0,
+        isMember,
+        memberCount: members.length > 0 ? members.length : (circle.memberCount ?? 0),
+      })
+    : null;
+  const inviteGated =
+    circle != null &&
     !isMember &&
-    (circle.status === "pending" || circle.status === "active");
+    (circle.status === "pending" || circle.status === "active") &&
+    needsInvite(circle);
+  const canJoinDirect = circle != null && !isMember && joinBlock === null;
   const canContribute = isMember && circle?.status === "active";
 
+  const joinCheckInput = () => ({
+    moiScore: user?.moiScore ?? 0,
+    isMember,
+    memberCount: members.length > 0 ? members.length : (circle?.memberCount ?? 0),
+  });
+
   const handleJoin = async () => {
+    if (!circle) return;
+    const reason = getJoinBlockReason(circle, joinCheckInput());
+    if (reason !== null) {
+      setJoinError(getJoinBlockMessage(reason, circle, joinCheckInput()));
+      return;
+    }
     // Auto circles require explicit consent BEFORE joining: no silent enrollment.
     if (circle?.autoDebit && !autoDebitConsent) {
       setJoinError(
@@ -129,6 +159,11 @@ export default function CircleDetailPage() {
       await joinCircle.mutateAsync({ circleId });
       await subscribeAfterJoin();
       setJoinLoading(false);
+      addToast({
+        type: "success",
+        title: "You've joined the circle",
+        description: "Welcome in — your first contribution starts the streak.",
+      });
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { error?: string } } })?.response?.data
@@ -160,6 +195,14 @@ export default function CircleDetailPage() {
 
   const handleJoinWithCode = async () => {
     if (!joinCodeValue.trim()) return;
+    if (!circle) return;
+    // The code satisfies the invite gate, but seats, score, status and rail
+    // still apply — surface those before posting.
+    const reason = getJoinBlockReason(circle, joinCheckInput());
+    if (reason !== null && reason !== "invite-only" && reason !== "already-member") {
+      setJoinCodeError(getJoinBlockMessage(reason, circle, joinCheckInput()));
+      return;
+    }
     if (circle?.autoDebit && !autoDebitConsent) {
       setJoinCodeError(
         "This is an Auto circle: tick the auto-debit consent box to join.",
@@ -358,7 +401,7 @@ export default function CircleDetailPage() {
             </Button>
           </motion.div>
         )}
-        {canJoin && circle?.autoDebit && (
+        {(canJoinDirect || inviteGated) && circle?.autoDebit && (
           <div className="rounded-xl border border-aurora-violet/30 bg-aurora-violet/[0.06] px-5 py-4">
             <label className="flex cursor-pointer items-start gap-3">
               <input
@@ -381,7 +424,7 @@ export default function CircleDetailPage() {
             </label>
           </div>
         )}
-        {canJoin && circle?.circleType === "private" && (
+        {inviteGated && (
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <Button
               variant="primary"
@@ -393,7 +436,7 @@ export default function CircleDetailPage() {
             </Button>
           </motion.div>
         )}
-        {canJoin && circle && circle.circleType !== "private" && (
+        {canJoinDirect && (
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <Button
               variant="primary"
@@ -405,6 +448,11 @@ export default function CircleDetailPage() {
               Join Circle
             </Button>
           </motion.div>
+        )}
+        {!isMember && joinBlock !== null && joinBlock !== "invite-only" && circle && (
+          <p role="note" className="w-full rounded-xl border border-white/[0.08] px-4 py-3 text-sm text-muted-foreground">
+            {getJoinBlockMessage(joinBlock, circle, joinCheckInput())}
+          </p>
         )}
         {isOrganizer && circle.status === "pending" && members.length >= 2 && (
           <Button
@@ -480,6 +528,13 @@ export default function CircleDetailPage() {
       </div>
 
       <CirclePayoutTrigger circle={circle} members={members} isOrganizer={isOrganizer} />
+
+      <CircleExitSection
+        circle={circle}
+        members={members}
+        isMember={isMember}
+        isOrganizer={isOrganizer}
+      />
 
       <CirclePayoutsList
         circle={circle}

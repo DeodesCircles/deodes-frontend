@@ -80,7 +80,7 @@ export function usePayouts(filters?: PayoutFilters) {
   });
 }
 
-export function useCirclePayouts(circleId: string, filters?: Omit<PayoutFilters, "circleId">) {
+export function useCirclePayouts(circleId: string, filters?: Omit<PayoutFilters, "circleId">, options?: { enabled?: boolean }) {
   const page = filters?.page ?? 1;
   const limit = filters?.limit ?? 20;
   return useQuery({
@@ -103,7 +103,7 @@ export function useCirclePayouts(circleId: string, filters?: Omit<PayoutFilters,
         meta: response.meta ?? fallbackMeta(page, limit, payouts.length),
       };
     },
-    enabled: !!circleId,
+    enabled: !!circleId && options?.enabled !== false,
     staleTime: 5000,
     refetchOnWindowFocus: true,
   });

@@ -6,6 +6,7 @@ import { Search } from "lucide-react";
 import { CircleCard } from "@/components/circles/circle-card";
 import { CircleCardSkeleton } from "@/components/skeletons";
 import { useExploreCircles } from "@/hooks/use-explore-circles";
+import { useAuth } from "@/hooks/use-auth";
 
 const TYPE_FILTERS = ["all", "public", "private", "community", "premium"] as const;
 
@@ -16,9 +17,16 @@ const TYPE_FILTERS = ["all", "public", "private", "community", "premium"] as con
  */
 export function ExploreLive() {
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
   const [search, setSearch] = useState("");
   const [type, setType] = useState<(typeof TYPE_FILTERS)[number]>("all");
   const { circles, source, isLoading } = useExploreCircles(search, type);
+
+  const handleCircleClick = (circleId: string) => {
+    // Signed-in visitors land on the circle detail page (join flow);
+    // logged-out visitors go to signup first.
+    router.push(isAuthenticated ? `/circles/${circleId}` : "/register");
+  };
 
   return (
     <div className="mt-16">
@@ -99,7 +107,7 @@ export function ExploreLive() {
       ) : (
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {circles.map((circle) => (
-            <CircleCard key={circle.id} circle={circle} onClick={() => router.push("/register")} />
+            <CircleCard key={circle.id} circle={circle} onClick={() => handleCircleClick(circle.id)} />
           ))}
         </div>
       )}
