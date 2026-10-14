@@ -47,6 +47,10 @@ export const CircleCard = memo(function CircleCard({ circle, onClick, className 
   const freqLabel = circle.frequency.charAt(0).toUpperCase() + circle.frequency.slice(1);
   const memberCount = circle.memberCount ?? 0;
   const totalRounds = circle.maxMembers;
+  // Guard: maxMembers 0 (bad API row) would yield NaN, which breaks
+  // Progress clamping (Math.min/max propagate NaN) into width "NaN%".
+  const progressValue =
+    totalRounds > 0 ? (circle.currentRound / totalRounds) * 100 : 0;
 
   return (
     <Card
@@ -111,7 +115,7 @@ export const CircleCard = memo(function CircleCard({ circle, onClick, className 
           </div>
           <Progress
             aria-label="Circle round progress"
-            value={(circle.currentRound / totalRounds) * 100}
+            value={progressValue}
             size="sm"
             variant="primary"
           />

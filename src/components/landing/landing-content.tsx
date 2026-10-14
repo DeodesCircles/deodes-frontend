@@ -414,16 +414,22 @@ export function LandingContent() {
               onSubmit={(e) => {
                 const input = (e.currentTarget.elements as unknown as { code?: { value: string } })
                   .code
-                if (input?.value) {
+                if (!input?.value?.trim()) {
+                  // Empty submit would GET /invite (no such route, only
+                  // /invite/[code]) — stay put instead of 404ing.
                   e.preventDefault()
-                  window.location.href = `/invite/${encodeURIComponent(input.value.trim())}`
+                  return
                 }
+                e.preventDefault()
+                window.location.href = `/invite/${encodeURIComponent(input.value.trim())}`
               }}
             >
               <div className="relative flex-1">
                 <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <input
                   name="code"
+                  aria-label="Invite code"
+                  required
                   placeholder="Have an invite code? Paste it here…"
                   className="h-12 w-full rounded-2xl glass-strong pl-11 pr-4 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:holo-border"
                 />

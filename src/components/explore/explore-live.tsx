@@ -83,6 +83,18 @@ export function ExploreLive() {
           <p className="mt-1 text-sm text-muted-foreground">
             Try a different search — or start the first one.
           </p>
+          {(search.trim() !== "" || type !== "all") && (
+            <button
+              type="button"
+              onClick={() => {
+                setSearch("")
+                setType("all")
+              }}
+              className="mt-5 inline-flex items-center rounded-xl px-5 py-2.5 text-sm font-heading font-semibold glass-strong hover:bg-white/[0.06] transition-all"
+            >
+              Clear search
+            </button>
+          )}
         </div>
       ) : (
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

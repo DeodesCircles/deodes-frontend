@@ -60,7 +60,7 @@ export async function generateMetadata({
 
   return {
     ...base,
-    title: `${pageTitle} — Moistello`,
+    title: `${pageTitle} — Deodes`,
     description:
       description ||
       `Deodes docs: ${pageTitle.toLowerCase()} — passkey authentication, auto-provisioned Arc wallets, USDC savings circles and Arc contracts.`,
@@ -69,13 +69,13 @@ export async function generateMetadata({
       ...base.openGraph,
       type: "article",
       url: absoluteUrl(canonical),
-      title: `${pageTitle} — Moistello`,
-      description: description || `${pageTitle} in the Moistello developer and user documentation.`,
+      title: `${pageTitle} — Deodes`,
+      description: description || `${pageTitle} in the Deodes developer and user documentation.`,
     },
     twitter: {
       ...base.twitter,
-      title: `${pageTitle} — Moistello`,
-      description: description || `${pageTitle} in the Moistello documentation.`,
+      title: `${pageTitle} — Deodes`,
+      description: description || `${pageTitle} in the Deodes documentation.`,
     },
   };
 }
@@ -222,11 +222,8 @@ export default function DocsPage({ params }: { params: { slug?: string[] } }) {
               Page Not Found
             </h1>
             <p className="text-muted-foreground mb-6">
-              This doc doesn&apos;t exist yet. Create{" "}
-              <code className="text-sm glass-whisper px-2 py-0.5 rounded font-mono">
-                content/docs/{targetSlug}.md
-              </code>{" "}
-              to add it.
+              This doc doesn&apos;t exist yet. Check the URL or head back to
+              the docs index.
             </p>
             <Link
               href="/docs"

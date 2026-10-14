@@ -190,7 +190,7 @@ export default function CirclesBrowsePage() {
     limit,
   }
 
-  const { data, isLoading, isError } = useCircles(filters)
+  const { data, isLoading, isError, refetch } = useCircles(filters)
   const circles = data?.circles ?? []
   const meta = data?.meta
 
@@ -328,6 +328,10 @@ export default function CirclesBrowsePage() {
           icon={<Inbox className="h-6 w-6" />}
           title="Failed to load circles"
           description="Something went wrong. Please try again later."
+          action={{
+            label: "Retry",
+            onClick: () => void refetch(),
+          }}
         />
       ) : circles.length === 0 ? (
         <CircleListEmptyState
