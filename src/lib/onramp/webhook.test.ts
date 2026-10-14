@@ -4,15 +4,20 @@
  * dedupe for the Onramp reconciliation endpoint. Pure-function level; the
  * Next route wiring (401/503/200) is covered in route.test.ts.
  */
-import { createHmac } from "node:crypto";
+import { createHmac, generateKeyPairSync, sign } from "node:crypto";
 import { describe, expect, it, beforeEach, vi } from "vitest";
 import {
   circleWebhookSecret,
   dedupeKeyFor,
+  fetchCirclePublicKey,
   isDuplicateDelivery,
   parseDepositEvent,
+  readWebhookKeyId,
   readWebhookSignature,
+  resetEcdsaKeyCacheForTests,
   resetWebhookDedupeForTests,
+  verifyCircleWebhook,
+  verifyEcdsaSignature,
   verifyWebhookSignature,
 } from "./webhook";
 
@@ -173,5 +178,111 @@ describe("isDuplicateDelivery", () => {
     expect(byHash.startsWith("body:")).toBe(true);
     expect(isDuplicateDelivery(byHash)).toBe(false);
     expect(isDuplicateDelivery(byHash)).toBe(true);
+  });
+});
+
+describe("Circle v2 ECDSA verification (Gateway scheme)", () => {
+  const BODY = JSON.stringify({
+    subscriptionId: "sub-1",
+    notificationId: "notif-1",
+    notificationType: "gateway.deposit.finalized",
+    notification: { amount: "25" },
+    timestamp: "2026-01-01T00:00:00Z",
+    version: 2,
+  });
+
+  function makeKeypair() {
+    const { publicKey, privateKey } = generateKeyPairSync("ec", {
+      namedCurve: "P-256",
+    });
+    const derB64 = publicKey.export({ format: "der", type: "spki" }).toString("base64");
+    const signBody = (text: string) =>
+      sign("sha256", Buffer.from(text, "utf8"), privateKey).toString("base64");
+    return { publicKey, derB64, signBody };
+  }
+
+  function keyFetch_ok(derB64: string) {
+    return vi.fn(async () =>
+      Response.json({ data: { publicKey: derB64 } }),
+    );
+  }
+
+  beforeEach(() => {
+    resetEcdsaKeyCacheForTests();
+  });
+
+  it("accepts a valid ECDSA signature via key id", async () => {
+    const { publicKey, derB64, signBody } = makeKeypair();
+    const sig = signBody(BODY);
+    expect(verifyEcdsaSignature(BODY, sig, publicKey)).toBe(true);
+    const fetched = await fetchCirclePublicKey(
+      "key-1",
+      "https://api-test.circle.com",
+      "TEST_KEY",
+      keyFetch_ok(derB64),
+    );
+    expect(fetched).not.toBeNull();
+    expect(verifyEcdsaSignature(BODY, sig, fetched)).toBe(true);
+  });
+
+  it("rejects tampered bodies and wrong keys", () => {
+    const { publicKey, signBody } = makeKeypair();
+    const other = makeKeypair();
+    const sig = signBody(BODY);
+    expect(verifyEcdsaSignature(BODY + "x", sig, publicKey)).toBe(false);
+    expect(verifyEcdsaSignature(BODY, sig, other.publicKey)).toBe(false);
+    expect(verifyEcdsaSignature(BODY, "!!!not-base64!!!", publicKey)).toBe(false);
+    expect(verifyEcdsaSignature(BODY, sig, null)).toBe(false);
+  });
+
+  it("fetch returns null on non-OK, bad payload, or missing inputs", async () => {
+    const failFetch = vi.fn(async () => new Response("nope", { status: 404 }));
+    expect(
+      await fetchCirclePublicKey("k", "https://x.test", "KEY", failFetch),
+    ).toBeNull();
+    const badFetch = vi.fn(async () => Response.json({ data: {} }));
+    expect(
+      await fetchCirclePublicKey("k2", "https://x.test", "KEY", badFetch),
+    ).toBeNull();
+    expect(await fetchCirclePublicKey("", "https://x.test", "KEY")).toBeNull();
+    expect(await fetchCirclePublicKey("k", "", "KEY")).toBeNull();
+    expect(await fetchCirclePublicKey("k", "https://x.test", "")).toBeNull();
+  });
+
+  it("caches the public key by key id", async () => {
+    const { derB64 } = makeKeypair();
+    const f = keyFetch_ok(derB64);
+    await fetchCirclePublicKey("kc", "https://x.test", "KEY", f);
+    await fetchCirclePublicKey("kc", "https://x.test", "KEY", f);
+    expect(f).toHaveBeenCalledTimes(1);
+  });
+
+  it("verifyCircleWebhook prefers ECDSA, falls back to HMAC", async () => {
+    const { derB64, signBody } = makeKeypair();
+    const sig = signBody(BODY);
+    const cfg = {
+      apiBaseUrl: "https://api-test.circle.com",
+      apiKey: "TEST_KEY",
+      hmacSecret: "whsec-fallback",
+    };
+    const f = keyFetch_ok(derB64);
+    const r1 = await verifyCircleWebhook(BODY, sig, "key-9", cfg, f);
+    expect(r1).toEqual({ ok: true, method: "ecdsa" });
+
+    // No key id -> ECDSA skipped, HMAC fallback verifies.
+    const { createHmac: ch } = await import("node:crypto");
+    const hmacSig = ch("sha256", "whsec-fallback").update(BODY, "utf8").digest("hex");
+    const r2 = await verifyCircleWebhook(BODY, hmacSig, null, cfg, f);
+    expect(r2).toEqual({ ok: true, method: "hmac" });
+
+    // Neither matches.
+    const r3 = await verifyCircleWebhook(BODY, "deadbeef", "key-9", cfg, f);
+    expect(r3.ok).toBe(false);
+  });
+
+  it("reads the X-Circle-Key-Id header", () => {
+    const headers = new Headers({ "X-Circle-Key-Id": "kid-42" });
+    expect(readWebhookKeyId(headers)).toBe("kid-42");
+    expect(readWebhookKeyId(new Headers())).toBeNull();
   });
 });

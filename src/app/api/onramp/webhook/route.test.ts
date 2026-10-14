@@ -113,3 +113,50 @@ describe("POST /api/onramp/webhook", () => {
     expect(res.status).toBe(405);
   });
 });
+
+describe("POST /api/onramp/webhook — Circle v2 ECDSA (Gateway)", () => {
+  beforeEach(() => {
+    vi.unstubAllEnvs();
+    vi.resetModules();
+  });
+
+  it("accepts an ECDSA-signed gateway.deposit.finalized envelope", async () => {
+    const { generateKeyPairSync, sign } = await import("node:crypto");
+    const { publicKey, privateKey } = generateKeyPairSync("ec", { namedCurve: "P-256" });
+    const derB64 = publicKey.export({ format: "der", type: "spki" }).toString("base64");
+    const body = JSON.stringify({
+      subscriptionId: "sub-route",
+      notificationId: "notif-route-1",
+      notificationType: "gateway.deposit.finalized",
+      notification: { amount: "10" },
+      timestamp: "2026-01-01T00:00:00Z",
+      version: 2,
+    });
+    const sig = sign("sha256", Buffer.from(body, "utf8"), privateKey).toString("base64");
+
+    vi.stubEnv("CIRCLE_ENV", "sandbox");
+    vi.stubEnv("CIRCLE_TEST_API_KEY", "TEST_ROUTE_KEY");
+    vi.stubEnv("CIRCLE_WEBHOOK_SECRET", "");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => Response.json({ data: { publicKey: derB64 } })),
+    );
+    try {
+      const { POST } = await import("./route");
+      const req = new NextRequest("http://localhost/api/onramp/webhook", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-circle-signature": sig,
+          "x-circle-key-id": "key-route-1",
+        },
+        body,
+      });
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+      await expect(res.json()).resolves.toMatchObject({ status: "settled" });
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+});

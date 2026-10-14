@@ -1,33 +1,43 @@
 /**
- * Circle Onramp webhook verification + deposit-event parsing (server-only).
+ * Circle Onramp/Gateway webhook verification + deposit-event parsing
+ * (server-only).
  *
  * Browser widget events (`onDepositSettled` / `onDepositNotCompleted`) are
  * best-effort UX signals — a user can close the tab before settlement and
  * the browser never delivers them. This module backs
  * `POST /api/onramp/webhook`, the server-side reconciliation hook point.
  *
- * Signature scheme: HMAC-SHA256 over the RAW request body bytes, keyed with
- * the shared webhook secret (`CIRCLE_WEBHOOK_SECRET`, alias
- * `ONRAMP_WEBHOOK_SECRET`). The hex (or base64) digest arrives in the
- * `x-circle-signature` header (`x-onramp-signature` accepted as an alias;
- * a `sha256=` / `v1=` prefix is tolerated). Comparison is constant-time.
- * Verify against the raw body — parsing to JSON and re-serializing changes
- * bytes and breaks the digest.
+ * Signature schemes (tried in order):
  *
- * NOTE on Circle's v2 ECDSA scheme: Wallets/CPN webhooks use
- * `X-Circle-Signature` + `X-Circle-Key-Id` with ECDSA_SHA_256 and a public
- * key fetched from `GET /v2/notifications/publicKey/{keyId}` (see
- * developers.circle.com/api-reference/verify-webhook-signatures). If Circle
- * provisions Onramp webhooks under that scheme instead of a shared secret,
- * add an ECDSA branch here (fetch + cache the public key by keyId, verify
- * with node:crypto `createVerify("SHA256")`) and keep this HMAC path.
+ * 1. Circle v2 ECDSA (primary — what Gateway actually sends):
+ *    `ECDSA_SHA_256` over the RAW request body, signature base64 in
+ *    `X-Circle-Signature`, key id in `X-Circle-Key-Id`, public key (DER/SPKI
+ *    base64) fetched once per keyId from
+ *    `GET {apiBase}/v2/notifications/publicKey/{keyId}` with the Circle API
+ *    key, then cached. Verify against the raw body — parsing to JSON and
+ *    re-serializing changes bytes and breaks the digest.
+ *    (developers.circle.com/api-reference/verify-webhook-signatures)
  *
- * Idempotency: Circle may redeliver. Deliveries are deduped in-memory by
- * event/deposit id (falling back to a hash of the raw body). This covers a
- * single instance only — the TODO in the route covers the durable ledger.
+ * 2. HMAC-SHA256 fallback over the RAW body, keyed with the shared webhook
+ *    secret (`CIRCLE_WEBHOOK_SECRET`, alias `ONRAMP_WEBHOOK_SECRET`). The hex
+ *    (or base64) digest arrives in `x-circle-signature`
+ *    (`x-onramp-signature` accepted as an alias; a `sha256=` / `v1=` prefix
+ *    is tolerated). Comparison is constant-time.
+ *
+ * Idempotency: Circle may redeliver (v2 reuses `notificationId`). Deliveries
+ * are deduped in-memory by event/deposit id (falling back to a hash of the
+ * raw body). This covers a single instance only — the TODO in the route
+ * covers the durable ledger.
  */
 
-import { createHash, createHmac, timingSafeEqual } from "node:crypto";
+import {
+  createHash,
+  createHmac,
+  createPublicKey,
+  createVerify,
+  timingSafeEqual,
+  type KeyObject,
+} from "node:crypto";
 
 export const ONRAMP_WEBHOOK_ROUTE = "/api/onramp/webhook";
 
@@ -44,12 +54,24 @@ export function circleWebhookSecret(): string {
 }
 
 const SIGNATURE_HEADER_NAMES = ["x-circle-signature", "x-onramp-signature"];
+const KEY_ID_HEADER_NAMES = ["x-circle-key-id", "x-onramp-key-id"];
 
 /** First signature header present (header lookup is case-insensitive). */
 export function readWebhookSignature(
   headers: Pick<Headers, "get">,
 ): string | null {
   for (const name of SIGNATURE_HEADER_NAMES) {
+    const value = headers.get(name)?.trim();
+    if (value) return value;
+  }
+  return null;
+}
+
+/** Key id for Circle's v2 ECDSA scheme (`X-Circle-Key-Id`), if present. */
+export function readWebhookKeyId(
+  headers: Pick<Headers, "get">,
+): string | null {
+  for (const name of KEY_ID_HEADER_NAMES) {
     const value = headers.get(name)?.trim();
     if (value) return value;
   }
@@ -95,6 +117,107 @@ export function verifyWebhookSignature(
   );
 }
 
+const ecdsaPublicKeyCache = new Map<string, KeyObject>();
+
+/** Test-only reset for the ECDSA public-key cache. */
+export function resetEcdsaKeyCacheForTests(): void {
+  ecdsaPublicKeyCache.clear();
+}
+
+/**
+ * Fetch (and cache) Circle's v2 ECDSA public key for a keyId.
+ * `apiBaseUrl` is the active-env API origin, `apiKey` the matching key.
+ */
+export async function fetchCirclePublicKey(
+  keyId: string,
+  apiBaseUrl: string,
+  apiKey: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<KeyObject | null> {
+  const cached = ecdsaPublicKeyCache.get(keyId);
+  if (cached) return cached;
+  if (keyId === "" || apiBaseUrl === "" || apiKey === "") return null;
+  try {
+    const response = await fetchImpl(
+      `${apiBaseUrl.replace(/\/+$/, "")}/v2/notifications/publicKey/${encodeURIComponent(keyId)}`,
+      { headers: { Authorization: `Bearer ${apiKey}` } },
+    );
+    if (!response.ok) return null;
+    const payload = (await response.json().catch(() => null)) as {
+      data?: { publicKey?: unknown };
+    } | null;
+    const b64 = payload?.data?.publicKey;
+    if (typeof b64 !== "string" || b64 === "") return null;
+    const key = createPublicKey({
+      key: Buffer.from(b64, "base64"),
+      format: "der",
+      type: "spki",
+    });
+    ecdsaPublicKeyCache.set(keyId, key);
+    return key;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * ECDSA_SHA_256 verification of the raw body with a fetched public key.
+ * Signature is base64 (Circle's documented encoding).
+ */
+export function verifyEcdsaSignature(
+  rawBody: string,
+  signatureB64: string | null,
+  publicKey: KeyObject | null,
+): boolean {
+  if (!publicKey || !signatureB64) return false;
+  try {
+    const verifier = createVerify("SHA256");
+    verifier.update(rawBody, "utf8");
+    return verifier.verify(publicKey, signatureB64, "base64");
+  } catch {
+    return false;
+  }
+}
+
+export type WebhookVerifyMethod = "ecdsa" | "hmac" | "none";
+
+export interface CircleWebhookConfig {
+  /** Active-env API origin for the public-key fetch. */
+  apiBaseUrl: string;
+  /** Active-env Circle API key for the public-key fetch. */
+  apiKey: string;
+  /** Shared secret for the HMAC fallback (empty disables it). */
+  hmacSecret: string;
+}
+
+/**
+ * Verify a Circle webhook delivery, ECDSA first (what Gateway sends),
+ * HMAC fallback (shared secret). Returns the method that verified.
+ */
+export async function verifyCircleWebhook(
+  rawBody: string,
+  signature: string | null,
+  keyId: string | null,
+  config: CircleWebhookConfig,
+  fetchImpl: typeof fetch = fetch,
+): Promise<{ ok: boolean; method: WebhookVerifyMethod }> {
+  if (signature && keyId) {
+    const publicKey = await fetchCirclePublicKey(
+      keyId,
+      config.apiBaseUrl,
+      config.apiKey,
+      fetchImpl,
+    );
+    if (verifyEcdsaSignature(rawBody, signature, publicKey)) {
+      return { ok: true, method: "ecdsa" };
+    }
+  }
+  if (verifyWebhookSignature(rawBody, signature, config.hmacSecret)) {
+    return { ok: true, method: "hmac" };
+  }
+  return { ok: false, method: "none" };
+}
+
 export type DepositOutcome = "settled" | "not-completed" | "submitted" | "unknown";
 
 export interface ParsedDepositEvent {
@@ -138,8 +261,8 @@ function firstString(
 
 const NOT_COMPLETED_PATTERN =
   /not.?complet|cancel|fail|reject|expire|timeout|declin|refund/;
-const SETTLED_PATTERN = /settle|complet|success|confirm/;
-const SUBMITTED_PATTERN = /submit|pend|creat|initiated/;
+const SETTLED_PATTERN = /settle|complet|success|confirm|finaliz/;
+const SUBMITTED_PATTERN = /submit|pend|creat|initiated|forward/;
 
 function classifyOutcome(event: string, code: string): DepositOutcome {
   const haystack = `${event} ${code}`.toLowerCase().replace(/[._-]+/g, " ");

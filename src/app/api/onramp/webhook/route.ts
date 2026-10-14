@@ -1,16 +1,22 @@
 import { NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
 import {
+  circleApiBaseUrl,
+  circleApiKeyFor,
+  resolveCircleEnv,
+} from "@/lib/onramp/env";
+import {
   circleWebhookSecret,
   dedupeKeyFor,
   isDuplicateDelivery,
   parseDepositEvent,
+  readWebhookKeyId,
   readWebhookSignature,
-  verifyWebhookSignature,
+  verifyCircleWebhook,
 } from "@/lib/onramp/webhook";
 
 /**
- * Circle Onramp deposit webhook — server-side reconciliation.
+ * Circle Onramp/Gateway deposit webhook — server-side reconciliation.
  *
  * POST /api/onramp/webhook (Circle-signed JSON body)
  *
@@ -19,26 +25,38 @@ import {
  * deposits: Circle redelivers until it gets a 2xx, so the handler is fast
  * (verify → parse → log → 200) and idempotent.
  *
- * Auth: HMAC-SHA256 of the raw body with CIRCLE_WEBHOOK_SECRET
- * (alias ONRAMP_WEBHOOK_SECRET); digest in `x-circle-signature`
- * (`x-onramp-signature` alias). Missing secret = 503 fail-closed (never
- * accept unverified deposits); missing/bad signature = 401.
+ * Auth: Circle v2 ECDSA first (`X-Circle-Signature` + `X-Circle-Key-Id`,
+ * public key fetched with the active-env API key), HMAC-SHA256 fallback
+ * with CIRCLE_WEBHOOK_SECRET. Neither path available = 503 fail-closed
+ * (never accept unverified deposits); present-but-invalid = 401.
  */
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request): Promise<Response> {
-  const secret = circleWebhookSecret();
-  if (secret === "") {
+  const env = resolveCircleEnv();
+  const config = {
+    apiBaseUrl: circleApiBaseUrl(env),
+    apiKey: circleApiKeyFor(env),
+    hmacSecret: circleWebhookSecret(),
+  };
+  if (config.apiKey === "" && config.hmacSecret === "") {
     return NextResponse.json(
-      { error: "Onramp webhook is not configured (missing secret)" },
+      { error: "Onramp webhook is not configured (missing API key and secret)" },
       { status: 503 },
     );
   }
 
   const rawBody = await request.text();
   const signature = readWebhookSignature(request.headers);
-  if (!verifyWebhookSignature(rawBody, signature, secret)) {
+  const keyId = readWebhookKeyId(request.headers);
+  const { ok, method } = await verifyCircleWebhook(
+    rawBody,
+    signature,
+    keyId,
+    config,
+  );
+  if (!ok) {
     logger.warn("onramp webhook rejected: invalid signature");
     return NextResponse.json(
       { error: "Invalid webhook signature" },
