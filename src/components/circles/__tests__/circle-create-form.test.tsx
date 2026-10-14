@@ -268,14 +268,14 @@ describe("validateCircleStep — unit tests", () => {
       expect(result.errors.contributionAmount).toContain("50")
     })
 
-    it("fails for premium XLM contribution below 100", () => {
+    it("rejects non-USDC currency (circles are USDC-only)", () => {
       const result = validateCircleStep(
         2,
-        { ...base, circleType: "premium", currency: "XLM", contributionAmount: 50 },
+        { ...base, currency: "XLM" as never, contributionAmount: 50 },
         500
       )
       expect(result.success).toBe(false)
-      expect(result.errors.contributionAmount).toContain("100")
+      expect(result.errors.currency).toContain("USDC")
     })
 
     it("passes premium USDC at exactly 50", () => {

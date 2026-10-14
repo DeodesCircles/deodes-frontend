@@ -179,10 +179,10 @@ function ConnectWalletModal({ onClose }: { onClose: () => void }) {
           </button>
         </div>
         <h3 id="connect-wallet-title" className="text-lg font-heading font-bold gradient-text-extended mb-1.5">
-          Connect Wallet
+          Link Wallet
         </h3>
         <p className="text-sm text-muted-foreground font-body mb-5">
-          Connect your wallet to access Arc features.
+          Link your own wallet to move funds in. Linking never logs you in or turns on auto-pay.
         </p>
 
         {error && (

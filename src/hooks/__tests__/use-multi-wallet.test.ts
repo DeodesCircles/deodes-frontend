@@ -2,7 +2,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useMultiWalletStore } from "@/stores/multi-wallet-store";
 import { useWalletConnectStore } from "@/stores/walletconnect-store";
 import { usePasskeyWalletStore } from "@/stores/passkey-wallet-store";
-import { useLedgerStore } from "@/stores/ledger-store";
 import type { WalletAdapter } from "@/lib/wallet/types";
 
 const mockGetAdapter = vi.fn();
@@ -30,14 +29,13 @@ vi.mock("@/lib/wallet/balance-cache", () => ({
 
 vi.mock("@/lib/constants", () => ({
   WC2_QR_EXPIRATION_MS: 300000,
-  STELLAR_NETWORK: "testnet",
 }));
 
 function createMockAdapter(): WalletAdapter {
   return {
     meta: {
-      id: "freighter",
-      name: "Freighter",
+      id: "arc-evm",
+      name: "Browser Wallet",
       category: "extension",
       icon: "",
       installUrl: "",
@@ -45,7 +43,7 @@ function createMockAdapter(): WalletAdapter {
       priority: 1,
       isAvailable: () => true,
     },
-    connect: vi.fn().mockResolvedValue({ publicKey: "GTEST123" }),
+    connect: vi.fn().mockResolvedValue({ publicKey: "0x51b45Ba8570551e0D1fe818227d8bAa8b556694D" }),
     disconnect: vi.fn(),
     isConnected: vi.fn().mockResolvedValue(false),
     signMessage: vi.fn(),
@@ -76,11 +74,11 @@ describe("useMultiWallet store via hooks", () => {
     it("reflects connected state via wallet entry", () => {
       const adapter = createMockAdapter();
       useMultiWalletStore.setState({
-        activeWalletId: "freighter",
+        activeWalletId: "arc-evm",
         wallets: {
-          freighter: {
+          "arc-evm": {
             adapter,
-            publicKey: "GTEST123",
+            publicKey: "0x51b45Ba8570551e0D1fe818227d8bAa8b556694D",
             network: "testnet",
             balance: null,
             lastConnected: Date.now(),
@@ -91,9 +89,9 @@ describe("useMultiWallet store via hooks", () => {
       });
 
       const state = useMultiWalletStore.getState();
-      expect(state.activeWalletId).toBe("freighter");
-      expect(state.wallets.freighter.publicKey).toBe("GTEST123");
-      expect(state.wallets.freighter.adapter).toBe(adapter);
+      expect(state.activeWalletId).toBe("arc-evm");
+      expect(state.wallets["arc-evm"].publicKey).toBe("0x51b45Ba8570551e0D1fe818227d8bAa8b556694D");
+      expect(state.wallets["arc-evm"].adapter).toBe(adapter);
     });
   });
 
@@ -105,11 +103,11 @@ describe("useMultiWallet store via hooks", () => {
     it("returns active wallet entry", () => {
       const adapter = createMockAdapter();
       useMultiWalletStore.setState({
-        activeWalletId: "freighter",
+        activeWalletId: "arc-evm",
         wallets: {
-          freighter: {
+          "arc-evm": {
             adapter,
-            publicKey: "GTEST123",
+            publicKey: "0x51b45Ba8570551e0D1fe818227d8bAa8b556694D",
             network: "testnet",
             balance: null,
             lastConnected: Date.now(),
@@ -120,9 +118,9 @@ describe("useMultiWallet store via hooks", () => {
       });
 
       const state = useMultiWalletStore.getState();
-      expect(state.activeWalletId).toBe("freighter");
-      expect(state.wallets.freighter).toMatchObject({
-        publicKey: "GTEST123",
+      expect(state.activeWalletId).toBe("arc-evm");
+      expect(state.wallets["arc-evm"]).toMatchObject({
+        publicKey: "0x51b45Ba8570551e0D1fe818227d8bAa8b556694D",
         status: "connected",
       });
     });
@@ -152,11 +150,11 @@ describe("useMultiWallet store via hooks", () => {
 
     it("disconnect removes wallet entry", () => {
       useMultiWalletStore.setState({
-        activeWalletId: "freighter",
+        activeWalletId: "arc-evm",
         wallets: {
-          freighter: {
+          "arc-evm": {
             adapter: createMockAdapter(),
-            publicKey: "GABC",
+            publicKey: "0x70A7CCB7b5fe856384Aab3aAF553E09A10AF14A4",
             network: "testnet",
             balance: null,
             lastConnected: Date.now(),
@@ -166,20 +164,20 @@ describe("useMultiWallet store via hooks", () => {
         },
       });
 
-      useMultiWalletStore.getState().disconnect("freighter");
+      useMultiWalletStore.getState().disconnect("arc-evm");
 
       const state = useMultiWalletStore.getState();
-      expect(state.wallets.freighter).toBeUndefined();
+      expect(state.wallets["arc-evm"]).toBeUndefined();
       expect(state.activeWalletId).toBeNull();
     });
 
     it("switchWallet changes active wallet", () => {
       useMultiWalletStore.setState({
-        activeWalletId: "freighter",
+        activeWalletId: "arc-evm",
         wallets: {
-          freighter: {
+          "arc-evm": {
             adapter: createMockAdapter(),
-            publicKey: "GABC",
+            publicKey: "0x70A7CCB7b5fe856384Aab3aAF553E09A10AF14A4",
             network: "testnet",
             balance: null,
             lastConnected: Date.now(),
@@ -204,23 +202,23 @@ describe("useMultiWallet store via hooks", () => {
 
     it("clearError removes error from wallet", () => {
       useMultiWalletStore.setState({
-        activeWalletId: "freighter",
+        activeWalletId: "arc-evm",
         wallets: {
-          freighter: {
+          "arc-evm": {
             adapter: createMockAdapter(),
             publicKey: "",
             network: "testnet",
             balance: null,
             lastConnected: Date.now(),
-            error: { adapter: "freighter", code: "timeout", message: "Timed out" },
+            error: { adapter: "arc-evm", code: "timeout", message: "Timed out" },
             status: "error",
           },
         },
       });
 
-      useMultiWalletStore.getState().clearError("freighter");
+      useMultiWalletStore.getState().clearError("arc-evm");
 
-      const entry = useMultiWalletStore.getState().wallets.freighter;
+      const entry = useMultiWalletStore.getState().wallets["arc-evm"];
       expect(entry.error).toBeNull();
       expect(entry.status).toBe("disconnected");
     });
@@ -228,9 +226,9 @@ describe("useMultiWallet store via hooks", () => {
     it("updateWalletStatus changes wallet status", () => {
       useMultiWalletStore.setState({
         wallets: {
-          freighter: {
+          "arc-evm": {
             adapter: createMockAdapter(),
-            publicKey: "GABC",
+            publicKey: "0x70A7CCB7b5fe856384Aab3aAF553E09A10AF14A4",
             network: "testnet",
             balance: null,
             lastConnected: Date.now(),
@@ -240,8 +238,8 @@ describe("useMultiWallet store via hooks", () => {
         },
       });
 
-      useMultiWalletStore.getState().updateWalletStatus("freighter", "connected");
-      expect(useMultiWalletStore.getState().wallets.freighter.status).toBe("connected");
+      useMultiWalletStore.getState().updateWalletStatus("arc-evm", "connected");
+      expect(useMultiWalletStore.getState().wallets["arc-evm"].status).toBe("connected");
     });
   });
 
@@ -249,21 +247,21 @@ describe("useMultiWallet store via hooks", () => {
     it("sets error state when connect fails", async () => {
       const adapter = createMockAdapter();
       (adapter.connect as ReturnType<typeof vi.fn>).mockRejectedValue({
-        adapter: "freighter",
+        adapter: "arc-evm",
         code: "rejected",
         message: "User rejected connection",
       });
       mockGetAdapter.mockReturnValue(adapter);
 
       try {
-        await useMultiWalletStore.getState().connect("freighter");
+        await useMultiWalletStore.getState().connect("arc-evm");
       } catch {
         // expected
       }
 
       const state = useMultiWalletStore.getState();
-      expect(state.wallets.freighter.status).toBe("error");
-      expect(state.wallets.freighter.error?.message).toBe("User rejected connection");
+      expect(state.wallets["arc-evm"].status).toBe("error");
+      expect(state.wallets["arc-evm"].error?.message).toBe("User rejected connection");
     });
   });
 
@@ -308,25 +306,6 @@ describe("useMultiWallet store via hooks", () => {
       expect(state.state).toBe("idle");
       expect(state.error).toBeNull();
       expect(state.publicKey).toBeNull();
-    });
-  });
-
-  describe("ledger state", () => {
-    it("starts with idle ledger state", () => {
-      const state = useLedgerStore.getState();
-      expect(state.connectionState).toBe("idle");
-      expect(state.firmwareVersion).toBeNull();
-    });
-
-    it("resetLedgerState clears all ledger state", () => {
-      useLedgerStore.setState({ connectionState: "connected", firmwareVersion: "2.1.0", stellarAppVersion: "5.0.0" });
-      useLedgerStore.getState().reset();
-
-      const state = useLedgerStore.getState();
-      expect(state.connectionState).toBe("idle");
-      expect(state.firmwareVersion).toBeNull();
-      expect(state.stellarAppVersion).toBeNull();
-      expect(state.firmwareWarnings).toEqual([]);
     });
   });
 

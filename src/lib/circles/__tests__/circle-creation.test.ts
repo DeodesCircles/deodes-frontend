@@ -21,6 +21,14 @@ describe("circle-creation consolidation", () => {
     expect(payload.requiresInvite).toBe(false)
   })
 
+  it("defaults to Flexible mode and passes Auto through", () => {
+    expect(initialCircleForm().autoDebit).toBe(false)
+    expect(buildCircleFormData(initialCircleForm()).autoDebit).toBe(false)
+    expect(
+      buildCircleFormData({ ...initialCircleForm(), autoDebit: true }).autoDebit,
+    ).toBe(true)
+  })
+
   it("omits communityId when not provided", () => {
     const payload = buildCircleFormData(initialCircleForm())
     expect(payload.communityId).toBeUndefined()

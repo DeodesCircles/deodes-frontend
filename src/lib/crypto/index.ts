@@ -1,7 +1,7 @@
 export {
-  deriveStellarKeypair,
+  deriveEd25519Keypair,
   signWithSeed,
-  publicKeyToStellarAddress,
+  publicKeyToLegacyAddress,
   secureZeroMemory,
   hexEncode,
 } from "./key-derivation"

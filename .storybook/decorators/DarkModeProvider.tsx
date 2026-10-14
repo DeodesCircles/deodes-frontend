@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * The Moistello app renders dark-first (see the inline theme script in the
+ * The Deodes app renders dark-first (see the inline theme script in the
  * root layout). Storybook boots outside Next, so we force the `.dark` class on
  * <html> so tokens, glass surfaces and text colors render exactly as they do
  * in the product. Individual stories that want to show the light theme can

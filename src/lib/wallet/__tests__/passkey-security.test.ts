@@ -36,12 +36,12 @@ const localStorageMock = (() => {
 Object.defineProperty(global, "localStorage", { value: localStorageMock })
 
 import { createPasskeyAdapter } from "../adapters/passkey"
-import { deriveStellarKeypair } from "@/lib/crypto/key-derivation"
+import { deriveEd25519Keypair } from "@/lib/crypto/key-derivation"
 import { startRegistration } from "@simplewebauthn/browser"
 
 const mockOptions = {
   challenge: "test-challenge",
-  rp: { name: "Moistello", id: "localhost" },
+  rp: { name: "Deodes", id: "localhost" },
   user: { id: "dXNlckB0ZXN0LmNvbQ", name: "user@test.com", displayName: "user@test.com" },
   pubKeyCredParams: [{ alg: -7, type: "public-key" }],
 }
@@ -83,7 +83,7 @@ describe("Passkey Security Tests", { timeout: 60_000 }, () => {
     ]
 
     const keypairs = await Promise.all(
-      inputs.map((i) => deriveStellarKeypair(i.credentialId, i.email, i.pepper))
+      inputs.map((i) => deriveEd25519Keypair(i.credentialId, i.email, i.pepper))
     )
 
     const publicKeys = keypairs.map((kp) => Buffer.from(kp.publicKey).toString("hex"))

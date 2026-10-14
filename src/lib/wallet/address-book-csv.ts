@@ -1,4 +1,10 @@
-import { validateStellarAddress } from "@/lib/stellar/validate-address"
+/**
+ * Arc (0x) address validation for the address book. Legacy G... addresses
+ * are rejected: the book is an Arc-only surface post-purge.
+ */
+export function isBookAddress(address: string): boolean {
+  return /^0x[0-9a-fA-F]{40}$/.test(address.trim())
+}
 
 export interface SavedAddress {
   id: string
@@ -68,7 +74,7 @@ export function exportAddressBookToCSV(addresses: SavedAddress[]): string {
 }
 
 /**
- * Parses CSV input, validates Stellar addresses, and reports bad rows.
+ * Parses CSV input, validates Arc addresses, and reports bad rows.
  */
 export function importAddressBookFromCSV(csvContent: string): ImportAddressBookResult {
   const validAddresses: SavedAddress[] = []
@@ -107,7 +113,7 @@ export function importAddressBookFromCSV(csvContent: string): ImportAddressBookR
     let publicKey = (fields[keyIdx] ?? "").trim()
 
     // If fields swapped where key is in 0th col
-    if (!validateStellarAddress(publicKey) && validateStellarAddress(label)) {
+    if (!isBookAddress(publicKey) && isBookAddress(label)) {
       const temp = label
       label = publicKey || "Imported Address"
       publicKey = temp
@@ -118,8 +124,8 @@ export function importAddressBookFromCSV(csvContent: string): ImportAddressBookR
       continue
     }
 
-    if (!validateStellarAddress(publicKey)) {
-      invalidRows.push({ line: lineNum, raw: rawLine, reason: "Invalid Stellar public key format" })
+    if (!isBookAddress(publicKey)) {
+      invalidRows.push({ line: lineNum, raw: rawLine, reason: "Invalid Arc address format (want 0x + 40 hex)" })
       continue
     }
 

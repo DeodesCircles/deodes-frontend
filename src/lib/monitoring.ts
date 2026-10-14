@@ -50,7 +50,7 @@ let flushTimer: ReturnType<typeof setInterval> | null = null
 function stripPii(value: string): string {
   return value
     .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, "[email]")
-    .replace(/G[A-Za-z0-9]{55}/g, "[stellar-address]")
+    .replace(/G[A-Za-z0-9]{55}/g, "[legacy-address]")
     .replace(/0x[a-fA-F0-9]{40}/g, "[evm-address]")
 }
 

@@ -59,7 +59,7 @@ describe("CommunityDetailPage", () => {
     mockUseCommunity.mockReturnValue({
       data: {
         id: "community-1",
-        name: "Moistello Circle",
+        name: "Deodes Circle",
         description: "Financial discipline community",
         category: "finance",
         tags: ["savings"],
@@ -92,7 +92,7 @@ describe("CommunityDetailPage", () => {
     fireEvent.click(screen.getByRole("button", { name: /join/i }));
 
     expect(joinMutate).toHaveBeenCalledTimes(1);
-    expect(screen.getAllByText("Moistello Circle").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Deodes Circle").length).toBeGreaterThan(0);
   });
 
   it("shows empty states when the community has no announcements or circles yet", () => {

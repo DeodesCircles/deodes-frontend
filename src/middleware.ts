@@ -44,7 +44,7 @@ function attachCsrfCookie(response: NextResponse, csrfToken: string) {
 
 function getAllowedOrigins(request: NextRequest): Set<string> {
   const origins = new Set([request.nextUrl.origin])
-  const configuredAppUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV === "production" ? "https://moistello.com" : undefined)
+  const configuredAppUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV === "production" ? "https://deodes.com" : undefined)
   if (configuredAppUrl) {
     try {
       origins.add(new URL(configuredAppUrl).origin)

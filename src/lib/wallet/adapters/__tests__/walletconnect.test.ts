@@ -45,7 +45,7 @@ vi.mock("../../wc2-session-store", () => ({
   WC2SessionStore: vi.fn(),
 }))
 
-import { createWalletConnectAdapter, setOnPairingUri, resetWcState, __resetSignClientForTests } from "../walletconnect"
+import { createWalletConnectAdapter, setOnPairingUri, resetWcState, __resetSignClientForTests, type WalletConnectConnectOptions } from "../walletconnect"
 
 const TEST_ADDRESS = "0x1234567890abcdef1234567890abcdef12345678"
 
@@ -336,48 +336,47 @@ describe("WalletConnect setOnPairingUri", () => {
 })
 
 describe("WalletConnect address validation", () => {
-  it("detects invalid Stellar public key format", () => {
+  it("detects invalid Arc address format", () => {
     const invalidKeys = [
       "",
-      "G",
-      "G123",
-      "GA!@#$%",
-      "GAX23V3WWDPPR5WRER3KTEUTDLSCGZYMSJY5FDRRKKCIQ4JADF5T27R",
-      "not-a-public-key",
+      "0x",
+      "0x123",
+      "0xZZZ",
+      "0x51b45Ba8570551e0D1fe818227d8bAa8b55669",
+      "not-an-address",
     ]
-    const validKey = "GAX23V3WWDPPR5WRER3KTEUTDLSCGZYMSJY5FDRRKKCIQ4JADF5T27RC"
+    const validKey = "0x51b45Ba8570551e0D1fe818227d8bAa8b556694D"
 
     for (const key of invalidKeys) {
-      expect(key.length === 56 && key.startsWith("G")).toBe(false)
+      expect(/^0x[0-9a-fA-F]{40}$/.test(key)).toBe(false)
     }
-    expect(validKey.length === 56 && validKey.startsWith("G")).toBe(true)
+    expect(/^0x[0-9a-fA-F]{40}$/.test(validKey)).toBe(true)
   })
 
-  it("validates Stellar account format from WC2 session", () => {
-    const account = "stellar:testnet:GAX23V3WWDPPR5WRER3KTEUTDLSCGZYMSJY5FDRRKKCIQ4JADF5T27RC"
+  it("validates EVM account format from WC2 session", () => {
+    const account = "eip155:5042002:0x51b45Ba8570551e0D1fe818227d8bAa8b556694D"
     const parts = account.split(":")
-    expect(parts[0]).toBe("stellar")
-    expect(parts[1]).toBe("testnet")
-    expect(parts[2]).toHaveLength(56)
-    expect(parts[2][0]).toBe("G")
+    expect(parts[0]).toBe("eip155")
+    expect(parts[1]).toBe("5042002")
+    expect(parts[2]).toMatch(/^0x[0-9a-fA-F]{40}$/)
   })
 
   it("derives network from chain ID", () => {
-    expect("stellar:pubnet".split(":")[1]).toBe("pubnet")
-    expect("stellar:testnet".split(":")[1]).toBe("testnet")
+    expect("eip155:5042".split(":")[1]).toBe("5042")
+    expect("eip155:5042002".split(":")[1]).toBe("5042002")
   })
 
-  it("maps pubnet to mainnet network type", () => {
-    const account = "stellar:pubnet:GAX23V3WWDPPR5WRER3KTEUTDLSCGZYMSJY5FDRRKKCIQ4JADF5T27RC"
+  it("maps 5042 to mainnet network type", () => {
+    const account = "eip155:5042:0x51b45Ba8570551e0D1fe818227d8bAa8b556694D"
     const chain = account.split(":")[1]
-    const network = chain === "pubnet" ? "mainnet" : "testnet"
+    const network = chain === "5042" ? "mainnet" : "testnet"
     expect(network).toBe("mainnet")
   })
 
   it("maps testnet chain to testnet network type", () => {
-    const account = "stellar:testnet:GAX23V3WWDPPR5WRER3KTEUTDLSCGZYMSJY5FDRRKKCIQ4JADF5T27RC"
+    const account = "eip155:5042002:0x51b45Ba8570551e0D1fe818227d8bAa8b556694D"
     const chain = account.split(":")[1]
-    const network = chain === "pubnet" ? "mainnet" : "testnet"
+    const network = chain === "5042" ? "mainnet" : "testnet"
     expect(network).toBe("testnet")
   })
 })
@@ -691,5 +690,96 @@ describe("WalletConnect Arc (eip155) rail fixes", () => {
 
     expect(result).toEqual({ publicKey: TEST_ADDRESS, network: "mainnet" })
     await expect(adapter.getNetwork()).resolves.toBe("mainnet")
+  })
+})
+
+describe("WalletConnect Arc-chain guard", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    __resetSignClientForTests()
+    vi.stubEnv("NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID", "test-project-id")
+    mockRelay.status = "healthy"
+    setOnPairingUri(null)
+    mockSignClient.session.getAll.mockReturnValue([])
+    mockSignClient.disconnect.mockResolvedValue(undefined)
+  })
+
+  afterEach(() => {
+    setOnPairingUri(null)
+    vi.unstubAllEnvs()
+  })
+
+  it("rejects an approval whose session skips the Arc chain with the chain fix", async () => {
+    const ethSession = makeArcSession("eip155:1", "topic-eth")
+    mockSignClient.connect.mockResolvedValue({
+      uri: "wc:test",
+      approval: vi.fn().mockResolvedValue(ethSession),
+    })
+    const adapter = createWalletConnectAdapter()
+
+    const err = await adapter.connect().catch((e) => e)
+
+    expect(err.adapter).toBe("walletconnect")
+    expect(err.code).toBe("network_mismatch")
+    expect(err.message).toContain("Arc Testnet")
+    expect(err.message).toContain("5042002")
+  })
+
+  it("rejects session reuse when the live session lacks the Arc chain", async () => {
+    mockSignClient.session.getAll.mockReturnValue([
+      makeArcSession("eip155:1", "live-eth"),
+    ])
+    const adapter = createWalletConnectAdapter()
+
+    const err = await adapter.connect().catch((e) => e)
+
+    expect(err.adapter).toBe("walletconnect")
+    expect(err.code).toBe("network_mismatch")
+    expect(err.message).toContain("5042002")
+  })
+
+  it("accepts a session whose accounts carry the Arc chain even if chains omits it", async () => {
+    const session = {
+      topic: "topic-accounts-only",
+      namespaces: {
+        eip155: {
+          chains: ["eip155:1"],
+          accounts: [`eip155:5042002:${TEST_ADDRESS}`],
+        },
+      },
+    }
+    mockSignClient.connect.mockResolvedValue({
+      uri: "wc:test",
+      approval: vi.fn().mockResolvedValue(session),
+    })
+    const adapter = createWalletConnectAdapter()
+
+    const result = await adapter.connect()
+
+    expect(result.publicKey).toBe(TEST_ADDRESS)
+  })
+
+  it("requests chain 5042 for mainnet and rejects sessions missing it", async () => {
+    const testnetSession = makeArcSession("eip155:5042002", "topic-testnet")
+    mockSignClient.connect.mockResolvedValue({
+      uri: "wc:test",
+      approval: vi.fn().mockResolvedValue(testnetSession),
+    })
+    const adapter = createWalletConnectAdapter()
+    const connectWithOptions = adapter.connect as unknown as (
+      opts: WalletConnectConnectOptions,
+    ) => Promise<{ publicKey: string }>
+
+    const err = await connectWithOptions({ network: "mainnet" }).catch((e) => e)
+
+    expect(mockSignClient.connect).toHaveBeenCalledWith(
+      expect.objectContaining({
+        requiredNamespaces: expect.objectContaining({
+          eip155: expect.objectContaining({ chains: ["eip155:5042"] }),
+        }),
+      })
+    )
+    expect(err.code).toBe("network_mismatch")
+    expect(err.message).toContain("5042")
   })
 })

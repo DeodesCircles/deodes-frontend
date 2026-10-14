@@ -8,7 +8,7 @@ const PBKDF2_ITERATIONS = 600_000 // OWASP 2023 recommendation
 /**
  * Derives an intermediate passkey secret on the client side.
  * This is NOT the final wallet seed — it gets combined with the server-side
- * pepper on the backend to produce the actual Stellar keypair.
+ * pepper on the backend to produce the actual wallet keypair.
  * 
  * The pepper is never exposed to the client bundle.
  */
@@ -88,19 +88,19 @@ async function getEd25519(): Promise<Ed25519Module> {
 }
 
 /**
- * Derives the Stellar Ed25519 keypair from a passkey credential ID and the
+ * Derives the Ed25519 keypair from a passkey credential ID and the
  * server-side pepper. This must only ever be called server-side — the pepper
  * is never sent to the client, and the returned secretKey must never be
  * serialized into an API response. Callers are responsible for zeroing
  * `secretKey` (via `secureZeroMemory`) once signing is complete.
  */
-export async function deriveStellarKeypair(
+export async function deriveEd25519Keypair(
   credentialId: string,
   serverPepper?: string,
   email?: string,
 ): Promise<{ publicKey: Uint8Array; secretKey: Uint8Array }> {
   // Server pepper is REQUIRED for production. The fallback is for local dev only.
-  const pepper = serverPepper || "moistello-local-dev"
+  const pepper = serverPepper || "deodes-local-dev"
   const normalizedEmail = email ? email.toLowerCase().trim() : ""
   const passphrase = normalizedEmail ? `${normalizedEmail}:${credentialId}:${pepper}` : `${credentialId}:${pepper}`
   const saltInput = normalizedEmail ? `v1:${normalizedEmail}:${credentialId.slice(0, 16)}` : `v1:${credentialId.slice(0, 16)}`
@@ -129,7 +129,7 @@ export async function signWithSeed(message: Uint8Array, seed: Uint8Array): Promi
   return ed.sign(message, seed)
 }
 
-export function publicKeyToStellarAddress(publicKey: Uint8Array): string {
+export function publicKeyToLegacyAddress(publicKey: Uint8Array): string {
   const versionByte = 0x30
   const payload = new Uint8Array(1 + 32)
   payload[0] = versionByte

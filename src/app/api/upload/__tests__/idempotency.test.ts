@@ -79,7 +79,7 @@ class FakeFs {
   }
 }
 
-const SESSION_COOKIE = "moistello_session=valid-token";
+const SESSION_COOKIE = "deodes_session=valid-token";
 const SESSIONS_FILE = path.join(process.cwd(), "content", "sessions.json");
 const KEY_ONE = "1111111111111111aaaaaaaaaaaa1111";
 const KEY_TWO = "2222222222222222bbbbbbbbbbbb2222";

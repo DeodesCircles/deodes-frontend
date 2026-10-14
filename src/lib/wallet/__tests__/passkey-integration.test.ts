@@ -24,7 +24,7 @@ import { startRegistration, startAuthentication } from "@simplewebauthn/browser"
 
 const mockOptions = {
   challenge: "test-challenge",
-  rp: { name: "Moistello", id: "localhost" },
+  rp: { name: "Deodes", id: "localhost" },
   user: { id: "dXNlckB0ZXN0LmNvbQ", name: "user@test.com", displayName: "user@test.com" },
   pubKeyCredParams: [{ alg: -7, type: "public-key" }],
 }
@@ -78,7 +78,7 @@ describe("Passkey Integration — end-to-end flows", () => {
     await adapter.disconnect()
 
     localStorageMock.setItem(
-      "moistello_passkey_credential",
+      "deodes_passkey_credential",
       JSON.stringify({ credentialId: "test-credential-id-456", email: "user@test.com", publicKeyRaw: "test" })
     )
 
@@ -89,7 +89,7 @@ describe("Passkey Integration — end-to-end flows", () => {
 
   it("session restore via stored credential", async () => {
     localStorageMock.setItem(
-      "moistello_passkey_credential",
+      "deodes_passkey_credential",
       JSON.stringify({ credentialId: "test-credential-id-456", email: "user@test.com", publicKeyRaw: "test" })
     )
     vi.mocked(startAuthentication).mockResolvedValueOnce(mockAssertion as never)
@@ -106,7 +106,7 @@ describe("Passkey Integration — end-to-end flows", () => {
     await adapter.disconnect()
 
     localStorageMock.setItem(
-      "moistello_passkey_credential",
+      "deodes_passkey_credential",
       JSON.stringify({ credentialId: "test-credential-id-456", email: "user@test.com", publicKeyRaw: "test" })
     )
     vi.mocked(startAuthentication).mockResolvedValueOnce(mockAssertion as never)
@@ -117,7 +117,7 @@ describe("Passkey Integration — end-to-end flows", () => {
 
   it("handles invalid credential error gracefully", async () => {
     localStorageMock.setItem(
-      "moistello_passkey_credential",
+      "deodes_passkey_credential",
       JSON.stringify({ credentialId: "bad-credential", email: "user@test.com", publicKeyRaw: "test" })
     )
 

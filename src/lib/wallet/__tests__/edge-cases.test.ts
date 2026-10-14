@@ -6,11 +6,11 @@ describe("Edge Case Matrix", () => {
     expect(wallets.length).toBe(0)
   })
 
-  it("user with all 7 wallets connected", () => {
+  it("user with all 3 wallets connected", () => {
     const wallets = new Map()
-    const ids = ["walletconnect", "passkey", "freighter", "xbull", "rabet", "albedo", "ledger"]
+    const ids = ["walletconnect", "passkey", "arc-evm"]
     ids.forEach((id) => wallets.set(id, { status: "connected" }))
-    expect(wallets.size).toBe(7)
+    expect(wallets.size).toBe(3)
   })
 
   it("localStorage full — graceful degradation", () => {
@@ -55,13 +55,13 @@ describe("Edge Case Matrix", () => {
   it("multiple tabs with same wallet", () => {
     const tabs = ["tab1", "tab2", "tab3"]
     const activeWalletPerTab = new Map()
-    tabs.forEach((tab) => activeWalletPerTab.set(tab, "freighter"))
+    tabs.forEach((tab) => activeWalletPerTab.set(tab, "arc-evm"))
     expect(activeWalletPerTab.size).toBe(3)
   })
 
   it("back/forward browser navigation preserves wallet state", () => {
-    const state = { walletId: "freighter", publicKey: "GABC..." }
+    const state = { walletId: "arc-evm", publicKey: "0x51b45Ba8570551e0D1fe818227d8bAa8b556694D" }
     const cached = { ...state }
-    expect(cached.walletId).toBe("freighter")
+    expect(cached.walletId).toBe("arc-evm")
   })
 })

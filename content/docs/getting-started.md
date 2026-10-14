@@ -13,7 +13,7 @@ Before you begin, you'll need:
 
 - **A device with biometric authentication** — Face ID, Touch ID, Windows Hello, or fingerprint reader
 - **USDC** — The currency used for all contributions and payouts. Fund your auto-created wallet via the Yellow Card ramp or an external Arc wallet
-- **No Freighter, no passwords, no email** — Your passkey is your identity
+- **No extensions, no passwords, no email** — Your passkey is your identity
 
 ## Step 1: Sign In with Passkey
 

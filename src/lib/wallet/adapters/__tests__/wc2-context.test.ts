@@ -89,17 +89,6 @@ afterEach(() => {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function makeSession(address = "GAXI4RFQHLT2OVXZWRLGE6YFAJILKM576FKGSEDPMHPXWKBHDPXUIYJ") {  return {
-    topic: "test-topic",
-    namespaces: {
-      stellar: {
-        accounts: [`stellar:testnet:${address}`],
-        chains: ["stellar:testnet"],
-      },
-    },
-  }
-}
-
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------

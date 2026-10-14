@@ -3,7 +3,7 @@ import type { BrowserContext, Page, Route } from "@playwright/test"
 import type { Circle, CircleMember, Contribution, Payout, User } from "@/types"
 
 const APP_ORIGIN = "http://localhost:1110"
-const ACCESS_TOKEN_COOKIE = "moistello_token"
+const ACCESS_TOKEN_COOKIE = "deodes_token"
 
 export interface MockCalls {
   authLogins: unknown[]
@@ -70,6 +70,7 @@ export function buildMockFixtures(overrides: Partial<MockAppFixtures> = {}): Moc
     lateFeePercent: 5,
     gracePeriodHours: 24,
     maxStrikes: 3,
+    autoDebit: false,
     startDate: "2026-08-01T09:00:00.000Z",
     status: "active",
     currentRound: 2,
@@ -284,7 +285,7 @@ export async function installMockApi(
     }
 
     if (path === "/claim-name" && method === "POST") {
-      await fulfillJson(route, success({ name: fixtures.user.displayName ?? "Moistello Builder" }))
+      await fulfillJson(route, success({ name: fixtures.user.displayName ?? "Deodes Builder" }))
       return
     }
 

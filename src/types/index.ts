@@ -148,7 +148,6 @@ export interface PayoutPreview {
   totalGrossAmount: number
   totalNetAmount: number
   protocolFee: number
-  stellarFeeEstimate: number
   /** Estimated Arc network fee in USDC (USDC is gas on Arc). */
   arcFeeEstimate: number
   recipients: PayoutRecipientDistribution[]

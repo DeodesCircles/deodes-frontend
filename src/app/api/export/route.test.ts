@@ -27,7 +27,7 @@ const fetchMock = vi.fn()
 function makeRequest(ip = "203.0.113.9") {
   return new NextRequest("http://localhost/api/export", {
     method: "GET",
-    headers: { "x-forwarded-for": ip, cookie: "moistello_session=token-123" },
+    headers: { "x-forwarded-for": ip, cookie: "deodes_session=token-123" },
   })
 }
 
@@ -139,7 +139,7 @@ describe("GET /api/export — archive contents", () => {
     expect(response.status).toBe(200)
     expect(response.headers.get("Content-Type")).toContain("application/json")
     expect(response.headers.get("Content-Disposition")).toMatch(
-      /attachment; filename="moistello-data-user-alice-\d{4}-\d{2}-\d{2}\.json"/,
+      /attachment; filename="deodes-data-user-alice-\d{4}-\d{2}-\d{2}\.json"/,
     )
   })
 
@@ -158,7 +158,7 @@ describe("GET /api/export — archive contents", () => {
     // Both backend calls must carry a well-formed Cookie header, i.e. name=value.
     for (const call of fetchMock.mock.calls) {
       const init = call[1] as { headers: Record<string, string> }
-      expect(init.headers.cookie).toBe("moistello_session=token-123")
+      expect(init.headers.cookie).toBe("deodes_session=token-123")
     }
     expect(fetchMock).toHaveBeenCalledTimes(2)
   })

@@ -28,8 +28,8 @@ cat > "${BACKUP_SCRIPT}" << 'BACKEOF'
 #!/usr/bin/env bash
 set -euo pipefail
 
-BACKUP_DIR="/opt/moistello/backups"
-LOG_DIR="/var/log/moistello"
+BACKUP_DIR="/opt/deodes/backups"
+LOG_DIR="/var/log/deodes"
 RETENTION_DAYS=30
 MIN_FREE_PCT=10
 
@@ -58,7 +58,7 @@ GZ_FILE="${DUMP_FILE}.gz"
 TMP_RAW=$(mktemp)
 
 # Capture both stdout and stderr; do NOT discard stderr
-if docker exec moistello-postgres pg_dump -U moistello moistello > "${TMP_RAW}" 2>"${BACKUP_DIR}/.pg_dump_stderr.${TS}"; then
+if docker exec deodes-postgres pg_dump -U deodes deodes > "${TMP_RAW}" 2>"${BACKUP_DIR}/.pg_dump_stderr.${TS}"; then
     log_msg "pg_dump completed successfully"
 else
     EC=$?

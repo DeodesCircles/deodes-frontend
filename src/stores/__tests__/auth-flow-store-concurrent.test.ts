@@ -29,7 +29,7 @@ vi.mock("@/stores/multi-wallet-store", () => ({
   useMultiWalletStore: {
     getState: () => ({
       wallets: {
-        freighter: {
+        "arc-evm": {
           adapter: { signMessage: mockSignMessage },
         },
       },
@@ -55,8 +55,8 @@ function seedConnectedState() {
     status: { status: "idle" },
     isSigningInFlight: false,
     connection: {
-      walletId: "freighter",
-      address: "GABC123DEF456...",
+      walletId: "arc-evm",
+      address: "0x51b45Ba8570551e0D1fe818227d8bAa8b556694D",
       pairingUri: null,
       protocol: null,
       relayStatus: "healthy",
@@ -214,7 +214,7 @@ describe("AuthFlowStore - concurrent signAndSubmit guard", () => {
     mockPost.mockResolvedValueOnce({ data: { nonce: { nonce: "n-stale" } } })
     mockSignMessage.mockImplementationOnce(async () => {
       useAuthFlowStore.setState((state) => ({
-        connection: { ...state.connection, address: "GDIFFERENT..." },
+        connection: { ...state.connection, address: "0x70A7CCB7b5fe856384Aab3aAF553E09A10AF14A4" },
       }))
       return { signature: "sig-stale" }
     })

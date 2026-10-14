@@ -41,6 +41,7 @@ export default function CircleSettingsPage() {
 
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
+  const [autoDebit, setAutoDebit] = useState(false)
   const [saving, setSaving] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState("")
   const [deleting, setDeleting] = useState(false)
@@ -56,6 +57,7 @@ export default function CircleSettingsPage() {
     if (circle) {
       setName(circle.name)
       setDescription(circle.description ?? "")
+      setAutoDebit(circle.autoDebit ?? false)
     }
   }, [circle])
 
@@ -67,6 +69,7 @@ export default function CircleSettingsPage() {
       await patch(`/circles/${circleId}`, {
         name: name.trim(),
         description: description.trim() || undefined,
+        autoDebit,
       })
       await queryClient.invalidateQueries({ queryKey: ["circle", circleId] })
       addToast({
@@ -249,6 +252,27 @@ export default function CircleSettingsPage() {
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Brief description of your circle"
           />
+          <div className="flex items-start justify-between gap-4 rounded-xl border border-white/10 px-4 py-3">
+            <div>
+              <p className="font-heading text-sm font-semibold text-foreground">Auto-debit mode</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Auto pulls contributions each round (members consent at join). Switching to
+                Flexible pauses pulls; existing consents resume if you switch back.
+              </p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={autoDebit}
+              aria-label="Auto-debit mode"
+              onClick={() => setAutoDebit((v) => !v)}
+              className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${autoDebit ? "bg-aurora-violet" : "bg-white/15"}`}
+            >
+              <span
+                className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-all ${autoDebit ? "left-[22px]" : "left-0.5"}`}
+              />
+            </button>
+          </div>
           <div className="flex justify-end">
             <Button
               variant="primary"

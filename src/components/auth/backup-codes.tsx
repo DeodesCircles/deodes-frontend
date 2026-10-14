@@ -28,7 +28,7 @@ export function BackupCodes({ codes, onAcknowledged }: BackupCodesProps) {
   }
 
   const handleDownload = () => {
-    const blob = new Blob([`Moistello Backup Codes\n${"=".repeat(40)}\n\n${codes.join("\n")}\n\nKeep these codes safe. Each can be used once.`], { type: "text/plain" })
+    const blob = new Blob([`Deodes Backup Codes\n${"=".repeat(40)}\n\n${codes.join("\n")}\n\nKeep these codes safe. Each can be used once.`], { type: "text/plain" })
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
     a.href = url

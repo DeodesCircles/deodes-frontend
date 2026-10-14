@@ -71,7 +71,7 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   experimental: {
-    optimizePackageImports: ["lucide-react", "date-fns", "@stellar/stellar-base"],
+    optimizePackageImports: ["lucide-react", "date-fns"],
   },
   webpack(config, { isServer }) {
     // Only exclude on the server-side build (route handlers are server-only).
@@ -90,25 +90,9 @@ const nextConfig = {
       config.optimization.splitChunks = config.optimization.splitChunks || {}
       const cacheGroups = config.optimization.splitChunks.cacheGroups || {}
 
-      cacheGroups.stellar = {
-        test: /[\\/]node_modules[\\/](@stellar|stellar-sdk)[\\/]/,
-        name: "stellar-vendor",
-        chunks: "all",
-        priority: 40,
-        reuseExistingChunk: true,
-      }
-
       cacheGroups.walletconnect = {
         test: /[\\/]node_modules[\\/]@walletconnect[\\/]/,
         name: "walletconnect-vendor",
-        chunks: "all",
-        priority: 40,
-        reuseExistingChunk: true,
-      }
-
-      cacheGroups.ledger = {
-        test: /[\\/]node_modules[\\/]@ledgerhq[\\/]/,
-        name: "ledger-vendor",
         chunks: "all",
         priority: 40,
         reuseExistingChunk: true,

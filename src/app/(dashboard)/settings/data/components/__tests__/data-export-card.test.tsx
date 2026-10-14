@@ -22,7 +22,7 @@ const ARCHIVE = {
   counts: { contributions: 0, notifications: 0 },
 }
 
-const SERVER_FILENAME = "moistello-data-user-alice-2026-06-17.json"
+const SERVER_FILENAME = "deodes-data-user-alice-2026-06-17.json"
 
 const createObjectURL = vi.fn(() => "blob:mock-url")
 const revokeObjectURL = vi.fn()
@@ -139,7 +139,7 @@ describe("DataExportCard", () => {
 
     await waitFor(() => expect(anchorClick).toHaveBeenCalled())
     const anchor = anchorClick.mock.instances[0] as HTMLAnchorElement
-    expect(anchor.download).toBe("moistello-data-export.json")
+    expect(anchor.download).toBe("deodes-data-export.json")
   })
 
   it("cleans the anchor out of the document after clicking it", async () => {

@@ -47,7 +47,7 @@ test.describe('Passkey Login Flow', () => {
 
       // Store mock credential for adapter to find
       localStorage.setItem(
-        'moistello_passkey_credential',
+        'deodes_passkey_credential',
         JSON.stringify({ credentialId: 'mock-credential-id-12345' })
       )
     })

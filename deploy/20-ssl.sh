@@ -10,7 +10,7 @@ require_root
 require_command "certbot"
 require_command "nginx"
 
-NGINX_SITE="/etc/nginx/sites-available/moistello"
+NGINX_SITE="/etc/nginx/sites-available/deodes"
 EMAIL="${SSL_EMAIL:-admin@${DOMAIN}}"
 
 # ── DNS check ──────────────────────────────────────────────

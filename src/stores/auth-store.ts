@@ -32,7 +32,7 @@ const isDev = process.env.NODE_ENV === "development";
 // credential, and it stays in localStorage under an HMAC so tampering is
 // detected.
 
-const USER_DATA_KEY = "moistello_user";
+const USER_DATA_KEY = "deodes_user";
 
 interface UserStoreWithHmac {
   user: User;
@@ -197,7 +197,7 @@ function removeStoredUser(): void {
 function getUserEncryptionPassphrase(): string {
   if (typeof window === "undefined") return "ssr-fallback-key";
   const deviceSeed = `${window.navigator.userAgent}-${window.screen.width}x${window.screen.height}`;
-  return `moistello-user-v1:${deviceSeed}`;
+  return `deodes-user-v1:${deviceSeed}`;
 }
 
 /**
@@ -209,10 +209,10 @@ function getUserEncryptionPassphrase(): string {
  * remain readable for as long as the entry survives.
  */
 const LEGACY_TOKEN_KEYS = [
-  "moistello_token",
-  "moistello_refresh",
-  "moistello_access_token",
-  "moistello_refresh_token",
+  "deodes_token",
+  "deodes_refresh",
+  "deodes_access_token",
+  "deodes_refresh_token",
 ] as const;
 
 function purgeLegacyTokenStorage(): void {
@@ -358,8 +358,17 @@ const baseStore = (
       });
       void ensureHostedArcWallet();
     } catch (e) {
-      logger.warn("[auth] Token refresh failed, logging out:", e);
-      get().logout();
+      // Only a definitive auth rejection kills the session. Transient
+      // failures (network blip, backend restart mid-deploy) must not log
+      // the user out — the next request's interceptor recovers via refresh.
+      const status = (e as { response?: { status?: number } })?.response?.status
+      if (status === 401 || status === 403) {
+        logger.warn("[auth] Session rejected, logging out:", e);
+        get().logout();
+      } else {
+        logger.warn("[auth] checkAuth transient failure, keeping session:", e);
+        set({ isLoading: false });
+      }
     }
   },
 

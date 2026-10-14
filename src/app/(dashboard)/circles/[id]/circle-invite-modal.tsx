@@ -6,19 +6,19 @@ import { Modal } from "@/components/ui/modal"
 import { Button } from "@/components/ui/button"
 import { CopyButton } from "@/components/shared/copy-button"
 import { formatTimeRemaining, msUntilExpiry } from "@/lib/invite-expiry"
-import { STELLAR_ADDRESS_REGEX } from "@/lib/formatters"
+import { ARC_ADDRESS_REGEX } from "@/lib/formatters"
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-export function isStellarAddress(val: string): boolean {
-  return STELLAR_ADDRESS_REGEX ? STELLAR_ADDRESS_REGEX.test(val) : /^G[A-Z2-7]{55}$/.test(val)
+export function isArcAddress(val: string): boolean {
+  return ARC_ADDRESS_REGEX.test(val)
 }
 
 export interface MemberEntryValidation {
   raw: string
   clean: string
   isValid: boolean
-  type?: "email" | "stellar" | "evm"
+  type?: "email" | "evm"
 }
 
 export function validateMemberEntry(raw: string): MemberEntryValidation {
@@ -28,9 +28,6 @@ export function validateMemberEntry(raw: string): MemberEntryValidation {
   }
   if (EMAIL_REGEX.test(clean)) {
     return { raw, clean, isValid: true, type: "email" }
-  }
-  if (/^G[A-Z2-7]{55}$/.test(clean)) {
-    return { raw, clean, isValid: true, type: "stellar" }
   }
   if (/^0x[0-9a-fA-F]{40}$/.test(clean)) {
     return { raw, clean, isValid: true, type: "evm" }

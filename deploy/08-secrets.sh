@@ -29,29 +29,6 @@ JWT_PASSPHRASE=$(run openssl rand -base64 32 | tr -d '+/=')
 HMAC_KEY=$(run openssl rand -hex 32 | tr -d '\n')
 ok "Passwords generated (base64, URL-safe)"
 
-# ── Stellar keypair ────────────────────────────────────────────
-if [ -n "${STELLAR_SECRET_KEY:-}" ]; then
-    STELLAR_SECRET="$STELLAR_SECRET_KEY"
-    info "STELLAR_SECRET_KEY provided via environment — deriving public key"
-    STELLAR_PUBLIC=""
-    if command -v soroban &>/dev/null; then
-        STELLAR_PUBLIC=$(run soroban keys address "$STELLAR_SECRET" 2>/dev/null || echo "")
-    fi
-    if [ -z "$STELLAR_PUBLIC" ] && command -v stellar &>/dev/null; then
-        STELLAR_PUBLIC=$(run stellar keys address "$STELLAR_SECRET" 2>/dev/null || echo "")
-    fi
-    if [ -z "$STELLAR_PUBLIC" ]; then
-        STELLAR_PUBLIC="COULD_NOT_DERIVE"
-        warn "Could not derive public key from secret — please set STELLAR_PUBLIC_KEY manually"
-    fi
-    ok "Using provided Stellar keypair"
-else
-    warn "No STELLAR_SECRET_KEY in environment — writing placeholders"
-    STELLAR_SECRET="REPLACE_WITH_YOUR_PRIVATE_KEY"
-    STELLAR_PUBLIC="REPLACE_WITH_YOUR_PUBLIC_KEY"
-    info "Edit $ENV_FILE with your real keys before running step 09"
-fi
-
 # ── Generate JWT RSA keys ──────────────────────────────────────
 info "Generating JWT RSA-2048 keypair"
 run openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 \
@@ -71,10 +48,6 @@ cat > "$ENV_FILE" << ENVEOF
 POSTGRES_PW=${PG_PW}
 REDIS_PW=${RD_PW}
 RABBITMQ_PW=${MQ_PW}
-
-# ── Stellar ─────────────────────────────────────────────────
-STELLAR_PUBLIC_KEY=${STELLAR_PUBLIC}
-STELLAR_SECRET_KEY=${STELLAR_SECRET}
 
 # ── Arc (EVM, primary chain) + Keeper ─────────────────────────
 # 12-backend-env.sh applies NETWORK-based defaults for RPC/chain ID; the
@@ -117,17 +90,9 @@ ok ".env written and permissions set"
 # ── Summary ────────────────────────────────────────────────────
 echo ""
 info "═══ SECRETS GENERATED ═══"
-info "Stellar public:  $STELLAR_PUBLIC"
 info "Secrets file:    $ENV_FILE"
 info "JWT private:     $JWT_PRIVATE"
 info "JWT public:      $JWT_PUBLIC"
 echo ""
-if [ "$STELLAR_PUBLIC" = "REPLACE_WITH_YOUR_PUBLIC_KEY" ]; then
-    warn "Edit $ENV_FILE with your real Stellar keys, then run step 09"
-    echo ""
-    warn "Min recommended balance: 200 XLM"
-    echo ""
-fi
-
 mark_done "08"
 ok "Secrets generation complete"

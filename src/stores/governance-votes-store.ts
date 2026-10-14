@@ -49,6 +49,6 @@ export const useGovernanceVotes = create<GovernanceVotesState>()(
 
       clearAll: () => set({ votes: {} }),
     }),
-    { name: "moistello_governance_votes" },
+    { name: "deodes_governance_votes" },
   ),
 );

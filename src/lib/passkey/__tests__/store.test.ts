@@ -141,7 +141,7 @@ describe("Passkey server store", () => {
     it("getPepper falls back to default when env not set", async () => {
       vi.stubEnv("PASSKEY_SERVER_PEPPER", "")
       const { getPepper: getPepperDefault } = await import("../store")
-      expect(getPepperDefault()).toBe("moistello-passkey-pepper-v1")
+      expect(getPepperDefault()).toBe("deodes-passkey-pepper-v1")
     })
 
     it("getRpId falls back to localhost", async () => {

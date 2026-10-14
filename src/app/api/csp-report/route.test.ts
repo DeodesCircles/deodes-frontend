@@ -33,7 +33,7 @@ function violation(overrides: Record<string, unknown> = {}) {
   return {
     type: "csp-violation",
     body: {
-      documentURL: "https://moistello.com/wallet",
+      documentURL: "https://deodes.com/wallet",
       violatedDirective: "script-src",
       blockedURL: "https://cdn.attacker.example/t.js",
       disposition: "report",
@@ -56,7 +56,7 @@ describe("POST /api/csp-report", () => {
     const response = await POST(
       request(
         {
-          "document-uri": "https://moistello.com/",
+          "document-uri": "https://deodes.com/",
           "violated-directive": "script-src-elem",
           "blocked-uri": "https://cdn.attacker.example/t.js",
           type: "csp-violation",
@@ -94,7 +94,7 @@ describe("POST /api/csp-report", () => {
     expect(message).toContain("script-src")
     expect(context).toMatchObject({
       blockedUri: "https://cdn.attacker.example/t.js",
-      documentUri: "https://moistello.com/wallet",
+      documentUri: "https://deodes.com/wallet",
       disposition: "report",
     })
   })

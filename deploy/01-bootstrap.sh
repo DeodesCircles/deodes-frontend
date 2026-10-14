@@ -44,9 +44,9 @@ run mkdir -p "$APP_DIR"
 
 declare -A REPOS
 REPOS=(
-    ["backend"]="https://github.com/cocor-tech/moistello-backend.git"
-    ["frontend"]="https://github.com/cocor-tech/moistello-frontend.git"
-    ["contracts"]="https://github.com/cocor-tech/moistello-contracts.git"
+    ["backend"]="https://github.com/cocor-tech/deodes-backend.git"
+    ["frontend"]="https://github.com/cocor-tech/deodes-frontend.git"
+    ["contracts"]="https://github.com/cocor-tech/deodes-contracts.git"
 )
 
 for name in "${!REPOS[@]}"; do

@@ -2,9 +2,9 @@ import { logger } from "@/lib/logger"
 import { NextRequest, NextResponse } from "next/server"
 import { getCredential, getPepper } from "@/lib/passkey/store"
 import { checkRateLimit, requireAuthenticatedUser } from "@/lib/passkey/auth-guard"
-import { deriveStellarKeypair, hexEncode, signWithSeed, secureZeroMemory } from "@/lib/crypto/key-derivation"
+import { deriveEd25519Keypair, hexEncode, signWithSeed, secureZeroMemory } from "@/lib/crypto/key-derivation"
 
-// Allowed origins for CSRF protection (shared with sign-transaction).
+// Allowed origins for CSRF protection.
 const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS?.split(",") || []
 
 function checkCsrf(req: NextRequest): Response | null {
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
       return auth.response
     }
 
-    // Shared rate-limit bucket with sign-transaction.
+    // Shared rate-limit bucket for passkey signing routes.
     const rateLimit = checkRateLimit(req, "sign")
     if (!rateLimit.allowed) {
       return NextResponse.json({ error: "rate_limited" }, { status: 429, headers: { "Retry-After": String(Math.ceil(rateLimit.retryAfterMs / 1000)) } })
@@ -55,10 +55,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "forbidden" }, { status: 403 })
     }
 
-    // The Stellar secret key is derived server-side only for the duration of
+    // The Ed25519 secret key is derived server-side only for the duration of
     // this signing operation and is zeroed immediately after use — it is
     // never serialized into a response or persisted anywhere.
-    const keypair = await deriveStellarKeypair(credentialId, getPepper())
+    const keypair = await deriveEd25519Keypair(credentialId, getPepper())
     const publicKeyHex = hexEncode(keypair.publicKey)
 
     let signature: Uint8Array

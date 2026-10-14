@@ -47,7 +47,7 @@ describe("WC2SessionStore", () => {
   })
 
   it("handles corrupted data gracefully", () => {
-    localStorage.setItem("moistello_wc2_session", "invalid-json")
+    localStorage.setItem("deodes_wc2_session", "invalid-json")
     expect(store.getSession()).toBeNull()
   })
 
@@ -62,10 +62,10 @@ describe("WC2SessionStore", () => {
     }
     store.saveSession(data)
 
-    const raw = localStorage.getItem("moistello_wc2_session")!
+    const raw = localStorage.getItem("deodes_wc2_session")!
     const payload = JSON.parse(raw)
     payload.data.publicKey = "GDAMALIDI7LM2MQY2AFGJ75ZX3QPHHXIQP3UZY5Q6W3K7RPGD4L5KXYZ"
-    localStorage.setItem("moistello_wc2_session", JSON.stringify(payload))
+    localStorage.setItem("deodes_wc2_session", JSON.stringify(payload))
 
     expect(store.getSession()).toBeNull()
   })

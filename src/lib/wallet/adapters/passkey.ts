@@ -1,15 +1,15 @@
-import { WalletAdapter, WalletMeta, SignOptions, NetworkType } from "../types"
-import { STELLAR_NETWORK } from "@/lib/constants"
+import { WalletAdapter, WalletMeta, NetworkType } from "../types"
+import { ARC_NETWORK } from "@/lib/constants"
 import { getCsrfHeaders } from "@/lib/auth/csrf"
 import {
-  publicKeyToStellarAddress,
+  publicKeyToLegacyAddress,
   hexEncode,
   secureZeroMemory,
 } from "@/lib/crypto/key-derivation"
 import { hexToBytes } from "@noble/hashes/utils.js"
 import { classifyPasskeyError } from "@/lib/passkey/error-messages"
 
-const CREDENTIAL_STORAGE_KEY = "moistello_passkey_credential"
+const CREDENTIAL_STORAGE_KEY = "deodes_passkey_credential"
 
 export interface StoredCredential {
   credentialId: string
@@ -24,14 +24,8 @@ export interface StoredCredential {
 interface PasskeySession {
   credentialId: string
   publicKey: Uint8Array
-  stellarAddress: string
+  legacyAddress: string
   expiresAt: number
-}
-
-function resolveNetworkPassphrase(network?: NetworkType, networkPassphrase?: string): string {
-  if (networkPassphrase) return networkPassphrase
-  if (network === "mainnet") return "Public Global Stellar Network ; September 2015"
-  return "Test SDF Network ; September 2015"
 }
 
 export function createPasskeyAdapter(): WalletAdapter {
@@ -146,7 +140,7 @@ export function createPasskeyAdapter(): WalletAdapter {
         session = {
           credentialId: stored.credentialId,
           publicKey,
-          stellarAddress: publicKeyToStellarAddress(publicKey),
+          legacyAddress: publicKeyToLegacyAddress(publicKey),
           expiresAt: Date.now() + 3600000,
         }
         return { publicKey: publicKeyHex }
@@ -204,7 +198,7 @@ export function createPasskeyAdapter(): WalletAdapter {
       session = {
         credentialId,
         publicKey,
-        stellarAddress: publicKeyToStellarAddress(publicKey),
+        legacyAddress: publicKeyToLegacyAddress(publicKey),
         expiresAt: Date.now() + 3600000,
       }
 
@@ -244,22 +238,18 @@ export function createPasskeyAdapter(): WalletAdapter {
       return { signature: result.signature, publicKey: result.publicKey }
     },
 
-    async signTransaction(xdr: string, opts?: SignOptions) {
-      if (!session || Date.now() >= session.expiresAt) {
-        throw { adapter: "passkey", code: "not_installed" as const, message: "Not authenticated" }
+    async signTransaction() {
+      // XDR signing was removed with the legacy chain (the server route is
+      // deleted). Same precedent as the Arc adapter: explicit not_supported.
+      throw {
+        adapter: "passkey" as const,
+        code: "not_supported" as const,
+        message: "Transaction signing is unsupported for passkey wallets.",
       }
-
-      const networkPassphrase = resolveNetworkPassphrase(opts?.network, opts?.networkPassphrase)
-      const result = await apiPost<{ signedXdr: string }>(
-        "/api/auth/passkey/sign-transaction",
-        { credentialId: session.credentialId, xdr, networkPassphrase }
-      )
-
-      return { signedXdr: result.signedXdr }
     },
 
-    async getNetwork() {
-      return STELLAR_NETWORK as NetworkType
+    async getNetwork(): Promise<NetworkType> {
+      return ARC_NETWORK as NetworkType
     },
   }
 }

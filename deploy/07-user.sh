@@ -55,13 +55,13 @@ run rm -f /tmp/deploy-sudoers
 
 # ── Create application directories ─────────────────────────────
 info "Creating application directories"
-run mkdir -p /opt/moistello/{bin,scripts,secrets,backups}
-run mkdir -p /var/log/moistello
+run mkdir -p /opt/deodes/{bin,scripts,secrets,backups}
+run mkdir -p /var/log/deodes
 ok "Directories created"
 
 # ── Set ownership (excluding .git directories) ─────────────────
 info "Setting ownership to deploy:deploy"
-run find /opt/moistello /var/log/moistello \
+run find /opt/deodes /var/log/deodes \
     \( -name .git -type d -prune \) \
     -o -exec chown deploy:deploy {} \+ 2>/dev/null || true
 ok "Ownership set (excluding .git directories)"

@@ -107,7 +107,7 @@ export function buildPersonalDataArchive(input: ArchiveInput): PersonalDataArchi
 export function toArchiveFilename(userId: string, generatedAt: Date = new Date()): string {
   const safeId = userId.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 40) || "user"
   const day = generatedAt.toISOString().slice(0, 10)
-  return `moistello-data-${safeId}-${day}.json`
+  return `deodes-data-${safeId}-${day}.json`
 }
 
 /**

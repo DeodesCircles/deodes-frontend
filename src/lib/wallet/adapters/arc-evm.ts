@@ -181,7 +181,7 @@ export function createArcEvmAdapter(): WalletAdapter {
       throw {
         adapter: "arc-evm" as const,
         code: "not_supported" as const,
-        message: "XDR signing is Stellar-only and removed. Use EVM sendTransaction on Arc.",
+        message: "XDR signing was removed with the legacy chain. Use EVM sendTransaction on Arc.",
       }
     },
 

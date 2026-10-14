@@ -42,6 +42,7 @@ import { formatCurrency } from "@/lib/formatters";
 import dynamic from "next/dynamic";
 import { CircleMembersPreview } from "./circle-members-preview";
 import { AutoDebitCard } from "./components/auto-debit-card";
+import { AutoPayPrompt } from "./components/auto-pay-prompt";
 import { PrintSummaryButton } from "./print/print-summary-button";
 import { CircleStatCards } from "./circle-stat-cards";
 import { CircleRoundTimeline } from "./circle-round-timeline";
@@ -146,23 +147,21 @@ export default function CircleDetailPage() {
       setJoinError(getJoinBlockMessage(reason, circle, joinCheckInput()));
       return;
     }
-    // Auto circles require explicit consent BEFORE joining: no silent enrollment.
-    if (circle?.autoDebit && !autoDebitConsent) {
-      setJoinError(
-        "This is an Auto circle: tick the auto-debit consent box to join, or pick a Flexible circle for manual payments.",
-      );
-      return;
-    }
+    // Auto circles offer a choice, never a mandate: ticked consent enrolls
+    // auto-pay after join, unticked joins manual (pay each round yourself).
+    const enrollAutoPay = circle?.autoDebit === true && autoDebitConsent;
     setJoinLoading(true);
     setJoinError(null);
     try {
       await joinCircle.mutateAsync({ circleId });
-      await subscribeAfterJoin();
+      await subscribeAfterJoin(enrollAutoPay);
       setJoinLoading(false);
       addToast({
         type: "success",
         title: "You've joined the circle",
-        description: "Welcome in — your first contribution starts the streak.",
+        description: enrollAutoPay
+          ? "Auto-pay is on — contributions pull automatically each round."
+          : "Welcome in — pay each round manually from Contribute.",
       });
     } catch (err: unknown) {
       const msg =
@@ -177,8 +176,9 @@ export default function CircleDetailPage() {
   // Auto circles pull contributions via keeper subscription. The cap defaults
   // to a full circle so one authorization covers every round. Join stands even
   // if subscribing fails (member falls back to manual until they subscribe).
-  const subscribeAfterJoin = async () => {
-    if (!circle?.autoDebit) return;
+  // Enrollment happens only when the member chose auto-pay at join.
+  const subscribeAfterJoin = async (enroll: boolean) => {
+    if (!circle?.autoDebit || !enroll) return;
     try {
       await subscribe.mutateAsync({
         circleId,
@@ -203,12 +203,8 @@ export default function CircleDetailPage() {
       setJoinCodeError(getJoinBlockMessage(reason, circle, joinCheckInput()));
       return;
     }
-    if (circle?.autoDebit && !autoDebitConsent) {
-      setJoinCodeError(
-        "This is an Auto circle: tick the auto-debit consent box to join.",
-      );
-      return;
-    }
+    // Invite-code join offers the same choice as direct join: consent ticked
+    // enrolls auto-pay, unticked joins manual.
     setJoinCodeLoading(true);
     setJoinCodeError(null);
     try {
@@ -218,7 +214,7 @@ export default function CircleDetailPage() {
       });
       setShowJoinCodeModal(false);
       setJoinCodeValue("");
-      await subscribeAfterJoin();
+      await subscribeAfterJoin(autoDebitConsent);
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { error?: string } } })?.response?.data
@@ -411,7 +407,7 @@ export default function CircleDetailPage() {
                 className="mt-1 h-4 w-4 shrink-0 accent-aurora-violet"
               />
               <span className="text-sm leading-relaxed text-foreground">
-                <strong className="font-heading">Auto circle:</strong> I authorize
+                <strong className="font-heading">Auto-pay from my Deodes balance:</strong> authorize
                 automatic debits of{" "}
                 <strong>
                   {formatCurrency(circle.contributionAmount, circle.currency)}
@@ -419,7 +415,8 @@ export default function CircleDetailPage() {
                 every {circle.frequency} round (up to{" "}
                 {formatCurrency(circle.contributionAmount * circle.maxMembers, circle.currency)}{" "}
                 total). Skipped — never overdrafted — when my balance is short.
-                I can pause or cancel anytime.
+                Leave unticked to join manual and pay each round myself.
+                I can switch anytime.
               </span>
             </label>
           </div>
@@ -506,6 +503,15 @@ export default function CircleDetailPage() {
           <AutoDebitCard
             circleId={circleId}
             contributionAmount={circle.contributionAmount}
+            currency={circle.currency}
+            frequency={circle.frequency}
+          />
+        )}
+        {isMember && circle?.autoDebit && (
+          <AutoPayPrompt
+            circleId={circleId}
+            contributionAmount={circle.contributionAmount}
+            maxMembers={circle.maxMembers}
             currency={circle.currency}
             frequency={circle.frequency}
           />

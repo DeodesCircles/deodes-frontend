@@ -21,14 +21,14 @@ import {
   setAccessToken,
 } from "@/lib/auth/token-store"
 
-const USER_DATA_KEY = "moistello_user"
+const USER_DATA_KEY = "deodes_user"
 const getPassphrase = () =>
-  `moistello-user-v1:${window.navigator.userAgent}-${window.screen.width}x${window.screen.height}`
+  `deodes-user-v1:${window.navigator.userAgent}-${window.screen.width}x${window.screen.height}`
 const LEGACY_KEYS = [
-  "moistello_token",
-  "moistello_refresh",
-  "moistello_access_token",
-  "moistello_refresh_token",
+  "deodes_token",
+  "deodes_refresh",
+  "deodes_access_token",
+  "deodes_refresh_token",
 ]
 
 const user: User = {
@@ -201,7 +201,9 @@ describe("useAuthStore", () => {
     it("logs the user out when the token refresh fails", async () => {
       const expired = Math.floor(Date.now() / 1000) - 3600
       setAccessToken(makeToken(expired))
-      mockPost.mockRejectedValue(new Error("refresh failed"))
+      mockPost.mockRejectedValue(
+        Object.assign(new Error("refresh failed"), { response: { status: 401 } }),
+      )
 
       await useAuthStore.getState().checkAuth()
 
@@ -210,6 +212,18 @@ describe("useAuthStore", () => {
       expect(state.user).toBeNull()
       expect(state.token).toBeNull()
       expect(getAccessToken()).toBeNull()
+    })
+
+    it("keeps the session on transient checkAuth failures", async () => {
+      const expired = Math.floor(Date.now() / 1000) - 3600
+      setAccessToken(makeToken(expired))
+      // No status: network blip / backend restart, not an auth rejection.
+      mockPost.mockRejectedValue(new Error("network down"))
+
+      await useAuthStore.getState().checkAuth()
+
+      // Not bounced to a logged-out state by a transient failure.
+      expect(useAuthStore.getState().isLoading).toBe(false)
     })
   })
 
@@ -222,7 +236,7 @@ describe("useAuthStore", () => {
         tokenExpiresAt: Date.now() + 1000,
       })
       localStorage.setItem(USER_DATA_KEY, JSON.stringify({ user, hmac: "x" }))
-      localStorage.setItem("moistello_token", "legacy")
+      localStorage.setItem("deodes_token", "legacy")
       mockPost.mockResolvedValue({ success: true })
 
       useAuthStore.getState().logout()
@@ -234,7 +248,7 @@ describe("useAuthStore", () => {
       expect(mockPost).toHaveBeenCalledWith("/auth/logout")
       expect(globalThis.fetch).toHaveBeenCalledWith("/api/auth/session", expect.objectContaining({ method: "DELETE" }))
       expect(localStorage.getItem(USER_DATA_KEY)).toBeNull()
-      expect(localStorage.getItem("moistello_token")).toBeNull()
+      expect(localStorage.getItem("deodes_token")).toBeNull()
     })
   })
 

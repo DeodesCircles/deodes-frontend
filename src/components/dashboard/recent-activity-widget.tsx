@@ -74,7 +74,7 @@ export function RecentActivityWidget() {
   const { data: notifications = [], isLoading: notificationsLoading } = useQuery({
     queryKey: ['dashboard', 'notifications'],
     queryFn: async () => {
-      const res = await get<ApiResponse<{ notifications: Notification[] }>>('/api/notifications')
+      const res = await get<ApiResponse<{ notifications: Notification[] }>>('/notifications')
       return res.data?.notifications || []
     },
   })
@@ -82,7 +82,7 @@ export function RecentActivityWidget() {
   const { data: contributions = [], isLoading: contributionsLoading } = useQuery({
     queryKey: ['dashboard', 'contributions'],
     queryFn: async () => {
-      const res = await get<ApiResponse<{ contributions: Contribution[] }>>('/api/contributions')
+      const res = await get<ApiResponse<{ contributions: Contribution[] }>>('/contributions')
       return res.data?.contributions || []
     },
   })
@@ -90,7 +90,7 @@ export function RecentActivityWidget() {
   const { data: payouts = [], isLoading: payoutsLoading } = useQuery({
     queryKey: ['dashboard', 'payouts'],
     queryFn: async () => {
-      const res = await get<ApiResponse<{ payouts: Payout[] }>>('/api/payouts')
+      const res = await get<ApiResponse<{ payouts: Payout[] }>>('/payouts')
       return res.data?.payouts || []
     },
   })

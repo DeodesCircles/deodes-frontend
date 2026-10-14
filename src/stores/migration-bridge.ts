@@ -4,7 +4,7 @@ import type { EncryptedSessionStore, WalletSession } from "@/lib/wallet/types"
 /**
  * One-time migrations for client storage.
  *
- * Earlier builds kept a single wallet address in `moistello_wallet_address`.
+ * Earlier builds kept a single wallet address in `deodes_wallet_address`.
  * The session manager now persists an HMAC-signed list of wallet sessions, so
  * on first load any legacy single address is promoted into a session entry
  * under the new storage key. The migration only touches storage — it never
@@ -12,8 +12,8 @@ import type { EncryptedSessionStore, WalletSession } from "@/lib/wallet/types"
  * once the new key exists or no legacy address is present.
  */
 
-const OLD_STORAGE_KEY = "moistello_wallet_address"
-const NEW_STORAGE_KEY = "moistello_wallet_sessions"
+const OLD_STORAGE_KEY = "deodes_wallet_address"
+const NEW_STORAGE_KEY = "deodes_wallet_sessions"
 
 /**
  * Migrate a legacy single wallet address into the session store.
@@ -32,7 +32,10 @@ export function migrateOldWalletSession(): boolean {
 
     const sessions: WalletSession[] = [
       {
-        walletId: "freighter",
+        // Legacy addresses promote under the Arc adapter: the address bytes
+        // are the user's data and migrate verbatim; only the adapter id
+        // changes, since the legacy adapter no longer exists.
+        walletId: "arc-evm",
         publicKey: oldAddress,
         lastConnected: Date.now(),
         network: "testnet",
@@ -43,7 +46,7 @@ export function migrateOldWalletSession(): boolean {
     const store: EncryptedSessionStore = {
       sessions,
       hmac,
-      activeWalletId: "freighter",
+      activeWalletId: "arc-evm",
     }
 
     localStorage.setItem(NEW_STORAGE_KEY, JSON.stringify(store))

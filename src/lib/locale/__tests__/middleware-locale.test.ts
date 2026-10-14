@@ -31,11 +31,11 @@ describe("middleware – locale header", () => {
   // choice through the login redirect, since localStorage is invisible to the
   // server and a redirect drops every piece of client state.
   it("forwards the locale cookie so SSR can render the right language", () => {
-    expect(forwardedLocale(middleware(request("/", "moistello_locale=fr")))).toBe("fr")
+    expect(forwardedLocale(middleware(request("/", "deodes_locale=fr")))).toBe("fr")
   })
 
   it("forwards a region-qualified code", () => {
-    expect(forwardedLocale(middleware(request("/", "moistello_locale=pt-BR")))).toBe("pt-BR")
+    expect(forwardedLocale(middleware(request("/", "deodes_locale=pt-BR")))).toBe("pt-BR")
   })
 
   // The cookie is attacker-settable and lands in <html lang>, so an unvalidated
@@ -46,7 +46,7 @@ describe("middleware – locale header", () => {
     ["a URL", "https://evil.example"],
     ["an empty value", ""],
   ])("refuses to forward %s", (_label, value) => {
-    const res = middleware(request("/", `moistello_locale=${encodeURIComponent(value)}`))
+    const res = middleware(request("/", `deodes_locale=${encodeURIComponent(value)}`))
     expect(forwardedLocale(res)).toBe("en")
   })
 
@@ -55,19 +55,19 @@ describe("middleware – locale header", () => {
     // login redirect. Nothing about the bounce can carry client state, so the
     // cookie is the only thing that can — assert the leg that matters, which is
     // the request the browser actually makes for the login page.
-    const bounce = middleware(request("/settings", "moistello_locale=fr"))
+    const bounce = middleware(request("/settings", "deodes_locale=fr"))
     expect(bounce.status).toBe(307)
     expect(bounce.headers.get("location")).toContain("/login")
 
     // The browser resends cookies on the follow-up request.
-    expect(forwardedLocale(middleware(request("/login", "moistello_locale=fr")))).toBe("fr")
+    expect(forwardedLocale(middleware(request("/login", "deodes_locale=fr")))).toBe("fr")
   })
 
   it("ignores the locale cookie when a session cookie is absent on an API route", () => {
     // API routes return JSON and never render a document, so the header is
     // irrelevant there; this just pins that the guard above still runs.
     const res = middleware(new NextRequest("http://localhost/api/auth/session", {
-      headers: { cookie: `moistello_locale=fr; ${ACCESS_TOKEN_COOKIE}=t; ${CSRF_TOKEN_COOKIE}=c` },
+      headers: { cookie: `deodes_locale=fr; ${ACCESS_TOKEN_COOKIE}=t; ${CSRF_TOKEN_COOKIE}=c` },
     }))
     expect(res.status).toBe(200)
   })

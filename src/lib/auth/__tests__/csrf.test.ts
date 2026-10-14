@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from "vitest"
 import { getCsrfHeaders, getCsrfToken } from "../csrf"
 
 afterEach(() => {
-  document.cookie = "moistello_csrf=; Max-Age=0; path=/"
+  document.cookie = "deodes_csrf=; Max-Age=0; path=/"
   document.querySelector('meta[name="csrf-token"]')?.remove()
 })
 
@@ -12,7 +12,7 @@ describe("CSRF token helper", () => {
     meta.name = "csrf-token"
     meta.content = "stale-token"
     document.head.appendChild(meta)
-    document.cookie = "moistello_csrf=rotated-token; path=/"
+    document.cookie = "deodes_csrf=rotated-token; path=/"
 
     expect(getCsrfToken()).toBe("rotated-token")
     expect(getCsrfHeaders()).toEqual({ "X-CSRF-Token": "rotated-token" })

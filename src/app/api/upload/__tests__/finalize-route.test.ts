@@ -5,7 +5,7 @@ import fs from "fs"
 
 import { POST } from "../finalize/route"
 
-const SESSION_COOKIE = "moistello_session=valid-token"
+const SESSION_COOKIE = "deodes_session=valid-token"
 
 function makeRequest(body: unknown) {
   return new NextRequest("http://localhost/api/upload/finalize", {

@@ -25,8 +25,8 @@ cat > "$COMPOSE_FILE" << 'COMPOSEEOF'
 services:
   postgres:
     environment:
-      POSTGRES_DB: moistello
-      POSTGRES_USER: moistello
+      POSTGRES_DB: deodes
+      POSTGRES_USER: deodes
       POSTGRES_PASSWORD: "${POSTGRES_PW}"
     ports:
       - "127.0.0.1:9811:5432"
@@ -50,7 +50,7 @@ services:
 
   rabbitmq:
     environment:
-      RABBITMQ_DEFAULT_USER: moistello
+      RABBITMQ_DEFAULT_USER: deodes
       RABBITMQ_DEFAULT_PASS: "${RABBITMQ_PW}"
     ports:
       - "127.0.0.1:9809:5672"

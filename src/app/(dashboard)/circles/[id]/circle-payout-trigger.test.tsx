@@ -2,7 +2,7 @@ import React from "react"
 import { describe, expect, it, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import { CirclePayoutTrigger } from "./circle-payout-trigger"
-import { post } from "@/lib/api-client"
+import { get, post } from "@/lib/api-client"
 import { createQueryWrapper } from "@/hooks/__tests__/test-utils"
 import type { Circle, CircleMember } from "@/types"
 
@@ -13,6 +13,7 @@ vi.mock("@/lib/api-client", () => ({
     (err as { message?: string })?.message ?? "Request failed",
 }))
 
+const mockedGet = vi.mocked(get)
 const mockedPost = vi.mocked(post)
 
 const TXN_HASH =
@@ -30,6 +31,26 @@ const circle = {
   maxMembers: 5,
 } as unknown as Circle
 
+const randomCircle = { ...circle, payoutType: "random" } as Circle
+
+function mockCirclePayouts(payouts: unknown[]) {
+  mockedGet.mockResolvedValue({
+    success: true,
+    data: { payouts },
+    meta: { page: 1, limit: 100, total: payouts.length, totalPages: 1 },
+  })
+}
+
+const paidPayout = {
+  id: "payout-1",
+  circleId: "circle-1",
+  recipientId: "user-1",
+  roundNumber: 1,
+  amount: 200,
+  payoutType: "random",
+  createdAt: "2026-07-25T00:00:00Z",
+}
+
 const members = [
   { userId: "user-1", circleId: "circle-1", status: "active", userName: "Alice", userAddress: ARC_ADDRESS },
   { userId: "user-2", circleId: "circle-1", status: "active", userName: "Bob", userAddress: ARC_ADDRESS },
@@ -42,7 +63,6 @@ const preview = {
   totalGrossAmount: 200,
   totalNetAmount: 199,
   protocolFee: 1,
-  stellarFeeEstimate: 0.00001,
   arcFeeEstimate: 0.001,
   recipients: [{ recipientId: "user-1", grossAmount: 200, feeAmount: 1, netAmount: 199 }],
   dryRun: true,
@@ -160,5 +180,66 @@ describe("CirclePayoutTrigger", () => {
         payoutType: "fixed",
       }),
     )
+  })
+})
+
+describe("CirclePayoutTrigger rotation (random circles)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  function renderRandomTrigger() {
+    const { QueryWrapper } = createQueryWrapper()
+    return render(
+      <QueryWrapper>
+        <CirclePayoutTrigger circle={randomCircle} members={members} isOrganizer />
+      </QueryWrapper>,
+    )
+  }
+
+  it("lists only remaining recipients and marks the paid member", async () => {
+    mockCirclePayouts([paidPayout])
+    renderRandomTrigger()
+
+    expect(await screen.findByText(/Rotation: 1 of 2 paid/)).toBeDefined()
+    const options = screen.getAllByRole("option")
+    // Placeholder + one remaining member + one disabled paid member.
+    expect(options).toHaveLength(3)
+    const paidOption = screen.getByRole("option", { name: /already paid/ })
+    expect((paidOption as HTMLOptionElement).disabled).toBe(true)
+    expect(screen.getByRole("option", { name: /Bob/ })).toBeDefined()
+  })
+
+  it("blocks previewing an already-paid member client-side", async () => {
+    mockCirclePayouts([paidPayout])
+    renderRandomTrigger()
+    await screen.findByText(/Rotation: 1 of 2 paid/)
+
+    fireEvent.change(screen.getByLabelText(/Recipient/), { target: { value: "user-1" } })
+    fireEvent.click(screen.getByRole("button", { name: /Preview distribution/ }))
+
+    expect(await screen.findByText(/already been paid in this rotation/)).toBeDefined()
+    expect(mockedPost).not.toHaveBeenCalled()
+  })
+
+  it("announces rotation completion and disables distribution", async () => {
+    mockCirclePayouts([
+      paidPayout,
+      { ...paidPayout, id: "payout-2", recipientId: "user-2", roundNumber: 2 },
+    ])
+    renderRandomTrigger()
+
+    expect(await screen.findByText(/Rotation complete/)).toBeDefined()
+    expect(screen.getByRole("button", { name: /Preview distribution/ })).toHaveProperty("disabled", true)
+  })
+
+  it("shows the full member list for non-random circles", async () => {
+    mockCirclePayouts([paidPayout])
+    renderTrigger()
+
+    // Fixed circles keep organizer-directed selection: no rotation copy.
+    expect(screen.queryByText(/Rotation:/)).toBeNull()
+    expect(screen.queryByText(/Rotation complete/)).toBeNull()
+    expect(screen.getAllByRole("option")).toHaveLength(3)
   })
 })

@@ -1,20 +1,20 @@
 import { describe, it, expect } from "vitest"
 import {
-  deriveStellarKeypair,
-  publicKeyToStellarAddress,
+  deriveEd25519Keypair,
+  publicKeyToLegacyAddress,
   hexEncode,
   secureZeroMemory,
 } from "@/lib/crypto/key-derivation"
 
 describe("Key Derivation — PBKDF2 → Ed25519", { timeout: 30_000 }, () => {
   it("produces deterministic output for same inputs", async () => {
-    const email = "test@moistello.io"
+    const email = "test@deodes.io"
     const credentialId = "abc123def456ghi789"
     const pepper = "deadbeefdeadbeefdeadbeefdeadbeef"
 
-    const r1 = await deriveStellarKeypair(credentialId, email, pepper)
-    const r2 = await deriveStellarKeypair(credentialId, email, pepper)
-    const r3 = await deriveStellarKeypair(credentialId, email, pepper)
+    const r1 = await deriveEd25519Keypair(credentialId, email, pepper)
+    const r2 = await deriveEd25519Keypair(credentialId, email, pepper)
+    const r3 = await deriveEd25519Keypair(credentialId, email, pepper)
 
     expect(hexEncode(r1.publicKey)).toBe(hexEncode(r2.publicKey))
     expect(hexEncode(r2.publicKey)).toBe(hexEncode(r3.publicKey))
@@ -26,8 +26,8 @@ describe("Key Derivation — PBKDF2 → Ed25519", { timeout: 30_000 }, () => {
     const credentialId = "abc123def456ghi789"
     const pepper = "deadbeefdeadbeefdeadbeefdeadbeef"
 
-    const r1 = await deriveStellarKeypair(credentialId, "alice@test.com", pepper)
-    const r2 = await deriveStellarKeypair(credentialId, "bob@test.com", pepper)
+    const r1 = await deriveEd25519Keypair(credentialId, "alice@test.com", pepper)
+    const r2 = await deriveEd25519Keypair(credentialId, "bob@test.com", pepper)
 
     expect(hexEncode(r1.publicKey)).not.toBe(hexEncode(r2.publicKey))
     expect(hexEncode(r1.secretKey)).not.toBe(hexEncode(r2.secretKey))
@@ -35,28 +35,28 @@ describe("Key Derivation — PBKDF2 → Ed25519", { timeout: 30_000 }, () => {
 
   it("produces different keypair for different pepper", async () => {
     const credentialId = "abc123def456ghi789"
-    const email = "test@moistello.io"
+    const email = "test@deodes.io"
 
-    const r1 = await deriveStellarKeypair(credentialId, email, "pepper1")
-    const r2 = await deriveStellarKeypair(credentialId, email, "pepper2")
+    const r1 = await deriveEd25519Keypair(credentialId, email, "pepper1")
+    const r2 = await deriveEd25519Keypair(credentialId, email, "pepper2")
 
     expect(hexEncode(r1.publicKey)).not.toBe(hexEncode(r2.publicKey))
   })
 
-  it("derives valid Ed25519 keypair and encodes to Stellar G address", async () => {
-    const email = "test@moistello.io"
+    it("derives valid Ed25519 keypair and encodes to legacy G address", async () => {
+    const email = "test@deodes.io"
     const credentialId = "abc123def456ghi789"
     const pepper = "deadbeefdeadbeefdeadbeefdeadbeef"
 
-    const keypair = await deriveStellarKeypair(credentialId, email, pepper)
-    const address = publicKeyToStellarAddress(keypair.publicKey)
+    const keypair = await deriveEd25519Keypair(credentialId, email, pepper)
+    const address = publicKeyToLegacyAddress(keypair.publicKey)
 
     expect(address).toMatch(/^G[A-Z0-9]{55}$/)
     expect(address.length).toBe(56)
   })
 })
 
-describe("Public Key → Stellar Address", () => {
+describe("Public Key → Legacy Address", () => {
   it("encodes a known public key to G address", async () => {
     const ed = await import("@noble/ed25519") as unknown as { etc: { sha512Sync?: (...msgs: Uint8Array[]) => Uint8Array; concatBytes: (...arrs: Uint8Array[]) => Uint8Array }; getPublicKey: (seed: Uint8Array) => Uint8Array }
     if (!ed.etc.sha512Sync) {
@@ -65,15 +65,15 @@ describe("Public Key → Stellar Address", () => {
     }
     const seed = new Uint8Array(32).fill(42)
     const pubKey = ed.getPublicKey(seed)
-    const address = publicKeyToStellarAddress(pubKey)
+    const address = publicKeyToLegacyAddress(pubKey)
     expect(address).toMatch(/^G[A-Z0-9]{55}$/)
     expect(address.length).toBe(56)
   })
 
   it("is deterministic for same public key", () => {
     const pubKey = new Uint8Array(32).fill(42)
-    const a1 = publicKeyToStellarAddress(pubKey)
-    const a2 = publicKeyToStellarAddress(pubKey)
+    const a1 = publicKeyToLegacyAddress(pubKey)
+    const a2 = publicKeyToLegacyAddress(pubKey)
     expect(a1).toBe(a2)
   })
 })

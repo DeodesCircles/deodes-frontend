@@ -95,8 +95,22 @@ function unauthorized(config: InternalAxiosRequestConfig): AxiosError {
   } as unknown as AxiosError;
 }
 
-function requestConfig(url = "/wallets"): InternalAxiosRequestConfig {
-  return { url, method: "get", headers: {} } as InternalAxiosRequestConfig;
+function requestConfig(url = "/wallets", authed = true): InternalAxiosRequestConfig {
+  return {
+    url,
+    method: "get",
+    headers: authed ? { Authorization: "Bearer test-token" } : {},
+  } as InternalAxiosRequestConfig;
+}
+
+/** A refresh failure shaped like the axios error the interceptor branches on. */
+function refreshFailed(status?: number): AxiosError {
+  return {
+    isAxiosError: true,
+    message: "refresh rejected",
+    response: status === undefined ? undefined : { status },
+    toJSON: () => ({}),
+  } as unknown as AxiosError;
 }
 
 /** jsdom refuses real navigation, so the redirect target is observed directly. */
@@ -190,7 +204,9 @@ describe("refresh race", () => {
 
 describe("refresh failure", () => {
   beforeEach(() => {
-    mockPost.mockRejectedValue(new Error("refresh rejected"));
+    // Dead session: the refresh endpoint rejects with 401, so the nuclear
+    // path (clear + redirect) still applies.
+    mockPost.mockRejectedValue(refreshFailed(401));
     mockDelete.mockResolvedValue({ data: {} });
   });
 
@@ -251,5 +267,49 @@ describe("refresh failure", () => {
     // A failure to clear cookies must not replace the error the caller sees with
     // an unrelated one.
     await expect(handler(unauthorized(requestConfig()))).rejects.toThrow("refresh rejected");
+  });
+});
+
+describe("logged-out 401s", () => {
+  it("rejects without refreshing when the request carried no token", async () => {
+    const handler = responseErrorHandler();
+    const redirect = stubLocationRedirect();
+    const events: string[] = [];
+    const listener = () => events.push("auth:required");
+    window.addEventListener("auth:required", listener);
+
+    // Logged-out (or not-yet-logged-in) caller: no Authorization header.
+    // Refreshing here would fail and bounce the user to /login — including
+    // mid-OAuth-callback and wallet-connect races. Plain rejection instead.
+    await expect(handler(unauthorized(requestConfig("/wallets", false)))).rejects.toThrow(
+      "Request failed with status code 401",
+    );
+
+    expect(mockPost).not.toHaveBeenCalled();
+    expect(mockDelete).not.toHaveBeenCalled();
+    expect(events).toHaveLength(0);
+    expect(redirect.navigatedTo).toBeNull();
+
+    window.removeEventListener("auth:required", listener);
+  });
+
+  it("keeps the session on transient refresh failures (no 401/403 from refresh)", async () => {
+    mockPost.mockRejectedValue(refreshFailed(500));
+    mockDelete.mockResolvedValue({ data: {} });
+    const handler = responseErrorHandler();
+    const redirect = stubLocationRedirect();
+    const events: string[] = [];
+    const listener = () => events.push("auth:required");
+    window.addEventListener("auth:required", listener);
+
+    // A 500 from the refresh route must not nuke valid HttpOnly cookies or
+    // bounce every tab: reject and let recovery handle it.
+    await expect(handler(unauthorized(requestConfig()))).rejects.toThrow("refresh rejected");
+
+    expect(mockDelete).not.toHaveBeenCalled();
+    expect(events).toHaveLength(0);
+    expect(redirect.navigatedTo).toBeNull();
+
+    window.removeEventListener("auth:required", listener);
   });
 });

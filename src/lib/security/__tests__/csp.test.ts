@@ -33,6 +33,10 @@ describe("generateNonce", () => {
 describe("buildCsp", () => {
   const prod = buildCsp("test-nonce", false)
 
+  afterEach(() => {
+    vi.unstubAllEnvs()
+  })
+
   it("carries the nonce in script-src", () => {
     expect(directive(prod, "script-src")).toContain("'nonce-test-nonce'")
   })
@@ -73,6 +77,23 @@ describe("buildCsp", () => {
   it("permits eval for the dev server but not in production", () => {
     expect(directive(buildCsp("n", true), "script-src")).toContain("'unsafe-eval'")
     expect(directive(prod, "script-src")).not.toContain("'unsafe-eval'")
+  })
+
+  // Phase 2.3: the API origin must be reachable from the browser. NEXT_PUBLIC_*
+  // is unset in local dev, and the app default (constants.ts API_BASE_URL) is
+  // :1100 — without the fallback below, connect-src bans every backend call
+  // and the UI silently runs on mocks/fail-opens only.
+  it("falls back to the local API origin when NEXT_PUBLIC_API_URL is unset", () => {
+    vi.stubEnv("NEXT_PUBLIC_API_URL", "")
+    const connect = directive(buildCsp("n", true), "connect-src") ?? ""
+    expect(connect).toContain("http://localhost:1100")
+  })
+
+  it("prefers the configured API origin over the local fallback", () => {
+    vi.stubEnv("NEXT_PUBLIC_API_URL", "https://deodes.com/v1")
+    const connect = directive(buildCsp("n", false), "connect-src") ?? ""
+    expect(connect).toContain("https://deodes.com")
+    expect(connect).not.toContain("http://localhost:1100")
   })
 })
 

@@ -14,39 +14,37 @@ describe("WalletRegistry — detection algorithm", () => {
   })
 
   it("should detect installed wallet via window object", () => {
-    // Simulate: window.freighterApi exists
-    const isInstalled = () => typeof window !== "undefined" && "freighterApi" in window
-    // In test environment, window.freighterApi won't exist
+    // Simulate: window.ethereum exists
+    const isInstalled = () => typeof window !== "undefined" && "ethereum" in window
+    // In test environment, window.ethereum won't exist
     expect(typeof isInstalled()).toBe("boolean")
   })
 
   it("should sort detected wallets before undetected", () => {
     const wallets = [
-      { id: "rabet", isInstalled: false, priority: 3 },
-      { id: "freighter", isInstalled: true, priority: 1 },
-      { id: "xbull", isInstalled: false, priority: 2 },
-      { id: "albedo", isInstalled: true, priority: 4 },
+      { id: "passkey", isInstalled: false, priority: 3 },
+      { id: "arc-evm", isInstalled: true, priority: 1 },
+      { id: "walletconnect", isInstalled: false, priority: 2 },
     ]
     const sorted = wallets.sort((a, b) => {
       if (a.isInstalled !== b.isInstalled) return a.isInstalled ? -1 : 1
       return a.priority - b.priority
     })
-    expect(sorted[0].id).toBe("freighter")
-    expect(sorted[1].id).toBe("albedo")
-    expect(sorted[2].id).toBe("xbull")
-    expect(sorted[3].id).toBe("rabet")
+    expect(sorted[0].id).toBe("arc-evm")
+    expect(sorted[1].id).toBe("walletconnect")
+    expect(sorted[2].id).toBe("passkey")
   })
 
   it("should sort by priority within same availability group", () => {
     const wallets = [
-      { id: "albedo", isInstalled: true, priority: 4 },
-      { id: "freighter", isInstalled: true, priority: 1 },
-      { id: "xbull", isInstalled: true, priority: 2 },
+      { id: "walletconnect", isInstalled: true, priority: 4 },
+      { id: "arc-evm", isInstalled: true, priority: 1 },
+      { id: "passkey", isInstalled: true, priority: 2 },
     ]
     const sorted = wallets.sort((a, b) => a.priority - b.priority)
-    expect(sorted[0].id).toBe("freighter")
-    expect(sorted[1].id).toBe("xbull")
-    expect(sorted[2].id).toBe("albedo")
+    expect(sorted[0].id).toBe("arc-evm")
+    expect(sorted[1].id).toBe("passkey")
+    expect(sorted[2].id).toBe("walletconnect")
   })
 
   it("should handle adapter that throws during detection", () => {
@@ -75,7 +73,7 @@ describe("WalletRegistry — detection algorithm", () => {
 
   it("should clear cache on explicit re-scan request", () => {
     const cache = new Map()
-    cache.set("freighter", { detected: true, timestamp: Date.now() })
+    cache.set("arc-evm", { detected: true, timestamp: Date.now() })
     // Simulate re-scan
     cache.clear()
     expect(cache.size).toBe(0)

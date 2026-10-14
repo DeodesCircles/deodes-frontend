@@ -9,7 +9,7 @@ skip_if_done "19" && exit 0
 require_root
 require_command "nginx"
 
-NGINX_SITE="/etc/nginx/sites-available/moistello"
+NGINX_SITE="/etc/nginx/sites-available/deodes"
 backup_file "$NGINX_SITE"
 
 info "Writing nginx config (HTTP only; SSL block commented out for step 20)..."
@@ -18,8 +18,8 @@ cat > "$NGINX_SITE" << 'NGINXEOF'
 # ──────────────────────────────────────────────────────────
 # Rate limiting
 # ──────────────────────────────────────────────────────────
-limit_req_zone $binary_remote_addr zone=moistello_api:10m rate=20r/s;
-limit_req_zone $binary_remote_addr zone=moistello_fe:10m rate=100r/s;
+limit_req_zone $binary_remote_addr zone=deodes_api:10m rate=20r/s;
+limit_req_zone $binary_remote_addr zone=deodes_fe:10m rate=100r/s;
 
 # ──────────────────────────────────────────────────────────
 # Upstreams
@@ -66,7 +66,7 @@ server {
 
     # API routes — rate limited
     location /v1/ {
-        limit_req zone=moistello_api burst=20 nodelay;
+        limit_req zone=deodes_api burst=20 nodelay;
         proxy_pass http://backend;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
@@ -79,7 +79,7 @@ server {
 
     # Frontend — everything else
     location / {
-        limit_req zone=moistello_fe burst=50 nodelay;
+        limit_req zone=deodes_fe burst=50 nodelay;
         proxy_pass http://frontend;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
@@ -133,7 +133,7 @@ server {
 #    }
 #
 #    location /v1/ {
-#        limit_req zone=moistello_api burst=20 nodelay;
+#        limit_req zone=deodes_api burst=20 nodelay;
 #        proxy_pass http://backend;
 #        proxy_http_version 1.1;
 #        proxy_set_header Host $host;
@@ -145,7 +145,7 @@ server {
 #    }
 #
 #    location / {
-#        limit_req zone=moistello_fe burst=50 nodelay;
+#        limit_req zone=deodes_fe burst=50 nodelay;
 #        proxy_pass http://frontend;
 #        proxy_http_version 1.1;
 #        proxy_set_header Host $host;
@@ -162,7 +162,7 @@ sed -i "s/__DOMAIN__/${DOMAIN}/g" "$NGINX_SITE"
 ok "Nginx config written to $NGINX_SITE"
 
 info "Enabling site..."
-ln -sf "$NGINX_SITE" /etc/nginx/sites-enabled/moistello
+ln -sf "$NGINX_SITE" /etc/nginx/sites-enabled/deodes
 rm -f /etc/nginx/sites-enabled/default
 
 info "Validating nginx config..."

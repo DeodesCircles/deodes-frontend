@@ -3,8 +3,8 @@ import { describe, it, expect } from "vitest"
 // Since we're testing types at compile time, verify runtime type guard behavior
 describe("WalletAdapter types", () => {
   it("should create a valid WalletError discriminated union", () => {
-    const err = { adapter: "freighter" as const, code: "not_installed" as const, message: "test" }
-    expect(err.adapter).toBe("freighter")
+    const err = { adapter: "arc-evm" as const, code: "not_installed" as const, message: "test" }
+    expect(err.adapter).toBe("arc-evm")
     expect(err.code).toBe("not_installed")
   })
 
@@ -12,7 +12,7 @@ describe("WalletAdapter types", () => {
     const codes = ["not_installed", "user_rejected", "network_mismatch", "timeout", "internal"]
     codes.forEach(code => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const err = { adapter: "freighter" as const, code: code as any, message: "test" }
+      const err = { adapter: "arc-evm" as const, code: code as any, message: "test" }
       expect(err.code).toBe(code)
     })
   })

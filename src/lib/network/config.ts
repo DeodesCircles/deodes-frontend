@@ -8,15 +8,32 @@ export interface NetworkConfig {
   chainId: number;
   rpcUrl: string;
   explorerUrl: string;
-  /** @deprecated Stellar legacy — kept for migration reference only */
-  horizonUrl?: string;
-  /** @deprecated Stellar passphrase — not used on Arc (EVM) */
-  networkPassphrase?: string;
   contractIds: Record<string, string>;
 }
 
 const configuredContractId = (name: string): string =>
   process.env[name] ?? `UNCONFIGURED_${name}`;
+
+/**
+ * Phase 0.5 freeze: deployments.*.json is the source of truth, env is the
+ * wire. `UNCONFIGURED_*` sentinels must never reach a contract call — they
+ * exist only so a misconfigured build fails here with a named variable
+ * instead of reverting on-chain against the zero address.
+ */
+export function isContractConfigured(id: string): boolean {
+  return id !== "" && !id.startsWith("UNCONFIGURED_") && /^0x[0-9a-fA-F]{40}$/.test(id);
+}
+
+export function requireContractId(id: string, envName: string): string {
+  if (!isContractConfigured(id)) {
+    throw new Error(
+      `${envName} is not configured (got ${JSON.stringify(id)}). ` +
+        `Copy the address from deodes-contracts/deployments.{testnet,mainnet}.json ` +
+        `into your env file — see .env.example.`,
+    );
+  }
+  return id;
+}
 
 const chainId = (fallback: number, ...names: string[]): number => {
   for (const name of names) {
@@ -41,10 +58,6 @@ export const NETWORK_CONFIG: Record<SupportedNetwork, NetworkConfig> = {
     explorerUrl:
       process.env.NEXT_PUBLIC_ARC_TESTNET_EXPLORER_URL ??
       "https://explorer.testnet.arc.io",
-    horizonUrl:
-      process.env.NEXT_PUBLIC_STELLAR_TESTNET_HORIZON_URL ??
-      "https://horizon-testnet.stellar.org",
-    networkPassphrase: "Test SDF Network ; September 2015",
     contractIds: {
       primary: configuredContractId(
         "NEXT_PUBLIC_TESTNET_PRIMARY_CONTRACT_ID",
@@ -63,8 +76,6 @@ export const NETWORK_CONFIG: Record<SupportedNetwork, NetworkConfig> = {
     explorerUrl:
       process.env.NEXT_PUBLIC_ARC_MAINNET_EXPLORER_URL ??
       "https://explorer.arc.io",
-    horizonUrl: process.env.NEXT_PUBLIC_STELLAR_MAINNET_HORIZON_URL,
-    networkPassphrase: "Public Global Stellar Network ; September 2015",
     contractIds: {
       primary: configuredContractId(
         "NEXT_PUBLIC_MAINNET_PRIMARY_CONTRACT_ID",

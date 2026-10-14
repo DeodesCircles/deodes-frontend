@@ -36,6 +36,14 @@ const ARC_ENDPOINTS = [
   "https://explorer.arc.io",
 ]
 
+/**
+ * Fallback API origin when NEXT_PUBLIC_API_URL is unset (local dev).
+ * MUST stay identical to the fallback in `@/lib/constants` API_BASE_URL —
+ * if they drift, the browser blocks the very API calls the app is built
+ * around (found by e2e: CSP killed every :1100 call in dev, 2.3).
+ */
+const FALLBACK_API_ORIGIN = "http://localhost:1100"
+
 const WALLETCONNECT_ENDPOINTS = [
   "https://*.walletconnect.com",
   "https://*.walletconnect.org",
@@ -115,7 +123,9 @@ function toOrigin(raw: string | undefined): string[] {
 /** Deployment-configured origins the browser is expected to talk to. */
 function configuredOrigins(): string[] {
   return [
+    // Env override first; dev fallback second (never an empty contribution).
     ...toOrigin(process.env.NEXT_PUBLIC_API_URL),
+    ...(process.env.NEXT_PUBLIC_API_URL ? [] : [FALLBACK_API_ORIGIN]),
     ...toOrigin(process.env.NEXT_PUBLIC_WS_URL),
     ...toOrigin(process.env.NEXT_PUBLIC_METRICS_ENDPOINT),
     ...toOrigin(process.env.NEXT_PUBLIC_LOGS_ENDPOINT),
@@ -138,7 +148,7 @@ export function buildCsp(
     "'self'",
     `'nonce-${nonce}'`,
     "'strict-dynamic'",
-    // Stellar SDK ships WebAssembly; this permits compilation without
+    // Wallet SDKs may ship WebAssembly; this permits compilation without
     // unlocking JavaScript eval().
     "'wasm-unsafe-eval'",
     // Fallback allowlist for browsers that ignore 'strict-dynamic'.

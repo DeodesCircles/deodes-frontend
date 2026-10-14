@@ -102,7 +102,7 @@ describe("POST /api/upload – auth guard (dev mode)", () => {
       }
       return ""
     }) as typeof fs.readFileSync)
-    const res = await POST(makeUploadRequest({ cookie: "moistello_session=bad-token" }))
+    const res = await POST(makeUploadRequest({ cookie: "deodes_session=bad-token" }))
     expect(res.status).toBe(401)
   })
 })

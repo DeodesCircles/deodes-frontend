@@ -9,7 +9,7 @@ vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: () => Promise
 vi.mock("@simplewebauthn/server", () => ({
   generateRegistrationOptions: vi.fn().mockResolvedValue({
     challenge: "reg-challenge-abc",
-    rp: { name: "Moistello", id: "localhost" },
+    rp: { name: "Deodes", id: "localhost" },
     user: { id: "user-123", name: "user@test.com", displayName: "user@test.com" },
     pubKeyCredParams: [{ alg: -7, type: "public-key" }],
     authenticatorSelection: { authenticatorAttachment: "platform", userVerification: "required", residentKey: "required" },
@@ -44,7 +44,7 @@ vi.mock("@simplewebauthn/server", () => ({
 }))
 
 vi.mock("@/lib/crypto/key-derivation", () => ({
-  deriveStellarKeypair: vi.fn().mockResolvedValue({
+  deriveEd25519Keypair: vi.fn().mockResolvedValue({
     publicKey: new Uint8Array(32).fill(7),
     secretKey: new Uint8Array(32).fill(9),
   }),
@@ -87,7 +87,7 @@ function makeRequest(body: unknown, ip = `10.9.${++ipSequence}.1`) {
     headers: {
       "Content-Type": "application/json",
       "x-forwarded-for": ip,
-      Cookie: "moistello_session=session-token",
+      Cookie: "deodes_session=session-token",
     },
     body: JSON.stringify(body),
   })
@@ -202,7 +202,7 @@ function makeRequest(body: unknown, ip = `10.9.${++ipSequence}.1`) {
     expect(data.credentialId).toBe("new-cred-id")
     expect(data.publicKey).toBeDefined()
     expect(typeof data.publicKey).toBe("string")
-    // The Stellar secret key must never be sent to the client.
+    // The Ed25519 secret key must never be sent to the client.
     expect(data.secretKey).toBeUndefined()
   })
 
@@ -305,7 +305,7 @@ describe("auth-verify API", () => {
     expect(data.verified).toBe(true)
     expect(data.publicKey).toBeDefined()
     expect(typeof data.publicKey).toBe("string")
-    // The Stellar secret key must never be sent to the client.
+    // The Ed25519 secret key must never be sent to the client.
     expect(data.secretKey).toBeUndefined()
   })
 

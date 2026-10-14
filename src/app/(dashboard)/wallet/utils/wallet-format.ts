@@ -28,7 +28,7 @@ export function formatActivityAmount(
   })
 }
 
-/** Arc addresses are 0x hex; anything else is a legacy Stellar key. */
+/** Arc addresses are 0x hex; anything else is not an Arc address. */
 export function isArcAddress(address: string): boolean {
   return /^0x[0-9a-fA-F]{40}$/.test(address.trim())
 }

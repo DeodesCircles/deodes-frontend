@@ -39,7 +39,7 @@ export interface CspViolationReport {
 }
 
 /**
- * Field caps. Generous enough to keep a real report intact (Stellar
+ * Field caps. Generous enough to keep a real report intact (explorer
  * transaction URLs and WalletConnect hostnames are long), tight enough that a
  * crafted body cannot dominate a log line.
  */

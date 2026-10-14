@@ -17,6 +17,9 @@ const browserChannel = process.env.PLAYWRIGHT_BROWSER_CHANNEL
 
 export default defineConfig({
   testDir: "./tests",
+  // Never run e2e against production (they create real circles) — see
+  // tests/global-setup.ts.
+  globalSetup: "./tests/global-setup.ts",
   testMatch: ["e2e/**/*.spec.ts", "*.spec.ts"],
   testIgnore: [
     /hmac\.spec\.ts/,

@@ -1,5 +1,7 @@
 "use client";
 
+import { useBackendConfig } from "@/hooks/use-backend-config";
+
 function GoogleMark({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" className={className ?? "h-5 w-5"} aria-hidden="true">
@@ -23,10 +25,16 @@ function GoogleMark({ className }: { className?: string }) {
   );
 }
 
-/** "Continue with Google" — starts the OAuth flow in ../api/auth/google. */
+/** "Continue with Google" — starts the OAuth flow in ../api/auth/google.
+ * Hidden when the backend reports google_enabled: false (Phase 2.3: no
+ * GOOGLE_CLIENT_ID → the endpoint 503s, so offering the button is a trap).
+ * Fail-open: renders while loading or when the config is unreachable. */
 export function GoogleButton({ mode }: { mode: "signin" | "signup" }) {
+  const { googleEnabled } = useBackendConfig()
+  if (!googleEnabled) return null
   return (
     <a
+      data-testid="google-button"
       href="/api/auth/google/start"
       className="flex h-12 w-full items-center justify-center gap-3 rounded-xl border border-white/15 bg-white/[0.03] text-sm font-heading font-semibold text-foreground transition-all hover:bg-white/[0.07] focus:outline-none focus:ring-2 focus:ring-foreground"
     >

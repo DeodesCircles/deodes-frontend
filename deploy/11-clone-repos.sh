@@ -7,9 +7,9 @@ step_header "STEP 11: Repository Verification & Clone"
 
 GIT_BASE="https://github.com/cocor-tech"
 REPOS=(
-    "moistello-backend|backend"
-    "moistello-frontend|frontend"
-    "moistello-contracts|contracts"
+    "deodes-backend|backend"
+    "deodes-frontend|frontend"
+    "deodes-contracts|contracts"
 )
 
 for entry in "${REPOS[@]}"; do

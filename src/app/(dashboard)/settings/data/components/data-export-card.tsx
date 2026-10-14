@@ -62,7 +62,7 @@ export function DataExportCard() {
       // missing (a proxy may strip it).
       const disposition = response.headers.get("Content-Disposition") ?? ""
       const match = /filename="?([^"]+)"?/.exec(disposition)
-      const filename = match?.[1] ?? `moistello-data-export.json`
+      const filename = match?.[1] ?? `deodes-data-export.json`
 
       const blob = new Blob([JSON.stringify(body, null, 2)], {
         type: "application/json",

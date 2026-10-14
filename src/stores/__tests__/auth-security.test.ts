@@ -26,7 +26,7 @@ describe("Auth Security - Token Storage", () => {
       store.setNonce("test-nonce-123");
 
       // Check localStorage
-      const stored = localStorage.getItem("moistello-auth-flow");
+      const stored = localStorage.getItem("deodes-auth-flow");
       expect(stored).not.toBeNull();
 
       const parsed = JSON.parse(stored!);
@@ -42,7 +42,7 @@ describe("Auth Security - Token Storage", () => {
       store.signSuccess("test-signature", "test-nonce");
 
       // Check localStorage
-      const stored = localStorage.getItem("moistello-auth-flow");
+      const stored = localStorage.getItem("deodes-auth-flow");
       const parsed = JSON.parse(stored!);
 
       expect(parsed.state.auth).toBeUndefined();
@@ -55,7 +55,7 @@ describe("Auth Security - Token Storage", () => {
       store.updateProfileField("displayName", "Test User");
       store.updateProfileField("countryCode", "US");
 
-      const stored = localStorage.getItem("moistello-auth-flow");
+      const stored = localStorage.getItem("deodes-auth-flow");
       const parsed = JSON.parse(stored!);
 
       expect(parsed.state.profile).toBeDefined();
@@ -66,14 +66,14 @@ describe("Auth Security - Token Storage", () => {
     it("should persist connection metadata without secrets", () => {
       const store = useAuthFlowStore.getState();
 
-      store.connectSuccess("freighter", "GACCOUNT123");
+      store.connectSuccess("arc-evm", "0x51b45Ba8570551e0D1fe818227d8bAa8b556694D");
 
-      const stored = localStorage.getItem("moistello-auth-flow");
+      const stored = localStorage.getItem("deodes-auth-flow");
       const parsed = JSON.parse(stored!);
 
       expect(parsed.state.connection).toBeDefined();
-      expect(parsed.state.connection.walletId).toBe("freighter");
-      expect(parsed.state.connection.address).toBe("GACCOUNT123");
+      expect(parsed.state.connection.walletId).toBe("arc-evm");
+      expect(parsed.state.connection.address).toBe("0x51b45Ba8570551e0D1fe818227d8bAa8b556694D");
       // Pairing URI should not be persisted
       expect(parsed.state.connection.pairingUri).toBeUndefined();
     });
@@ -96,18 +96,18 @@ describe("Auth Security - Token Storage", () => {
 
     it("should clear legacy token storage on init", () => {
       // Simulate legacy tokens in storage
-      localStorage.setItem("moistello_token", "legacy-token");
-      localStorage.setItem("moistello_refresh", "legacy-refresh");
-      localStorage.setItem("moistello_access_token", "legacy-access");
+      localStorage.setItem("deodes_token", "legacy-token");
+      localStorage.setItem("deodes_refresh", "legacy-refresh");
+      localStorage.setItem("deodes_access_token", "legacy-access");
 
       // Re-import to trigger cleanup
       vi.resetModules();
       import("../auth-store");
 
       // Legacy keys should be removed
-      expect(localStorage.getItem("moistello_token")).toBeNull();
-      expect(localStorage.getItem("moistello_refresh")).toBeNull();
-      expect(localStorage.getItem("moistello_access_token")).toBeNull();
+      expect(localStorage.getItem("deodes_token")).toBeNull();
+      expect(localStorage.getItem("deodes_refresh")).toBeNull();
+      expect(localStorage.getItem("deodes_access_token")).toBeNull();
     });
 
     it("should only persist user profile (non-sensitive)", async () => {
@@ -129,10 +129,10 @@ describe("Auth Security - Token Storage", () => {
       const allKeys = Object.keys(localStorage);
       const userKey = allKeys.find((k) => k.includes("user"));
 
-      expect(userKey).toBe("moistello_user");
+      expect(userKey).toBe("deodes_user");
 
       // User data should be encrypted (has ciphertext, iv, salt)
-      const userData = localStorage.getItem("moistello_user");
+      const userData = localStorage.getItem("deodes_user");
       expect(userData).not.toBeNull();
 
       const parsed = JSON.parse(userData!);

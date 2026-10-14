@@ -8,7 +8,7 @@ import {
 
 describe("buildTerms", () => {
   it("splits, trims and lowercases terms", () => {
-    expect(buildTerms("  Stellar Wallet  ")).toEqual(["stellar", "wallet"])
+    expect(buildTerms("  Arc Wallet  ")).toEqual(["arc", "wallet"])
     expect(buildTerms("   ")).toEqual([])
   })
 })
@@ -40,7 +40,7 @@ describe("windowSnippet", () => {
 describe("searchDocs", () => {
   const pages: DocPage[] = [
     { slug: "circles", title: "Circles", source: "docs", content: "create a circle and contribute weekly to reach a payout goal" },
-    { slug: "wallet", title: "Wallet", source: "docs", content: "fund your passkey wallet with USDC from a Stellar anchor" },
+    { slug: "wallet", title: "Wallet", source: "docs", content: "fund your passkey wallet with USDC on Arc" },
     { slug: "faq", title: "FAQ", source: "page", content: "how do I contribute to a circle" },
   ]
 
@@ -57,8 +57,8 @@ describe("searchDocs", () => {
   })
 
   it("includes a snippet containing the matched term", () => {
-    const [top] = searchDocs(pages, "anchor")
-    expect(top.snippet.toLowerCase()).toContain("anchor")
+    const [top] = searchDocs(pages, "usdc")
+    expect(top.snippet.toLowerCase()).toContain("usdc")
   })
 
   it("returns nothing for a blank query", () => {

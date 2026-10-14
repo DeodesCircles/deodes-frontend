@@ -5,22 +5,21 @@ set -euo pipefail
 
 # ── Configuration ──────────────────────────────────────────────
 # All scripts read these from environment or use defaults
-export DOMAIN="${DOMAIN:-moistello.com}"
+export DOMAIN="${DOMAIN:-deodes.com}"
 export NETWORK="${NETWORK:-mainnet}"
-export APP_DIR="${APP_DIR:-/opt/moistello}"
-export LOG_DIR="${LOG_DIR:-/var/log/moistello}"
+export APP_DIR="${APP_DIR:-/opt/deodes}"
+export LOG_DIR="${LOG_DIR:-/var/log/deodes}"
 export DRY_RUN="${DRY_RUN:-false}"
 
-# Derive Stellar URLs from network
+# Derive Arc endpoints from network
 if [ "$NETWORK" = "mainnet" ]; then
-    export STELLAR_HORIZON="https://horizon.stellar.org"
-    # Prefer user's custom RPC from .env, fall back to public endpoint
-    export STELLAR_RPC="${STELLAR_RPC_URL:-https://mainnet.sorobanrpc.com}"
-    export STELLAR_PASSPHRASE="Public Global Stellar Network ; September 2015"
+    export ARC_RPC_URL="${ARC_RPC_URL:-https://rpc.mainnet.arc.io}"
+    export ARC_EXPLORER_URL="${ARC_EXPLORER_URL:-https://explorer.arc.io}"
+    export ARC_CHAIN_ID="${ARC_CHAIN_ID:-5042}"
 else
-    export STELLAR_HORIZON="https://horizon-testnet.stellar.org"
-    export STELLAR_RPC="https://soroban-testnet.stellar.org"
-    export STELLAR_PASSPHRASE="Test SDF Network ; September 2015"
+    export ARC_RPC_URL="${ARC_RPC_URL:-https://rpc.testnet.arc.io}"
+    export ARC_EXPLORER_URL="${ARC_EXPLORER_URL:-https://explorer.testnet.arc.io}"
+    export ARC_CHAIN_ID="${ARC_CHAIN_ID:-5042002}"
 fi
 
 # ── Colors ─────────────────────────────────────────────────────

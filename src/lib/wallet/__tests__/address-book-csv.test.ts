@@ -6,9 +6,9 @@ import {
   type SavedAddress,
 } from "../address-book-csv"
 
-const VALID_KEY_1 = "GA2HGBJIJKIHGFEDCBAZYXWVUTSRQPONMLKJIHGFEDCBAZYXWVUTSRQP"
-const VALID_KEY_2 = "GB2HGBJIJKIHGFEDCBAZYXWVUTSRQPONMLKJIHGFEDCBAZYXWVUTSRQP"
-const INVALID_KEY = "INVALID_STELLAR_ADDRESS"
+const VALID_KEY_1 = "0x51b45Ba8570551e0D1fe818227d8bAa8b556694D"
+const VALID_KEY_2 = "0x70A7CCB7b5fe856384Aab3aAF553E09A10AF14A4"
+const INVALID_KEY = "INVALID_ARC_ADDRESS"
 
 describe("address-book-csv", () => {
   it("exports address book to CSV losslessly", () => {
@@ -44,7 +44,7 @@ ${VALID_KEY_2}`
     expect(result.validAddresses[1].publicKey).toBe(VALID_KEY_2)
 
     expect(result.invalidRows).toHaveLength(2)
-    expect(result.invalidRows[0].reason).toContain("Invalid Stellar public key format")
+    expect(result.invalidRows[0].reason).toContain("Invalid Arc address format")
     expect(result.invalidRows[1].reason).toContain("Missing public key")
   })
 

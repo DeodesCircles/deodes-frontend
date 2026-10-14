@@ -39,7 +39,7 @@ describe("Monitoring", () => {
     })
 
     it("TestMonitoring_IncludesTags: tags are preserved on metrics", () => {
-      const tags = { path: "/governance", referrer: "moistello.io" }
+      const tags = { path: "/governance", referrer: "deodes.io" }
       recordMetric("page.view", 1, tags)
 
       // Tags are stored internally. We verify by confirming the metric was

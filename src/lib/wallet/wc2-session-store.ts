@@ -3,7 +3,7 @@ import type { NetworkType } from "./types"
 import { SESSION_TTL_MS } from "./session-lifecycle"
 import { computeHmacSha256Sync, isHmacKeyReady, withHmacKey } from "./hmac"
 
-const STORAGE_KEY = "moistello_wc2_session"
+const STORAGE_KEY = "deodes_wc2_session"
 const SESSION_TTL = SESSION_TTL_MS
 
 interface WC2SessionData {

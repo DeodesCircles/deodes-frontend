@@ -11,7 +11,7 @@ describe("CircleInviteModal", () => {
         isOpen
         onClose={vi.fn()}
         code=""
-        inviteUrl="https://moistello.app/invite/ABC123"
+        inviteUrl="https://deodes.app/invite/ABC123"
         expiresAt={new Date(Date.now() + 24 * 3_600_000).toISOString()}
         ttlHours={24}
         isError={false}
@@ -28,7 +28,7 @@ describe("CircleInviteModal", () => {
         isOpen
         onClose={vi.fn()}
         code="ABC123"
-        inviteUrl="https://moistello.app/invite/ABC123"
+        inviteUrl="https://deodes.app/invite/ABC123"
         expiresAt={new Date(Date.now() + 24 * 3_600_000).toISOString()}
         ttlHours={24}
         isError={false}
@@ -55,7 +55,7 @@ describe("CircleInviteModal", () => {
         isOpen
         onClose={vi.fn()}
         code="ABC123"
-        inviteUrl="https://moistello.app/invite/ABC123"
+        inviteUrl="https://deodes.app/invite/ABC123"
         expiresAt={new Date(Date.now() + 24 * 3_600_000).toISOString()}
         ttlHours={24}
         isError={false}
@@ -66,7 +66,7 @@ describe("CircleInviteModal", () => {
     await user.click(screen.getByRole("button", { name: /copy invite link/i }))
 
     // The full URL is the only artefact a recipient can actually use.
-    expect(writeText).toHaveBeenCalledWith("https://moistello.app/invite/ABC123")
+    expect(writeText).toHaveBeenCalledWith("https://deodes.app/invite/ABC123")
   })
 
   it("shows the live link and a countdown once generated", () => {
@@ -75,7 +75,7 @@ describe("CircleInviteModal", () => {
         isOpen
         onClose={vi.fn()}
         code="ABC123"
-        inviteUrl="https://moistello.app/invite/ABC123"
+        inviteUrl="https://deodes.app/invite/ABC123"
         expiresAt={new Date(Date.now() + 2 * 3_600_000 + 30 * 60_000).toISOString()}
         ttlHours={2}
         isError={false}
@@ -84,7 +84,7 @@ describe("CircleInviteModal", () => {
     )
 
     expect(screen.getByTestId("invite-link")).toHaveTextContent(
-      "https://moistello.app/invite/ABC123",
+      "https://deodes.app/invite/ABC123",
     )
     // Set 2h30m out, so the floored remainder reads 2h29m.
     expect(screen.getByTestId("invite-expiry")).toHaveTextContent(/2h 29m/)
@@ -97,7 +97,7 @@ describe("CircleInviteModal", () => {
         isOpen
         onClose={vi.fn()}
         code="ABC123"
-        inviteUrl="https://moistello.app/invite/ABC123"
+        inviteUrl="https://deodes.app/invite/ABC123"
         expiresAt={new Date(Date.now() - 1_000).toISOString()}
         ttlHours={24}
         isError={false}
@@ -114,7 +114,7 @@ describe("CircleInviteModal", () => {
         isOpen
         onClose={vi.fn()}
         code="error-generating-code"
-        inviteUrl="https://moistello.app/invite/ABC123"
+        inviteUrl="https://deodes.app/invite/ABC123"
         expiresAt={new Date(Date.now() + 24 * 3_600_000).toISOString()}
         ttlHours={24}
         isError
@@ -134,7 +134,7 @@ describe("CircleInviteModal", () => {
           isOpen
           onClose={vi.fn()}
           code="ABC123"
-          inviteUrl="https://moistello.app/invite/ABC123"
+          inviteUrl="https://deodes.app/invite/ABC123"
           expiresAt={new Date(Date.now() + 24 * 3_600_000).toISOString()}
           ttlHours={24}
           isError={false}
@@ -144,18 +144,18 @@ describe("CircleInviteModal", () => {
 
       await user.click(screen.getByRole("button", { name: "Bulk Import (CSV)" }))
       expect(screen.getByText("Upload CSV File")).toBeDefined()
-      expect(screen.getByPlaceholderText(/Enter member emails or Stellar addresses/i)).toBeDefined()
+      expect(screen.getByPlaceholderText(/Enter member emails/i)).toBeDefined()
     })
 
-    it("parses CSV textarea input with valid emails and Stellar G-addresses", async () => {
+    it("parses CSV textarea input with valid emails and Arc addresses", async () => {
       const user = userEvent.setup()
-      const stellarAddr = "G" + "A".repeat(55)
+      const arcAddr = "0x51b45Ba8570551e0D1fe818227d8bAa8b556694D"
       render(
         <CircleInviteModal
           isOpen
           onClose={vi.fn()}
           code="ABC123"
-          inviteUrl="https://moistello.app/invite/ABC123"
+          inviteUrl="https://deodes.app/invite/ABC123"
           expiresAt={new Date(Date.now() + 24 * 3_600_000).toISOString()}
           ttlHours={24}
           isError={false}
@@ -164,26 +164,26 @@ describe("CircleInviteModal", () => {
       )
 
       await user.click(screen.getByRole("button", { name: "Bulk Import (CSV)" }))
-      const textarea = screen.getByPlaceholderText(/Enter member emails or Stellar addresses/i)
+      const textarea = screen.getByPlaceholderText(/Enter member emails/i)
 
-      await user.type(textarea, `user1@example.com, ${stellarAddr}\ninvalid-entry`)
+      await user.type(textarea, `user1@example.com, ${arcAddr}\ninvalid-entry`)
 
       expect(screen.getByTestId("summary-text").textContent).toContain("2 valid entries, 1 invalid")
       expect(screen.getByText("user1@example.com")).toBeDefined()
-      expect(screen.getByText(stellarAddr)).toBeDefined()
+      expect(screen.getByText(arcAddr)).toBeDefined()
       expect(screen.getByText("invalid-entry")).toBeDefined()
     })
 
     it("calls onBulkImport with valid entries on submission", async () => {
       const user = userEvent.setup()
       const onBulkImport = vi.fn()
-      const stellarAddr = "G" + "B".repeat(55)
+      const arcAddr = "0x" + "B".repeat(40)
       render(
         <CircleInviteModal
           isOpen
           onClose={vi.fn()}
           code="ABC123"
-          inviteUrl="https://moistello.app/invite/ABC123"
+          inviteUrl="https://deodes.app/invite/ABC123"
           expiresAt={new Date(Date.now() + 24 * 3_600_000).toISOString()}
           ttlHours={24}
           isError={false}
@@ -193,13 +193,13 @@ describe("CircleInviteModal", () => {
       )
 
       await user.click(screen.getByRole("button", { name: "Bulk Import (CSV)" }))
-      const textarea = screen.getByPlaceholderText(/Enter member emails or Stellar addresses/i)
+      const textarea = screen.getByPlaceholderText(/Enter member emails/i)
 
-      await user.type(textarea, `valid@domain.com, ${stellarAddr}, bad-email`)
+      await user.type(textarea, `valid@domain.com, ${arcAddr}, bad-email`)
       await user.click(screen.getByRole("button", { name: /Import \d+ Members/ }))
 
       expect(onBulkImport).toHaveBeenCalledTimes(1)
-      expect(onBulkImport).toHaveBeenCalledWith(["valid@domain.com", stellarAddr])
+      expect(onBulkImport).toHaveBeenCalledWith(["valid@domain.com", arcAddr])
     })
 
     it("disables Import Members button when no valid entries exist", async () => {
@@ -209,7 +209,7 @@ describe("CircleInviteModal", () => {
           isOpen
           onClose={vi.fn()}
           code="ABC123"
-          inviteUrl="https://moistello.app/invite/ABC123"
+          inviteUrl="https://deodes.app/invite/ABC123"
           expiresAt={new Date(Date.now() + 24 * 3_600_000).toISOString()}
           ttlHours={24}
           isError={false}
@@ -218,7 +218,7 @@ describe("CircleInviteModal", () => {
       )
 
       await user.click(screen.getByRole("button", { name: "Bulk Import (CSV)" }))
-      const textarea = screen.getByPlaceholderText(/Enter member emails or Stellar addresses/i)
+      const textarea = screen.getByPlaceholderText(/Enter member emails/i)
       const importBtn = screen.getByRole("button", { name: "Import Members" })
 
       expect(importBtn).toHaveProperty("disabled", true)
@@ -234,7 +234,7 @@ describe("CircleInviteModal", () => {
           isOpen
           onClose={vi.fn()}
           code="ABC123"
-          inviteUrl="https://moistello.app/invite/ABC123"
+          inviteUrl="https://deodes.app/invite/ABC123"
           expiresAt={new Date(Date.now() + 24 * 3_600_000).toISOString()}
           ttlHours={24}
           isError={false}
@@ -256,21 +256,29 @@ describe("CircleInviteModal", () => {
   })
 
   describe("Helper validation logic", () => {
-    it("correctly validates emails and Stellar G-addresses", () => {
+    it("correctly validates emails and Arc addresses", () => {
       expect(validateMemberEntry("test@example.com").isValid).toBe(true)
-      expect(validateMemberEntry("G" + "C".repeat(55)).isValid).toBe(true)
+      expect(validateMemberEntry("0x742d35Cc6634C0532925a3b844Bc454e4438f44e").isValid).toBe(true)
       expect(validateMemberEntry("invalid-address").isValid).toBe(false)
-      expect(validateMemberEntry("Gshort").isValid).toBe(false)
+      expect(validateMemberEntry("0x123").isValid).toBe(false)
+      expect(validateMemberEntry("G" + "A".repeat(55)).isValid).toBe(false)
     })
 
     it("correctly parses CSV strings split by commas and newlines", () => {
-      const input = "a@b.com, G" + "D".repeat(55) + "\n\n  c@d.com , invalid"
+      const input = "a@b.com, 0x742d35Cc6634C0532925a3b844Bc454e4438f44e\n\n  c@d.com , invalid"
       const result = parseCSVInput(input)
       expect(result).toHaveLength(4)
       expect(result[0].isValid).toBe(true)
       expect(result[1].isValid).toBe(true)
       expect(result[2].isValid).toBe(true)
       expect(result[3].isValid).toBe(false)
+    })
+
+    it("accepts Arc 0x addresses as evm entries", () => {
+      const arc = "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+      expect(validateMemberEntry(arc)).toMatchObject({ isValid: true, type: "evm", clean: arc })
+      expect(validateMemberEntry("0x123").isValid).toBe(false)
+      expect(validateMemberEntry("G" + "A".repeat(55)).isValid).toBe(false)
     })
   })
 })

@@ -352,7 +352,7 @@ export function createWalletConnectAdapter(): WalletAdapter & {
 
       const connectStartedAt = Date.now()
       // The chain requested in requiredNamespaces — derived from ARC_CHAIN_ID
-      // (testnet default) unless the caller explicitly asked for mainnet.
+      // (mainnet; no more testnet) unless the caller explicitly asked otherwise.
       const expectedChainId =
         options?.network === "mainnet" ? ARC_MAINNET_CHAIN_ID : ARC_CHAIN_ID
 

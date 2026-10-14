@@ -31,24 +31,22 @@ export interface WalletDescriptor {
 
 const walletIcons: Record<string, string> = {
   walletconnect: "WC",
-  freighter: "F",
-  xbull: "X",
-  rabet: "R",
-  albedo: "A",
+  passkey: "P",
+  "arc-evm": "W",
 }
 
 interface HardwareWalletItemProps {
   name: string
   status: "detected" | "not_detected"
   isHardwareAvailable: boolean
-  onOpenLedgerPrompt: () => void
+  onOpenHardwarePrompt: () => void
 }
 
 export function HardwareWalletItem({
   name,
   status,
   isHardwareAvailable,
-  onOpenLedgerPrompt,
+  onOpenHardwarePrompt,
 }: HardwareWalletItemProps) {
   const isDetected = isHardwareAvailable && status === "detected"
 
@@ -80,7 +78,7 @@ export function HardwareWalletItem({
       {isHardwareAvailable ? (
         <button
           type="button"
-          onClick={onOpenLedgerPrompt}
+          onClick={onOpenHardwarePrompt}
           className="text-xs text-aurora-violet font-medium shrink-0 hover:text-premium-gold transition-colors"
         >
           Connect
@@ -308,7 +306,7 @@ export function WalletList({
           name={w.name}
           status={w.status as "detected" | "not_detected"}
           isHardwareAvailable={isHardwareAvailable}
-          onOpenLedgerPrompt={() => onSelect(w.id)}
+          onOpenHardwarePrompt={() => onSelect(w.id)}
         />
       ))}
 

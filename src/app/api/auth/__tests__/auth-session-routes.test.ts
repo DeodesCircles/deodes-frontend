@@ -54,8 +54,8 @@ function makeBadJsonRequest(url = "http://localhost/api") {
 function makeGetRequest(cookieValue?: string) {
   const headers: Record<string, string> = {}
   if (cookieValue) {
-    // The cookie name in non-production is "moistello_token" (no __Host- prefix)
-    headers["Cookie"] = `moistello_token=${cookieValue}`
+    // The cookie name in non-production is "deodes_token" (no __Secure- prefix)
+    headers["Cookie"] = `deodes_token=${cookieValue}`
   }
   return new NextRequest("http://localhost/api/auth/session", {
     method: "GET",
@@ -66,7 +66,7 @@ function makeGetRequest(cookieValue?: string) {
 function makeRefreshRequest(refreshToken?: string) {
   const headers: Record<string, string> = {}
   if (refreshToken) {
-    headers["Cookie"] = `moistello_refresh=${refreshToken}`
+    headers["Cookie"] = `deodes_refresh=${refreshToken}`
   }
   return new NextRequest("http://localhost/api/auth/refresh", {
     method: "POST",
@@ -137,7 +137,7 @@ describe("POST /api/auth/refresh", () => {
     const json = await res.json()
     expect(json.token).toBe(VALID_TOKEN)
     const setCookieHeader = res.headers.get("set-cookie") ?? ""
-    expect(setCookieHeader).toContain("moistello_token")
+    expect(setCookieHeader).toContain("deodes_token")
   })
 
   it("rotates refresh token when upstream returns a new one", async () => {
@@ -149,7 +149,7 @@ describe("POST /api/auth/refresh", () => {
     const res = await refreshPOST(req)
     expect(res.status).toBe(200)
     const setCookieHeader = res.headers.get("set-cookie") ?? ""
-    expect(setCookieHeader).toContain("moistello_refresh")
+    expect(setCookieHeader).toContain("deodes_refresh")
   })
 
   it("accepts token nested under data.token", async () => {
@@ -232,13 +232,25 @@ describe("POST /api/auth/session", () => {
     const json = await res.json()
     expect(json.success).toBe(true)
     const setCookieHeader = res.headers.get("set-cookie") ?? ""
-    expect(setCookieHeader).toContain("moistello_token")
+    expect(setCookieHeader).toContain("deodes_token")
   })
 
-  it("sets CSRF cookie on successful POST", async () => {
+  it("sets CSRF cookie when the backend-issued token is provided", async () => {
+    // The readable CSRF cookie MUST be the backend-issued token bound to the
+    // access token (csrf:sha256(token) in Redis). The route sets nothing when
+    // the caller has none, so the backend reports "missing" loudly instead of
+    // mismatching silently (see route.ts).
+    const res = await sessionPOST(
+      makePostRequest({ token: VALID_TOKEN, csrfToken: "csrf-abc" })
+    )
+    const setCookieHeader = res.headers.get("set-cookie") ?? ""
+    expect(setCookieHeader).toContain("deodes_csrf=csrf-abc")
+  })
+
+  it("sets no CSRF cookie when no backend-issued token is provided", async () => {
     const res = await sessionPOST(makePostRequest({ token: VALID_TOKEN }))
     const setCookieHeader = res.headers.get("set-cookie") ?? ""
-    expect(setCookieHeader).toContain("moistello_csrf")
+    expect(setCookieHeader).not.toContain("deodes_csrf")
   })
 
   it("stores refresh token when provided", async () => {
@@ -247,7 +259,7 @@ describe("POST /api/auth/session", () => {
     )
     expect(res.status).toBe(200)
     const setCookieHeader = res.headers.get("set-cookie") ?? ""
-    expect(setCookieHeader).toContain("moistello_refresh")
+    expect(setCookieHeader).toContain("deodes_refresh")
   })
 
   it("does not crash when refreshToken is absent", async () => {
@@ -271,20 +283,20 @@ describe("DELETE /api/auth/session", () => {
   it("clears access token cookie (maxAge=0)", async () => {
     const res = await sessionDELETE()
     const setCookieHeader = res.headers.get("set-cookie") ?? ""
-    expect(setCookieHeader).toContain("moistello_token")
+    expect(setCookieHeader).toContain("deodes_token")
     expect(setCookieHeader).toContain("Max-Age=0")
   })
 
   it("clears refresh token cookie (maxAge=0)", async () => {
     const res = await sessionDELETE()
     const setCookieHeader = res.headers.get("set-cookie") ?? ""
-    expect(setCookieHeader).toContain("moistello_refresh")
+    expect(setCookieHeader).toContain("deodes_refresh")
   })
 
   it("clears CSRF cookie", async () => {
     const res = await sessionDELETE()
     const setCookieHeader = res.headers.get("set-cookie") ?? ""
-    expect(setCookieHeader).toContain("moistello_csrf")
+    expect(setCookieHeader).toContain("deodes_csrf")
   })
 
   it("is idempotent — can be called multiple times safely", async () => {

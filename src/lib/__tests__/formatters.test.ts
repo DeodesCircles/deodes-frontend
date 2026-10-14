@@ -24,7 +24,7 @@ describe("formatCurrency", () => {
     expect(formatCurrency(1.234567, "XLM", "en-US")).toBe("1.2346 XLM")
   })
 
-  it("does not throw on a Stellar asset, which is not an ISO 4217 code", () => {
+  it("does not throw on a non-ISO asset code", () => {
     // `Intl.NumberFormat` raises a RangeError for any code it cannot resolve.
     // USDC is offered as a circle currency, so this is reachable from ordinary
     // use and used to take the whole render down rather than just misformat.

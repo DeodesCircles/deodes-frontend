@@ -9,7 +9,7 @@ How your Arc wallet works on Deodes.
 
 ## Auto-Created Wallet
 
-Deodes creates a Arc wallet for you automatically when you sign in with your passkey. There is no manual wallet setup, no Freighter extension, and no seed phrase to manage.
+Deodes creates a Arc wallet for you automatically when you sign in with your passkey. There is no manual wallet setup, no extensions, and no seed phrase to manage.
 
 - **Wallet created on first sign-in** — authenticating with your passkey triggers wallet creation on-chain
 - **Funded from the master pool** — each new wallet receives 2 USDC to cover transaction fees
@@ -31,7 +31,7 @@ Since all circle contributions are in USDC, you'll need to fund your wallet:
 2. Use the **Yellow Card** integration to convert NGN to USDC deposited directly to your wallet
 3. Or send USDC from any external Arc wallet to your auto-generated address
 
-## No Freighter, No Seed Phrases
+## No Extensions, No Seed Phrases
 
 - **No browser extension** — everything works in the browser with your device biometrics
 - **No seed phrase to write down** — your passkey is your recovery mechanism. As long as you have access to your device's biometric auth, you can access your wallet

@@ -8,7 +8,6 @@
  *
  * Packages covered:
  *   @noble/*        — ed25519 signing & HKDF key derivation (passkey adapter)
- *   @ledgerhq/*     — Ledger hardware wallet transport & Stellar app
  *   @walletconnect/*— WalletConnect v2 QR-based mobile wallet
  */
 

@@ -44,7 +44,7 @@ export function DashboardContent() {
   const circlesQuery = useQuery({
     queryKey: ['dashboard', 'circles'],
     queryFn: async () => {
-      const res = await get<ApiResponse<{ circles: Circle[] }>>('/api/circles')
+      const res = await get<ApiResponse<{ circles: Circle[] }>>('/circles')
       return res.data?.circles || []
     },
   })
@@ -52,7 +52,7 @@ export function DashboardContent() {
   const contributionsQuery = useQuery({
     queryKey: ['dashboard', 'contributions'],
     queryFn: async () => {
-      const res = await get<ApiResponse<{ contributions: Contribution[] }>>('/api/contributions')
+      const res = await get<ApiResponse<{ contributions: Contribution[] }>>('/contributions')
       return res.data?.contributions || []
     },
   })
@@ -60,7 +60,7 @@ export function DashboardContent() {
   const payoutsQuery = useQuery({
     queryKey: ['dashboard', 'payouts'],
     queryFn: async () => {
-      const res = await get<ApiResponse<{ payouts: Payout[] }>>('/api/payouts')
+      const res = await get<ApiResponse<{ payouts: Payout[] }>>('/payouts')
       return res.data?.payouts || []
     },
   })

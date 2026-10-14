@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import Link from "next/link"
-import { ArrowRight, BadgePercent, Coins, FileLock2, Scale } from "lucide-react"
+import { ArrowRight, BadgePercent, Coins, FileLock2, Landmark, Scale } from "lucide-react"
 import { buildRouteMetadata } from "@/lib/seo/route-metadata"
 import { PublicLayout } from "@/components/layout/public-layout"
 import { Routes } from "@/lib/constants"
@@ -10,9 +10,9 @@ export const metadata: Metadata = buildRouteMetadata("/transparency")
 const rows = [
   {
     icon: BadgePercent,
-    name: "Protocol fee",
+    name: "Protocol fee (Deodes)",
     value: "0.5%",
-    desc: "Taken once, on payouts only — never on contributions. Shown up front before you join.",
+    desc: "Our only charge. Taken once, on payouts only — never on contributions. Shown up front before you join.",
   },
   {
     icon: Coins,
@@ -21,10 +21,16 @@ const rows = [
     desc: "USDC on Arc settles for fractions of a cent with deterministic finality.",
   },
   {
+    icon: Landmark,
+    name: "Fiat deposits (coming soon)",
+    value: "₦0",
+    desc: "Deodes charges nothing on deposits. Local-currency rails (NGN bank, KES M-Pesa, GHS mobile money) open here first — any rail fee will be quoted up front before you confirm.",
+  },
+  {
     icon: FileLock2,
     name: "Custody",
-    value: "None",
-    desc: "Contracts hold contributions; no company account ever touches your money.",
+    value: "Hybrid",
+    desc: "Circle funds sit in contracts, not company accounts. Optional hosted Arc wallets keep your encrypted key with us; self-custody wallets never share keys.",
   },
   {
     icon: Scale,
@@ -44,7 +50,7 @@ export default function TransparencyPage() {
             Every fee, <span className="gradient-text">on one page.</span>
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mt-4">
-            No spreads, no withdrawal cuts, no surprises. This is the complete economics of DEODES.
+            Deodes charges one fee: 0.5% on payouts. Local-currency rails are coming soon — any rail fee will be quoted before you pay, no surprises.
           </p>
           <div className="mt-10 grid gap-4 md:grid-cols-2">
             {rows.map((r) => {

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest"
 import { useUIStore } from "@/stores/ui-store"
 
-const STORAGE_KEY = "moistello_theme"
+const STORAGE_KEY = "deodes_theme"
 
 const ui = () => useUIStore.getState()
 

@@ -74,8 +74,8 @@ ok "All services healthy"
 # so we must keep it in sync with the current secret.
 info "Syncing Postgres password..."
 source "$SECRETS_FILE"
-docker exec moistello-postgres \
-    psql -U moistello -c "ALTER USER moistello WITH PASSWORD '${POSTGRES_PW}';" >/dev/null
+docker exec deodes-postgres \
+    psql -U deodes -c "ALTER USER deodes WITH PASSWORD '${POSTGRES_PW}';" >/dev/null
 ok "Postgres password synced"
 
 ok "Docker services started successfully"

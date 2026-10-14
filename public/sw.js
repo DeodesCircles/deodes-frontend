@@ -6,7 +6,7 @@ const API_CACHE = `api-${CACHE_VERSION}`
 const DEBUG = false
 function swLog(message, ...context) {
   if (DEBUG) {
-    self.dispatchEvent(new CustomEvent('moistello:sw-log', {
+    self.dispatchEvent(new CustomEvent('deodes:sw-log', {
       detail: { level: 'debug', message, context },
     }))
   }

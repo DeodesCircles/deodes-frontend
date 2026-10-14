@@ -167,6 +167,18 @@ export default function WalletSettingsPage() {
         </div>
       </div>
 
+      {/* Advanced: use your own wallet */}
+      <div className="border border-white/10 rounded-xl p-5 space-y-2">
+        <h3 className="font-heading text-sm font-semibold text-foreground">Use your own wallet</h3>
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          Already have MetaMask, Rabby or Coinbase? Link it and sweep funds into your Deodes wallet.
+          Linking is funding only — it never logs you in or turns on auto-pay.
+        </p>
+        <Link href="/wallet/link-external" className="inline-flex items-center gap-1 text-xs text-aurora-violet hover:underline">
+          Link external wallet <ArrowLeft className="h-3.5 w-3.5 rotate-180" />
+        </Link>
+      </div>
+
       {/* Back link */}
       <Link href="/wallet" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
         <ArrowLeft className="h-3.5 w-3.5" /> Back to Wallet

@@ -264,7 +264,7 @@ describe("POST /api/auth/setup — happy path", () => {
     const res = await POST(makeRequest({ token: VALID_TOKEN_STR, username: "newadmin", password: "securepass1" }))
     expect(res.status).toBe(200)
     const setCookie = res.headers.get("set-cookie")
-    expect(setCookie).toContain("moistello_session")
+    expect(setCookie).toContain("deodes_session")
     expect(setCookie).toContain("HttpOnly")
   })
 

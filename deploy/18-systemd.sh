@@ -10,78 +10,78 @@ require_root
 
 info "Writing systemd unit files..."
 
-backup_file "/etc/systemd/system/moistello-api.service"
-cat > /etc/systemd/system/moistello-api.service << 'UNIT'
+backup_file "/etc/systemd/system/deodes-api.service"
+cat > /etc/systemd/system/deodes-api.service << 'UNIT'
 [Unit]
-Description=Moistello API Server
+Description=Deodes API Server
 After=network.target docker.service
 Requires=docker.service
 
 [Service]
 Type=simple
 User=deploy
-WorkingDirectory=/opt/moistello/backend
-EnvironmentFile=/opt/moistello/backend/.env
-ExecStart=/opt/moistello/bin/moistello-api
+WorkingDirectory=/opt/deodes/backend
+EnvironmentFile=/opt/deodes/backend/.env
+ExecStart=/opt/deodes/bin/deodes-api
 Restart=always
 RestartSec=5
-StandardOutput=append:/var/log/moistello/api.log
-StandardError=append:/var/log/moistello/api-error.log
+StandardOutput=append:/var/log/deodes/api.log
+StandardError=append:/var/log/deodes/api-error.log
 LimitNOFILE=65536
 
 [Install]
 WantedBy=multi-user.target
 UNIT
-ok "moistello-api.service written"
+ok "deodes-api.service written"
 
-backup_file "/etc/systemd/system/moistello-frontend.service"
-cat > /etc/systemd/system/moistello-frontend.service << 'UNIT'
+backup_file "/etc/systemd/system/deodes-frontend.service"
+cat > /etc/systemd/system/deodes-frontend.service << 'UNIT'
 [Unit]
-Description=Moistello Frontend (Next.js)
+Description=Deodes Frontend (Next.js)
 After=network.target
 
 [Service]
 Type=simple
 User=deploy
-WorkingDirectory=/opt/moistello/frontend
+WorkingDirectory=/opt/deodes/frontend
 Environment=NODE_ENV=production
 Environment=PORT=1110
 # Server-only vars (CIRCLE_*, WALLET_HMAC_KEY, GOOGLE_*, PASSKEY_*, REDIS_*)
 # written by 17-build-frontend.sh as frontend/.env.server. NEXT_PUBLIC_* are
 # inlined at build time and do not need runtime injection.
-EnvironmentFile=/opt/moistello/frontend/.env.server
-ExecStart=/usr/bin/node /opt/moistello/frontend/node_modules/.bin/next start
+EnvironmentFile=/opt/deodes/frontend/.env.server
+ExecStart=/usr/bin/node /opt/deodes/frontend/node_modules/.bin/next start
 Restart=always
 RestartSec=5
-StandardOutput=append:/var/log/moistello/frontend.log
-StandardError=append:/var/log/moistello/frontend-error.log
+StandardOutput=append:/var/log/deodes/frontend.log
+StandardError=append:/var/log/deodes/frontend-error.log
 LimitNOFILE=65536
 
 [Install]
 WantedBy=multi-user.target
 UNIT
-ok "moistello-frontend.service written"
+ok "deodes-frontend.service written"
 
 info "Validating unit files with systemd-analyze..."
 if command -v systemd-analyze &>/dev/null; then
-    systemd-analyze verify /etc/systemd/system/moistello-api.service 2>&1 || warn "systemd-analyze reported warnings for moistello-api (non-fatal)"
-    systemd-analyze verify /etc/systemd/system/moistello-frontend.service 2>&1 || warn "systemd-analyze reported warnings for moistello-frontend (non-fatal)"
+    systemd-analyze verify /etc/systemd/system/deodes-api.service 2>&1 || warn "systemd-analyze reported warnings for deodes-api (non-fatal)"
+    systemd-analyze verify /etc/systemd/system/deodes-frontend.service 2>&1 || warn "systemd-analyze reported warnings for deodes-frontend (non-fatal)"
     ok "Unit files validated"
 else
     warn "systemd-analyze not available; skipping validation"
 fi
 
-mkdir -p /var/log/moistello
-chown deploy:deploy /var/log/moistello 2>/dev/null || true
+mkdir -p /var/log/deodes
+chown deploy:deploy /var/log/deodes 2>/dev/null || true
 
 run systemctl daemon-reload
 
 info "Enabling services..."
-run systemctl enable moistello-api moistello-frontend
+run systemctl enable deodes-api deodes-frontend
 ok "Services enabled"
 
 info "Starting services (start if new, restart if already running)..."
-for svc in moistello-api moistello-frontend; do
+for svc in deodes-api deodes-frontend; do
     if systemctl is-active --quiet "$svc" 2>/dev/null; then
         info "$svc is already running — restarting"
         run systemctl restart "$svc"
@@ -106,7 +106,7 @@ while [ $ATTEMPTS -lt 60 ]; do
 done
 if [ $ATTEMPTS -ge 60 ]; then
     warn "Backend did not respond within 60s — checking journal:"
-    systemctl status moistello-api --no-pager -l 2>&1 | tail -10 || true
+    systemctl status deodes-api --no-pager -l 2>&1 | tail -10 || true
 fi
 
 # Check frontend
@@ -122,7 +122,7 @@ while [ $ATTEMPTS -lt 60 ]; do
 done
 if [ $ATTEMPTS -ge 60 ]; then
     warn "Frontend did not respond within 60s — checking journal:"
-    systemctl status moistello-frontend --no-pager -l 2>&1 | tail -10 || true
+    systemctl status deodes-frontend --no-pager -l 2>&1 | tail -10 || true
 fi
 
 mark_done "18"

@@ -32,7 +32,7 @@ const EXTERNAL_URL = `http://82.24.19.118:1110/setup?token=${token}`;
 
 process.stdout.write(`
 ╔══════════════════════════════════════════════╗
-║         Moistello — Create New Admin         ║
+║         Deodes — Create New Admin         ║
 ╠══════════════════════════════════════════════╣
 ║                                              ║
 ║  Token: ${token.slice(0, 16)}...

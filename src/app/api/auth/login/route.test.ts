@@ -119,7 +119,7 @@ describe("POST /api/auth/login", () => {
     const res = await POST(makeRequest({ username: "alice", password: "correct-horse" }))
     expect(res.status).toBe(200)
     const setCookie = res.headers.get("set-cookie")
-    expect(setCookie).toContain("moistello_session")
+    expect(setCookie).toContain("deodes_session")
   })
 })
 

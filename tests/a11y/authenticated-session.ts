@@ -8,7 +8,7 @@ import { createMockCalls, installMockApi } from "../helpers/mock-app"
  *
  * ## Why this logs in instead of just seeding a cookie
  *
- * Seeding `moistello_token` is not sufficient, and the previous version of this
+ * Seeding `deodes_token` is not sufficient, and the previous version of this
  * spec discovered that the hard way: the dashboard routes are gated by
  * `useRequireAuth` in `src/app/(dashboard)/client-layout.tsx`, which reads the
  * **client** auth store, not the cookie. The store is hydrated from localStorage

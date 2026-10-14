@@ -3,7 +3,7 @@
 /**
  * useWalletBalance
  *
- * Fetches and polls the real USDC/XLM balance for the connected wallet
+ * Fetches and polls the real USDC balance for the connected wallet
  * via the first-party proxy (/api/wallet/balance).
  *
  * Features:

@@ -187,20 +187,4 @@ test.describe('Payout Claim Flow', () => {
     await page.waitForURL('/circles/circle-123', { timeout: 5000 })
     await expect(page).toHaveURL('/circles/circle-123')
   })
-
-  test('should view transaction on stellar explorer', async ({ page }: { page: any }) => {
-    const mocker = createApiMocker(page)
-    await mocker.mockPayouts()
-
-    await page.goto('/payouts')
-
-    // Click on transaction link
-    const txnLink = page.getByRole('link', { name: /xyz/i })
-    const newPagePromise = page.waitForEvent('popup')
-    await txnLink.click()
-    const newPage = await newPagePromise
-
-    // Should open stellar explorer
-    await expect(newPage).toHaveURL(/stellar\.expert/)
-  })
 })

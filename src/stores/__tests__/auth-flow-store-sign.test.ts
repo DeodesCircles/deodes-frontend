@@ -20,7 +20,7 @@ vi.mock("@/stores/multi-wallet-store", () => ({
   useMultiWalletStore: {
     getState: () => ({
       wallets: {
-        freighter: {
+        "arc-evm": {
           adapter: { signMessage: mockSignMessage },
         },
       },
@@ -45,8 +45,8 @@ function resetStore() {
     step: "sign",
     status: { status: "idle" },
     connection: {
-      walletId: "freighter",
-      address: "GABC123...",
+      walletId: "arc-evm",
+      address: "0x51b45Ba8570551e0D1fe818227d8bAa8b556694D",
       pairingUri: null,
       protocol: null,
       relayStatus: "healthy",
@@ -75,8 +75,8 @@ describe("AuthFlowStore - signAndSubmit", () => {
 
     useAuthFlowStore.getState().setStep("sign")
 
-    expect(localStorage.getItem("moistello-auth-flow")).not.toBeNull()
-    expect(sessionStorage.getItem("moistello-auth-flow")).toBeNull()
+    expect(localStorage.getItem("deodes-auth-flow")).not.toBeNull()
+    expect(sessionStorage.getItem("deodes-auth-flow")).toBeNull()
   })
 
   it("fails early if no wallet connected", async () => {
@@ -114,12 +114,12 @@ describe("AuthFlowStore - signAndSubmit", () => {
 
     await useAuthFlowStore.getState().signAndSubmit()
 
-    expect(mockPost).toHaveBeenCalledWith("/auth/nonce", { walletAddress: "GABC123..." }, { _retry: true })
+    expect(mockPost).toHaveBeenCalledWith("/auth/nonce", { walletAddress: "0x51b45Ba8570551e0D1fe818227d8bAa8b556694D" }, { _retry: true })
     expect(mockSignMessage).toHaveBeenCalledWith("nonce-123")
     expect(mockPost).toHaveBeenCalledWith(
       "/auth/verify",
       {
-        walletAddress: "GABC123...",
+        walletAddress: "0x51b45Ba8570551e0D1fe818227d8bAa8b556694D",
         signature: "sig-abc",
         nonce: "nonce-123",
         passkeyVersion: 0,
@@ -254,7 +254,7 @@ describe("AuthFlowStore - signAndSubmit", () => {
     expect(mockPost).toHaveBeenCalledWith(
       "/auth/register",
       {
-        walletAddress: "GABC123...",
+        walletAddress: "0x51b45Ba8570551e0D1fe818227d8bAa8b556694D",
         signature: "sig-abc",
         nonce: "nonce-123",
         passkeyVersion: 0,
@@ -294,7 +294,7 @@ describe("AuthFlowStore - signAndSubmit", () => {
     useAuthFlowStore.setState({
       connection: {
         walletId: "nonexistent",
-        address: "GABC...",
+        address: "0x0000000000000000000000000000000000000000",
         pairingUri: null,
         protocol: null,
         relayStatus: "healthy",

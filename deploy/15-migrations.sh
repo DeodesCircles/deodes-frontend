@@ -14,9 +14,9 @@ if [ ! -f "$BACKEND_ENV" ]; then
 fi
 
 # ── Export DATABASE_URL from backend .env ──────────────────────
-DB_URL=$(grep '^MOISTELLO_DATABASE_URL=' "$BACKEND_ENV" | cut -d= -f2-)
+DB_URL=$(grep '^DEODES_DATABASE_URL=' "$BACKEND_ENV" | cut -d= -f2-)
 if [ -z "$DB_URL" ]; then
-    fail "MOISTELLO_DATABASE_URL not found in $BACKEND_ENV"
+    fail "DEODES_DATABASE_URL not found in $BACKEND_ENV"
 fi
 export DATABASE_URL="$DB_URL"
 
@@ -37,7 +37,7 @@ fi
 
 # Quick connectivity check with psql if available
 if command -v psql &>/dev/null; then
-    if PGPASSWORD="${POSTGRES_PW:-}" psql -h "$DB_HOST" -p "$DB_PORT" -U moistello -d moistello -c "SELECT 1;" &>/dev/null; then
+    if PGPASSWORD="${POSTGRES_PW:-}" psql -h "$DB_HOST" -p "$DB_PORT" -U deodes -d deodes -c "SELECT 1;" &>/dev/null; then
         ok "PostgreSQL connection verified"
     else
         fail "PostgreSQL connection failed — check credentials and network"

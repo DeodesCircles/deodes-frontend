@@ -23,7 +23,7 @@ mkdir -p "${LOG_DIR}"
 
 # ── List all scripts and verify ─────────────────────────────────
 echo ""
-_log "${W}═══ Moistello Deployment ─── Starting from step ${START} ═══${N}"
+_log "${W}═══ Deodes Deployment ─── Starting from step ${START} ═══${N}"
 _log "Log file: ${DEPLOY_LOG}"
 echo ""
 
@@ -119,7 +119,7 @@ _log "    Backend:   https://${DOMAIN}/health"
 _log "    API:       https://${DOMAIN}/v1/"
 echo ""
 _log "${W}  Next steps:${N}"
-_log "    1. Fund the Stellar account"
+_log "    1. Fund the operator address (USDC for gas)"
 _log "    2. Run: bash run-all.sh 09  (fund check)"
 _log "    3. Verify the site: curl -s https://${DOMAIN}/health"
 _log "    4. Monitor logs:    tail -f ${LOG_DIR}/deploy.log"

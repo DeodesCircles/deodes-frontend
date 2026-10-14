@@ -2,51 +2,7 @@ import { expect, test } from "@playwright/test"
 
 import { buildMockFixtures, createMockCalls, installMockApi, seedAuthCookie } from "./helpers/mock-app"
 
-test.describe("Moistello core journeys", () => {
-  test("registers a new account and finishes wallet setup", async ({ page }) => {
-    const fixtures = buildMockFixtures()
-    const calls = createMockCalls()
-    await installMockApi(page, fixtures, calls)
-
-    await page.goto("/register")
-
-    await page.getByLabel("Email address").fill("new.member@example.com")
-    await page.getByLabel("Password").fill("supersecret1")
-    await page.getByRole("button", { name: "Create Account" }).click()
-
-    await expect(page.getByText("Code sent to")).toBeVisible()
-    await page.getByLabel("6-digit verification code").fill(fixtures.verificationCode ?? "123456")
-    await page.getByRole("button", { name: "Verify & Continue" }).click()
-
-    await expect(page.getByText(fixtures.user.displayName ?? "Amina Okafor")).toBeVisible()
-    await page.getByRole("button", { name: "Continue" }).click()
-
-    await expect(page.getByText("Verify Your Email")).toBeVisible()
-    await page.getByLabel("Email address").fill("new.member@example.com")
-    await page.getByRole("button", { name: "Send Code" }).click()
-    await expect(page.getByLabel("6-digit verification code")).toBeVisible()
-    await page.getByLabel("6-digit verification code").fill(fixtures.verificationCode ?? "123456")
-    await page.getByRole("button", { name: "Verify Code" }).click()
-
-    await expect(page.getByText("Create your Stellar wallet")).toBeVisible()
-    await page.getByRole("button", { name: "Create Stellar Wallet" }).click()
-    await expect(page.getByText("Stellar public key")).toBeVisible()
-    await page.getByRole("button", { name: "Continue" }).click()
-
-    await expect(page.getByText("Faster Login with Passkey")).toBeVisible()
-    await page.getByRole("button", { name: /skip/i }).click()
-
-    await expect(page).toHaveURL("/")
-    await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible()
-    await expect(page.getByText("Welcome to your dashboard.")).toBeVisible()
-
-    expect(calls.registerRequests).toHaveLength(1)
-    expect(calls.verificationSends).toHaveLength(1)
-    expect(calls.verificationChecks.length).toBeGreaterThanOrEqual(2)
-    expect(calls.profileUpdates).toHaveLength(1)
-    expect(calls.walletCreations).toHaveLength(1)
-  })
-
+test.describe("Deodes core journeys", () => {
   test("signs in with password and reaches the dashboard", async ({ page }) => {
     const fixtures = buildMockFixtures()
     const calls = createMockCalls()
@@ -140,6 +96,6 @@ test.describe("Moistello core journeys", () => {
     await expect(page.getByRole("heading", { name: "Payouts Received" })).toBeVisible()
     await expect(page.getByText(fixtures.createdCircle.name)).toBeVisible()
     await expect(page.getByText(`+$${fixtures.payouts[0].amount.toFixed(2)}`)).toBeVisible()
-    await expect(page.locator('a[href*="stellar.expert/explorer/testnet/tx/"]')).toBeVisible()
+    await expect(page.locator('a[href*="arc.io/tx/"]')).toBeVisible()
   })
 })

@@ -3,7 +3,7 @@ import { blockInProduction } from "@/lib/security/dev-only-route";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function POST(_request: NextRequest) {
-  // Local-development scaffolding — clears the dev-only moistello_session cookie.
+  // Local-development scaffolding — clears the dev-only deodes_session cookie.
   const blocked = blockInProduction();
   if (blocked) return blocked;
 

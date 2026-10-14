@@ -1,11 +1,10 @@
 import { describe, it, expect } from "vitest"
 
 describe("WC2 Security — Pairing URI", () => {
-  it("pairing URI does not contain Stellar public keys", () => {
+  it("pairing URI does not contain wallet addresses", () => {
     const mockURI = "wc:a1b2c3d4@2?relay-protocol=irn&symKey=abc123def456"
     expect(mockURI.startsWith("wc:")).toBe(true)
-    expect(mockURI).not.toContain("G")
-    expect(mockURI).not.toContain("stellar")
+    expect(mockURI).not.toMatch(/0x[0-9a-fA-F]{40}/)
   })
 
   it("pairing URI contains only ephemeral key, not private keys", () => {
@@ -94,7 +93,7 @@ describe("WC2 Security — Transaction Signing", () => {
     expect(validBase64.test("invalid!")).toBe(false)
   })
 
-  it("Stellar XDR transactions contain unique sequence numbers", () => {
+  it("transaction nonces are unique per submission", () => {
     const accountSequenceA = "123456789"
     const accountSequenceB = "123456790"
     expect(accountSequenceA).not.toBe(accountSequenceB)
@@ -139,24 +138,24 @@ describe("WC2 Security — Error Information Leakage", () => {
 })
 
 describe("WC2 Security — Public Key Validation", () => {
-  it("Stellar public keys start with G", () => {
-    const validKey = "GAX23V3WWDPPR5WRER3KTEUTDLSCGZYMSJY5FDRRKKCIQ4JADF5T27RC"
-    expect(validKey[0]).toBe("G")
+  it("Arc addresses are 0x + 40 hex", () => {
+    const validKey = "0x51b45Ba8570551e0D1fe818227d8bAa8b556694D"
+    expect(validKey.startsWith("0x")).toBe(true)
   })
 
-  it("Stellar public keys are exactly 56 characters", () => {
-    const validKey = "GAX23V3WWDPPR5WRER3KTEUTDLSCGZYMSJY5FDRRKKCIQ4JADF5T27RC"
-    expect(validKey).toHaveLength(56)
+  it("Arc addresses are exactly 42 characters", () => {
+    const validKey = "0x51b45Ba8570551e0D1fe818227d8bAa8b556694D"
+    expect(validKey).toHaveLength(42)
   })
 
-  it("Stellar public keys contain only base32 chars", () => {
-    const validKey = "GAX23V3WWDPPR5WRER3KTEUTDLSCGZYMSJY5FDRRKKCIQ4JADF5T27RC"
-    expect(/^G[A-Z0-9]{55}$/.test(validKey)).toBe(true)
+  it("Arc addresses contain only hex chars", () => {
+    const validKey = "0x51b45Ba8570551e0D1fe818227d8bAa8b556694D"
+    expect(/^0x[0-9a-fA-F]{40}$/.test(validKey)).toBe(true)
   })
 
-  it("rejects keys with lowercase", () => {
-    const invalidKey = "gax23v3wwdppr5wrer3kteutdlscgzymsjy5fdrrkkciq4jadf5t27rc"
-    expect(/^G[A-Z0-9]{55}$/.test(invalidKey)).toBe(false)
+  it("rejects malformed addresses", () => {
+    const invalidKey = "0xZZZ"
+    expect(/^0x[0-9a-fA-F]{40}$/.test(invalidKey)).toBe(false)
   })
 
   it("rejects keys of wrong length", () => {
@@ -169,7 +168,7 @@ describe("WC2 Security — Public Key Validation", () => {
 
 describe("WC2 Security — Auth XDR Structure", () => {
   it("auth XDR should contain identifiable prefix", () => {
-    const prefix = "MOISTELLO_AUTH"
+    const prefix = "DEODES_AUTH"
     const encoded = btoa(`${prefix}:hash123:${Date.now()}`)
     expect(encoded).toBeDefined()
     expect(atob(encoded)).toContain(prefix)
@@ -177,7 +176,7 @@ describe("WC2 Security — Auth XDR Structure", () => {
 
   it("auth XDR should include timestamp for freshness", () => {
     const ts = Date.now()
-    const encoded = btoa(`MOISTELLO_AUTH:hash456:${ts}`)
+    const encoded = btoa(`DEODES_AUTH:hash456:${ts}`)
     const decoded = atob(encoded)
     expect(decoded).toContain(String(ts))
   })

@@ -1,15 +1,23 @@
 /**
  * #207: Centralized CSRF/Origin Protection for State-Changing Routes
- * 
- * Validates origin and enforces CSRF token for all mutating API routes
+ *
+ * Validates origin and enforces CSRF token for all mutating API routes.
+ *
+ * DEPRECATED (Phase 0.3 freeze): this module is not imported by any route —
+ * live CSRF runs in `src/middleware.ts` (double-submit `deodes_csrf`) and,
+ * authoritatively, in the Go backend (`internal/api/middleware/csrf.go`,
+ * Redis-bound `csrf:sha256(bearer)`). Kept only so a future import cannot
+ * resurrect the pre-freeze `deodes.com` allowlist. Do not add callers;
+ * delete this file once Phase 3 removes the legacy shim.
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 
 const ALLOWED_ORIGINS = [
-  process.env.NEXT_PUBLIC_APP_URL || 'https://moistello.com',
-  'http://localhost:3000',
-  'http://localhost:3001',
+  process.env.NEXT_PUBLIC_APP_URL || 'https://deodes.com',
+  'https://app.deodes.com',
+  'http://localhost:1110',
+  'http://127.0.0.1:1110',
 ]
 
 const MUTATING_METHODS = ['POST', 'PUT', 'DELETE', 'PATCH']
@@ -23,12 +31,15 @@ export function isOriginAllowed(origin: string | null): boolean {
 }
 
 /**
- * Verify CSRF token from request
+ * Verify CSRF token from request (canonical `deodes_csrf` cookie).
  */
 export function verifyCsrfToken(req: NextRequest): boolean {
-  const csrfCookie = req.cookies.get('csrf-token')?.value
+  const csrfCookie =
+    req.cookies.get('deodes_csrf')?.value ??
+    req.cookies.get('__Secure-deodes_csrf')?.value ??
+    req.cookies.get('csrf-token')?.value
   const csrfHeader = req.headers.get('x-csrf-token')
-  
+
   if (!csrfCookie || !csrfHeader) return false
   return csrfCookie === csrfHeader
 }

@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
   // A `Cookie` request header is `name=value` pairs, so the raw value is not
   // enough — forwarding the bare token would leave the backend unable to match
   // a session and it would see the request as anonymous.
-  const cookie = `moistello_session=${sessionValue}`
+  const cookie = `deodes_session=${sessionValue}`
   const generatedAt = new Date()
 
   const [contributions, notifications] = await Promise.all([

@@ -117,7 +117,7 @@ describe("cookie round trip", () => {
     // jsdom exposes attributes only via a mock; assert on the jar round trip
     // and that the cookie survives into a fresh read instead.
     expect(readLocaleCookie()).toBe("fr")
-    expect(LOCALE_COOKIE).toBe("moistello_locale")
+    expect(LOCALE_COOKIE).toBe("deodes_locale")
   })
 
   it("returns null when nothing has been chosen", () => {

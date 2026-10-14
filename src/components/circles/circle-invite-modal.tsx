@@ -52,7 +52,7 @@ export function CircleInviteModal({
     try {
       const { get } = await import("@/lib/api-client");
       const response = await get<{ data: InviteCode[] }>(
-        `/api/circles/${circleId}/invites`,
+        `/circles/${circleId}/invites`,
       );
       setExistingInvites(response.data ?? []);
     } catch (e) {
@@ -80,7 +80,7 @@ export function CircleInviteModal({
         expiresAt: expiration || null,
       };
       const response = await post<{ data: InviteCode }>(
-        `/api/circles/${circleId}/invites`,
+        `/circles/${circleId}/invites`,
         payload,
       );
 

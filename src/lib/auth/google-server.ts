@@ -19,7 +19,7 @@ const GOOGLE_CERTS_URL = "https://www.googleapis.com/oauth2/v3/certs";
 
 export const GOOGLE_STATE_COOKIE = "deodes_oauth_state";
 const STATE_TTL_SECONDS = 10 * 60;
-const SESSION_TTL_SECONDS = 60 * 60 * 24; // 24h, matches ACCESS_TOKEN_MAX_AGE
+// (Session TTL now lives with backend-issued tokens; ACCESS_TOKEN_MAX_AGE.)
 
 export function googleConfigured(): boolean {
   return Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
@@ -181,12 +181,6 @@ export async function verifyIdToken(idToken: string): Promise<GoogleProfile> {
   };
 }
 
-function sessionKey(): Buffer {
-  const base = process.env.WALLET_HMAC_KEY ?? "";
-  if (base.length < 32) throw new Error("WALLET_HMAC_KEY is not set");
-  return crypto.createHash("sha256").update(`deodes-google-session:${base}`).digest();
-}
-
 export interface DeodesSessionClaims {
   sub: string;
   email: string;
@@ -194,48 +188,9 @@ export interface DeodesSessionClaims {
   provider: "google";
 }
 
-/** Mint the HS256 session JWT the app stores in its HttpOnly cookie. */
-export function mintSessionJwt(profile: Pick<GoogleProfile, "sub" | "email" | "name">): string {
-  const now = Math.floor(Date.now() / 1000);
-  const header = Buffer.from(JSON.stringify({ alg: "HS256", typ: "JWT" })).toString("base64url");
-  const body = Buffer.from(
-    JSON.stringify({
-      sub: `google:${profile.sub}`,
-      email: profile.email,
-      name: profile.name,
-      provider: "google",
-      iat: now,
-      exp: now + SESSION_TTL_SECONDS,
-    } satisfies DeodesSessionClaims & { iat: number; exp: number }),
-  ).toString("base64url");
-  const sig = crypto.createHmac("sha256", sessionKey()).update(`${header}.${body}`).digest("base64url");
-  return `${header}.${body}.${sig}`;
-}
-
-/** Verify a JWT minted by {@link mintSessionJwt} (unit-testable seam). */
-export function verifySessionJwt(token: string): (DeodesSessionClaims & { exp: number }) | null {
-  const parts = token.split(".");
-  if (parts.length !== 3) return null;
-  const [h64, p64, s64] = parts;
-  let expected: string;
-  try {
-    expected = crypto.createHmac("sha256", sessionKey()).update(`${h64}.${p64}`).digest("base64url");
-  } catch {
-    return null;
-  }
-  const a = Buffer.from(s64);
-  const b = Buffer.from(expected);
-  if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
-  try {
-    const payload = JSON.parse(Buffer.from(p64, "base64url").toString("utf-8")) as DeodesSessionClaims & {
-      exp?: number;
-    };
-    if (typeof payload.exp !== "number" || payload.exp * 1000 <= Date.now()) return null;
-    if (payload.provider !== "google" || typeof payload.sub !== "string") return null;
-    return payload as DeodesSessionClaims & { exp: number };
-  } catch {
-    return null;
-  }
-}
+// NOTE: frontend session minting was removed. Sessions must come from the
+// backend (POST /v1/auth/google), which verifies the Google ID token itself
+// and signs RS256 tokens only it can mint. A locally-minted token is rejected
+// by every backend call, which surfaced as "logged out on app.deodes.com".
 
 export { STATE_TTL_SECONDS };

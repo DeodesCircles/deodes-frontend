@@ -21,8 +21,8 @@ describe("SessionManager", () => {
 
   it("should persist a session after connect", () => {
     const session = {
-      walletId: "freighter",
-      publicKey: "GAX23V3WWDPPR5WRER3KTEUTDLSCGZYMSJY5FDRRKKCIQ4JADF5T27RC",
+      walletId: "arc-evm",
+      publicKey: "0x51b45Ba8570551e0D1fe818227d8bAa8b556694D",
       lastConnected: Date.now(),
       hmac: "mock-hmac-value",
     }
@@ -30,20 +30,20 @@ describe("SessionManager", () => {
     
     const restored = JSON.parse(localStorage.getItem("wallet_sessions")!)
     expect(restored.length).toBe(1)
-    expect(restored[0].walletId).toBe("freighter")
+    expect(restored[0].walletId).toBe("arc-evm")
     expect(restored[0].publicKey).toBe(session.publicKey)
   })
 
   it("should expire sessions older than 7 days", () => {
     const oldSession = {
-      walletId: "freighter",
+      walletId: "arc-evm",
       lastConnected: Date.now() - 8 * 24 * 60 * 60 * 1000, // 8 days ago
-      publicKey: "GABC...",
+      publicKey: "0x51b45Ba8570551e0D1fe818227d8bAa8b556694D",
     }
     const recentSession = {
-      walletId: "xbull",
+      walletId: "walletconnect",
       lastConnected: Date.now() - 1 * 60 * 60 * 1000, // 1 hour ago
-      publicKey: "GDEF...",
+      publicKey: "0x70A7CCB7b5fe856384Aab3aAF553E09A10AF14A4",
     }
     
     const sessions = [oldSession, recentSession]
@@ -51,7 +51,7 @@ describe("SessionManager", () => {
     const valid = sessions.filter(s => Date.now() - s.lastConnected < sevenDays)
     
     expect(valid.length).toBe(1)
-    expect(valid[0].walletId).toBe("xbull")
+    expect(valid[0].walletId).toBe("walletconnect")
   })
 
   it("should handle corrupted JSON in session store", () => {
@@ -79,29 +79,29 @@ describe("SessionManager", () => {
 
   it("should remove session on disconnect", () => {
     const sessions = [
-      { walletId: "freighter", publicKey: "GABC..." },
-      { walletId: "xbull", publicKey: "GDEF..." },
+      { walletId: "arc-evm", publicKey: "0x51b45Ba8570551e0D1fe818227d8bAa8b556694D" },
+      { walletId: "walletconnect", publicKey: "0x70A7CCB7b5fe856384Aab3aAF553E09A10AF14A4" },
     ]
-    const disconnectId = "freighter"
+    const disconnectId = "arc-evm"
     const remaining = sessions.filter(s => s.walletId !== disconnectId)
     
     expect(remaining.length).toBe(1)
-    expect(remaining[0].walletId).toBe("xbull")
+    expect(remaining[0].walletId).toBe("walletconnect")
   })
 
   it("should handle multiple sessions for same user", () => {
     const sessions = [
-      { walletId: "freighter", publicKey: "GABC...", lastConnected: Date.now() - 1000 },
-      { walletId: "xbull", publicKey: "GDEF...", lastConnected: Date.now() },
+      { walletId: "arc-evm", publicKey: "0x51b45Ba8570551e0D1fe818227d8bAa8b556694D", lastConnected: Date.now() - 1000 },
+      { walletId: "walletconnect", publicKey: "0x70A7CCB7b5fe856384Aab3aAF553E09A10AF14A4", lastConnected: Date.now() },
     ]
     // Active wallet is the most recently connected
     const active = sessions.sort((a, b) => b.lastConnected - a.lastConnected)[0]
-    expect(active.walletId).toBe("xbull")
+    expect(active.walletId).toBe("walletconnect")
   })
 
   it("should handle empty string public key (corrupted data)", () => {
-    const session = { walletId: "freighter", publicKey: "", lastConnected: Date.now() }
-    const isValid = session.publicKey.length === 56 && session.publicKey.startsWith("G")
+    const session = { walletId: "arc-evm", publicKey: "", lastConnected: Date.now() }
+    const isValid = /^0x[0-9a-fA-F]{40}$/.test(session.publicKey)
     expect(isValid).toBe(false)
   })
 

@@ -607,13 +607,29 @@ export const useAuthFlowStore = create<AuthFlowStore>()(
             const serverMessage =
               axiosErr?.response?.data?.error ??
               axiosErr?.response?.data?.message;
-            const errorMessage =
-              serverMessage ??
-              (axiosErr?.response?.status === 401
-                ? "This signature wasn't recognized. Make sure your wallet is on the account you connected, then retry signing."
-                : err instanceof Error
-                  ? err.message
-                  : "Signing failed");
+            // Translate server 401s into the action that fixes them. A raw
+            // "signature does not match" leaves users retrying a signature
+            // that can never verify (expired nonce, contract wallet).
+            const lowered = (serverMessage ?? "").toLowerCase();
+            let errorMessage: string;
+            if (lowered.includes("expired") || lowered.includes("nonce")) {
+              errorMessage =
+                "Your signing session expired (signatures last 5 minutes). Tap Retry signing for a fresh message.";
+            } else if (
+              lowered.includes("does not match") ||
+              lowered.includes("verification failed")
+            ) {
+              errorMessage =
+                "This signature wasn't recognized. Make sure your wallet is on the same account you connected, then retry signing. Note: smart-contract wallets (e.g. Coinbase Smart Wallet) can't sign in — use Google or passkey instead.";
+            } else {
+              errorMessage =
+                serverMessage ??
+                (axiosErr?.response?.status === 401
+                  ? "This signature wasn't recognized. Make sure your wallet is on the account you connected with, then retry signing."
+                  : err instanceof Error
+                    ? err.message
+                    : "Signing failed");
+            }
 
             const currentState = get();
             captureAuthError(err, {
@@ -852,7 +868,7 @@ export const useAuthFlowStore = create<AuthFlowStore>()(
       { name: "auth-flow-store" },
     ),
     {
-      name: "moistello-auth-flow",
+      name: "deodes-auth-flow",
       version: 3,
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({

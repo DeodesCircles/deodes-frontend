@@ -4,9 +4,9 @@ export const API_BASE_URL =
 export const WS_URL =
   process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:1100/ws"
 
-/** Arc network — set NEXT_PUBLIC_ARC_NETWORK=mainnet for production. Defaults to "testnet". */
+/** Arc network — mainnet only now (no more testnet). Override with NEXT_PUBLIC_ARC_NETWORK only for local dev. */
 export const ARC_NETWORK: "testnet" | "mainnet" =
-  (process.env.NEXT_PUBLIC_ARC_NETWORK as "testnet" | "mainnet") ?? "testnet"
+  (process.env.NEXT_PUBLIC_ARC_NETWORK as "testnet" | "mainnet") ?? "mainnet"
 
 /**
  * Arc chain IDs (docs.arc.io/arc/references/connect-to-arc):
@@ -45,25 +45,6 @@ export const ARC_MIN_MAX_FEE_GWEI = 20
 
 export const DEODES_CONTRACT_ID =
   process.env.NEXT_PUBLIC_DEODES_CONTRACT_ID || ""
-
-/**
- * LEGACY Stellar network — NOT user-facing. The wallet UI is Arc-only.
- * These exports are kept ONLY because non-UI modules still import them
- * (balance API route, transfer polling/confirmation, passkey adapter).
- * Do not reference them from any wallet UI component; use ARC_* above.
- */
-export const STELLAR_NETWORK: "testnet" | "mainnet" =
-  (process.env.NEXT_PUBLIC_STELLAR_NETWORK as "testnet" | "mainnet") ?? "testnet"
-
-export const STELLAR_HORIZON_URL =
-  STELLAR_NETWORK === "mainnet"
-    ? "https://horizon.stellar.org"
-    : "https://horizon-testnet.stellar.org"
-
-export const STELLAR_RPC_URL =
-  STELLAR_NETWORK === "mainnet"
-    ? "https://soroban.stellar.org"
-    : "https://soroban-testnet.stellar.org"
 
 export const APP_NAME = "Deodes"
 export const APP_CHAIN = "Arc" as const

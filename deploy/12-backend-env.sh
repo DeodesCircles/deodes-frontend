@@ -22,21 +22,16 @@ fi
 source "$SECRETS_FILE"
 
 # Validate critical secrets
-for var in POSTGRES_PW REDIS_PW RABBITMQ_PW STELLAR_PUBLIC_KEY STELLAR_SECRET_KEY; do
+for var in POSTGRES_PW REDIS_PW RABBITMQ_PW; do
     if [ -z "${!var:-}" ] || [ "${!var}" = "REPLACE_WITH_YOUR_PRIVATE_KEY" ] || [ "${!var}" = "REPLACE_WITH_YOUR_PUBLIC_KEY" ]; then
         fail "$var is not set or still contains placeholder in $SECRETS_FILE"
     fi
 done
 
-# ── Contract IDs (set by 10-deploy-contracts.sh) ───────────────
-CONTRACT_FACTORY="${CONTRACT_FACTORY:-}"
-CONTRACT_CIRCLE_HASH="${CONTRACT_CIRCLE_HASH:-}"
-CONTRACT_REP_REGISTRY="${CONTRACT_REP_REGISTRY:-}"
-CONTRACT_GOV_TOKEN="${CONTRACT_GOV_TOKEN:-}"
-CONTRACT_TREASURY="${CONTRACT_TREASURY:-}"
-# Deployed circle instance ID (NOT the WASM hash above). Binds to backend
-# contracts.circle; empty until the operator records a mainnet instance.
-CONTRACT_CIRCLE="${CONTRACT_CIRCLE:-}"
+# ── V1 contract addresses (set by 10-deploy-contracts.sh, recorded in
+# deodes-contracts/deployments.*.json; empty until the operator records them)
+DEODES_CIRCLE_ADDRESS="${DEODES_CIRCLE_ADDRESS:-}"
+DEODES_TREASURY_ADDRESS="${DEODES_TREASURY_ADDRESS:-}"
 
 # ── Arc (EVM, primary chain) + Keeper ──────────────────────────
 # Secrets pass through when set; RPC/chain ID fall back to NETWORK defaults.
@@ -62,34 +57,24 @@ CORS_ORIGINS="https://${DOMAIN},https://www.${DOMAIN}"
 backup_file "$BACKEND_ENV"
 
 cat > "$BACKEND_ENV" << ENVEOF
-MOISTELLO_ENVIRONMENT=production
-MOISTELLO_SERVER_PORT=1100
-MOISTELLO_SERVER_HOST=127.0.0.1
-MOISTELLO_DATABASE_URL=postgres://moistello:${POSTGRES_PW}@127.0.0.1:9811/moistello?sslmode=disable
-MOISTELLO_REDIS_URL=redis://:${REDIS_PW}@127.0.0.1:9808
-MOISTELLO_RABBITMQ_URL=amqp://moistello:${RABBITMQ_PW}@127.0.0.1:9809/
-MOISTELLO_AUTH_JWT_PRIVATE_KEY_PATH=/opt/moistello/backend/config/keys/jwt-private.pem
-MOISTELLO_AUTH_JWT_PUBLIC_KEY_PATH=/opt/moistello/backend/config/keys/jwt-public.pem
-MOISTELLO_AUTH_ACCESS_TOKEN_TTL=15m
-MOISTELLO_AUTH_REFRESH_TOKEN_TTL=168h
-MOISTELLO_CORS_ALLOWED_ORIGINS=${CORS_ORIGINS}
-MOISTELLO_LOGGING_LEVEL=info
-MOISTELLO_LOGGING_FORMAT=json
-MOISTELLO_STELLAR_NETWORK=${NETWORK}
-MOISTELLO_STELLAR_HORIZON_URL=${STELLAR_HORIZON}
-MOISTELLO_STELLAR_SOROBAN_RPC_URL=${STELLAR_RPC}
-MOISTELLO_STELLAR_NETWORK_PASSPHRASE=${STELLAR_PASSPHRASE}
-MOISTELLO_STELLAR_MASTER_PUBLIC_KEY=${STELLAR_PUBLIC_KEY}
-MOISTELLO_STELLAR_MASTER_SECRET_KEY=${STELLAR_SECRET_KEY}
-MOISTELLO_CONTRACT_FACTORY=${CONTRACT_FACTORY}
-MOISTELLO_CONTRACT_CIRCLE_HASH=${CONTRACT_CIRCLE_HASH}
-MOISTELLO_CONTRACT_CIRCLE=${CONTRACT_CIRCLE}
-MOISTELLO_CONTRACT_REP_REGISTRY=${CONTRACT_REP_REGISTRY}
-MOISTELLO_CONTRACT_GOV_TOKEN=${CONTRACT_GOV_TOKEN}
-MOISTELLO_CONTRACT_TREASURY=${CONTRACT_TREASURY}
+DEODES_ENVIRONMENT=production
+DEODES_SERVER_PORT=1100
+DEODES_SERVER_HOST=127.0.0.1
+DEODES_DATABASE_URL=postgres://deodes:${POSTGRES_PW}@127.0.0.1:9811/deodes?sslmode=disable
+DEODES_REDIS_URL=redis://:${REDIS_PW}@127.0.0.1:9808
+DEODES_RABBITMQ_URL=amqp://deodes:${RABBITMQ_PW}@127.0.0.1:9809/
+DEODES_AUTH_JWT_PRIVATE_KEY_PATH=/opt/deodes/backend/config/keys/jwt-private.pem
+DEODES_AUTH_JWT_PUBLIC_KEY_PATH=/opt/deodes/backend/config/keys/jwt-public.pem
+DEODES_AUTH_ACCESS_TOKEN_TTL=15m
+DEODES_AUTH_REFRESH_TOKEN_TTL=168h
+DEODES_CORS_ALLOWED_ORIGINS=${CORS_ORIGINS}
+DEODES_LOGGING_LEVEL=info
+DEODES_LOGGING_FORMAT=json
 DEODES_ARC_RPC_URL=${ARC_RPC_URL}
 DEODES_ARC_CHAIN_ID=${ARC_CHAIN_ID}
 DEODES_ARC_USDC_CONTRACT=${ARC_USDC_CONTRACT}
+DEODES_CIRCLE_ADDRESS=${DEODES_CIRCLE_ADDRESS}
+DEODES_TREASURY_ADDRESS=${DEODES_TREASURY_ADDRESS}
 DEODES_KEEPER_ESCROW_ADDRESS=${KEEPER_ESCROW_ADDRESS}
 DEODES_KEEPER_INTERVAL_MINUTES=${KEEPER_INTERVAL_MINUTES}
 ENVEOF
@@ -115,19 +100,17 @@ ok "JWT keys copied to $KEYS_DIR"
 
 # ── Validate the resulting .env ─────────────────────────────────
 REQUIRED_VARS=(
-    MOISTELLO_ENVIRONMENT
-    MOISTELLO_SERVER_PORT
-    MOISTELLO_SERVER_HOST
-    MOISTELLO_DATABASE_URL
-    MOISTELLO_REDIS_URL
-    MOISTELLO_RABBITMQ_URL
-    MOISTELLO_AUTH_JWT_PRIVATE_KEY_PATH
-    MOISTELLO_AUTH_JWT_PUBLIC_KEY_PATH
-    MOISTELLO_CORS_ALLOWED_ORIGINS
-    MOISTELLO_STELLAR_NETWORK
-    MOISTELLO_STELLAR_HORIZON_URL
-    MOISTELLO_STELLAR_SOROBAN_RPC_URL
-    MOISTELLO_STELLAR_MASTER_PUBLIC_KEY
+    DEODES_ENVIRONMENT
+    DEODES_SERVER_PORT
+    DEODES_SERVER_HOST
+    DEODES_DATABASE_URL
+    DEODES_REDIS_URL
+    DEODES_RABBITMQ_URL
+    DEODES_AUTH_JWT_PRIVATE_KEY_PATH
+    DEODES_AUTH_JWT_PUBLIC_KEY_PATH
+    DEODES_CORS_ALLOWED_ORIGINS
+    DEODES_ARC_RPC_URL
+    DEODES_ARC_CHAIN_ID
 )
 
 info "Validating backend .env..."
@@ -145,18 +128,18 @@ if [ ${#MISSING_VARS[@]} -gt 0 ]; then
 fi
 
 # Validate DB URL format: postgres://user:pass@host:port/dbname?options
-DB_URL=$(grep '^MOISTELLO_DATABASE_URL=' "$BACKEND_ENV" | cut -d= -f2-)
+DB_URL=$(grep '^DEODES_DATABASE_URL=' "$BACKEND_ENV" | cut -d= -f2-)
 if ! echo "$DB_URL" | grep -qE '^postgres://[^:]+:[^@]+@[^:]+:[0-9]+/[^?]+'; then
-    fail "MOISTELLO_DATABASE_URL format is invalid: $DB_URL"
+    fail "DEODES_DATABASE_URL format is invalid: $DB_URL"
 fi
 
 # Ensure CORS includes both domain variants
-if ! grep 'MOISTELLO_CORS_ALLOWED_ORIGINS' "$BACKEND_ENV" | grep -q "www.${DOMAIN}"; then
+if ! grep 'DEODES_CORS_ALLOWED_ORIGINS' "$BACKEND_ENV" | grep -q "www.${DOMAIN}"; then
     fail "CORS origins missing www.${DOMAIN}"
 fi
 
 # ── Mainnet guard: mirror the backend cutover guard in the pipeline ──
-# MOISTELLO_ENVIRONMENT is always production here, so a mainnet NETWORK with
+# DEODES_ENVIRONMENT is always production here, so a mainnet NETWORK with
 # testnet-shaped Arc/Keeper values must fail now — not at backend boot.
 if [ "$NETWORK" = "mainnet" ]; then
     info "Validating mainnet Arc/Keeper configuration..."

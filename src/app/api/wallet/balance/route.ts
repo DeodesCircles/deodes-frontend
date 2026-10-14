@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ARC_RPC_URL, STELLAR_HORIZON_URL } from "@/lib/constants";
-import { validateStellarAddress } from "@/lib/stellar/validate-address";
+import { ARC_RPC_URL } from "@/lib/constants";
 
 function isArcAddress(address: string): boolean {
   return /^0x[0-9a-fA-F]{40}$/.test(address);
@@ -32,7 +31,7 @@ async function fetchArcBalance(address: string): Promise<{ xlm: string; usdc: st
   return { xlm: "0", usdc };
 }
 
-// Simple in-memory server cache for balance requests to reduce Horizon hits
+// Simple in-memory server cache for balance requests to reduce Arc RPC hits
 const serverBalanceCache = new Map<
   string,
   { data: { xlm: string; usdc: string }; timestamp: number }
@@ -81,80 +80,10 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // Validate Arc 0x address format using the canonical validator
-  if (!validateStellarAddress(address)) {
-    return NextResponse.json(
-      { error: "Invalid wallet address: must be an Arc 0x address." },
-      { status: 400 }
-    );
-  }
-
-  // Check server-side cache
-  const cached = serverBalanceCache.get(address);
-  if (cached && Date.now() - cached.timestamp < SERVER_CACHE_TTL_MS) {
-    return NextResponse.json(cached.data, {
-      status: 200,
-      headers: {
-        "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60",
-        "X-Cache": "HIT",
-      },
-    });
-  }
-
-  try {
-    const horizonUrl = `${STELLAR_HORIZON_URL}/accounts/${address}`;
-    const response = await fetch(horizonUrl, {
-      headers: { Accept: "application/json" },
-      next: { revalidate: 30 },
-    });
-
-    if (!response.ok) {
-      if (response.status === 404) {
-        // Account not funded yet
-        const emptyBalance = { xlm: "0", usdc: "0" };
-        serverBalanceCache.set(address, {
-          data: emptyBalance,
-          timestamp: Date.now(),
-        });
-        return NextResponse.json(emptyBalance, { status: 200 });
-      }
-      return NextResponse.json(
-        { error: `Balance service returned status ${response.status}` },
-        { status: response.status }
-      );
-    }
-
-    const data = await response.json();
-    let xlm = "0";
-    let usdc = "0";
-
-    for (const b of data.balances || []) {
-      if (b.asset_type === "native") {
-        xlm = b.balance;
-      } else if (b.asset_code === "USDC") {
-        usdc = b.balance;
-      }
-    }
-
-    const result = { xlm, usdc };
-
-    // Update server-side cache
-    serverBalanceCache.set(address, {
-      data: result,
-      timestamp: Date.now(),
-    });
-
-    return NextResponse.json(result, {
-      status: 200,
-      headers: {
-        "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60",
-        "X-Cache": "MISS",
-      },
-    });
-  } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to fetch balance" },
-      { status: 500 }
-    );
-  }
+  // Arc-only rail: anything that is not a 0x address is rejected. Legacy
+  // address formats have no chain left to resolve against.
+  return NextResponse.json(
+    { error: "Invalid wallet address: must be an Arc 0x address." },
+    { status: 400 }
+  );
 }

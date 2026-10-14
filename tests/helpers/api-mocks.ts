@@ -352,7 +352,7 @@ export class ApiMocker {
           initiatorId: 'user-123',
           status: 'disputed',
           reason: 'Member defaulted and organizer unresponsive',
-          evidence: 'https://stellar.expert/tx/mock-evidence-hash',
+          evidence: 'https://explorer.testnet.arc.io/tx/mock-evidence-hash',
           votesForResolution: 3,
           votesAgainstResolution: 0,
           createdAt: new Date().toISOString(),
@@ -432,7 +432,7 @@ export class ApiMocker {
     // document request is already redirected to /login.
     await this.page.context().addCookies([
       {
-        name: 'moistello_token',
+        name: 'deodes_token',
         value: token,
         domain: 'localhost',
         path: '/',

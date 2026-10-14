@@ -12,9 +12,9 @@ import {
 } from "@/lib/security/encryption";
 import { SESSION_TTL_MS } from "./session-lifecycle";
 
-const STORAGE_KEY = "moistello_wallet_sessions";
+const STORAGE_KEY = "deodes_wallet_sessions";
 const SESSION_TTL = SESSION_TTL_MS;
-const CHANNEL_NAME = "moistello-wallet";
+const CHANNEL_NAME = "deodes-wallet";
 
 export class WalletSessionManager {
   private sessions: WalletSession[] = [];
@@ -240,7 +240,7 @@ export class WalletSessionManager {
       typeof window !== "undefined"
         ? `${window.navigator.userAgent}-${window.screen.width}x${window.screen.height}`
         : "ssr-fallback";
-    return `${deviceSeed}:moistello-wallet-v1`;
+    return `${deviceSeed}:deodes-wallet-v1`;
   }
 
   destroy(): void {

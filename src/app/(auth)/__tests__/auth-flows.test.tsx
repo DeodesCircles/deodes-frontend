@@ -15,12 +15,12 @@ describe("Auth System Integration Flows", () => {
     expect(store.connection.walletId).toBeNull()
 
     act(() => {
-      useAuthFlowStore.getState().connectSuccess("freighter", "GAAXTEST1234567890")
+      useAuthFlowStore.getState().connectSuccess("arc-evm", "0x51b45Ba8570551e0D1fe818227d8bAa8b556694D")
     })
 
     const updated = useAuthFlowStore.getState()
-    expect(updated.connection.walletId).toBe("freighter")
-    expect(updated.connection.address).toBe("GAAXTEST1234567890")
+    expect(updated.connection.walletId).toBe("arc-evm")
+    expect(updated.connection.address).toBe("0x51b45Ba8570551e0D1fe818227d8bAa8b556694D")
     expect(updated.status.status).toBe("connected")
   })
 
@@ -44,11 +44,11 @@ describe("Auth System Integration Flows", () => {
   it("Flow 3: updates and tracks email verification state transitions", () => {
     act(() => {
       useAuthFlowStore.getState().startRegisterFlow()
-      useAuthFlowStore.getState().setEmailVerificationCodeSent("test@moistello.com", "verif-id-123")
+      useAuthFlowStore.getState().setEmailVerificationCodeSent("test@deodes.com", "verif-id-123")
     })
 
     const state = useAuthFlowStore.getState()
-    expect(state.emailVerification.email).toBe("test@moistello.com")
+    expect(state.emailVerification.email).toBe("test@deodes.com")
     expect(state.emailVerification.verificationId).toBe("verif-id-123")
     expect(state.emailVerification.codeSent).toBe(true)
     expect(state.emailVerification.codeVerified).toBe(false)

@@ -23,7 +23,7 @@ Deodes digitizes traditional savings circles (esusu, tontine, chit fund) using A
 ### Payout Modes
 | Mode | Mechanism |
 |------|-----------|
-| Random | VRF selects recipient (provably fair) |
+| Random | Seeded shuffle of unpaid members, deterministic per round (auditable; on-chain VRF planned) |
 | Fixed Order | Pre-defined sequential distribution |
 | Auction (Chit Fund) | Members bid discount, winner gets pool minus discount |
 | Vote-Based | Community votes recipient each round |

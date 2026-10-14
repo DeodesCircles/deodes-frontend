@@ -24,10 +24,10 @@ describe("contribution validation (Arc USDC only)", () => {
     expect(validateArcTxHash(HASH)).toBeNull();
   });
 
-  it("rejects Stellar G... addresses with a wrong-rail message", () => {
-    const stellar = "G" + "A".repeat(55);
-    expect(isArcAddress(stellar)).toBe(false);
-    expect(validateArcAddress(stellar)).toMatch(/Arc \(0x\)/);
+  it("rejects legacy G... addresses with a wrong-rail message", () => {
+    const legacy = "G" + "A".repeat(55);
+    expect(isArcAddress(legacy)).toBe(false);
+    expect(validateArcAddress(legacy)).toMatch(/Arc \(0x\)/);
     expect(validateArcAddress("0x123")).toMatch(/40 hex/);
     expect(validateArcAddress("")).toMatch(/Connect an Arc wallet/);
   });

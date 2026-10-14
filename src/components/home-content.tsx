@@ -38,10 +38,28 @@ const DashboardContent = dynamic(
   }
 )
 
-export function HomeContent() {
+export function HomeContent({ isAppHost = false }: { isAppHost?: boolean }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const isLoading = useAuthStore((s) => s.isLoading)
   const token = useAuthStore((s) => s.token)
+
+  // App host never shows marketing: loading, token-pending, or even the
+  // (middleware-should-have-redirected) resolved-unauthenticated state all
+  // render the dashboard shell. Landing belongs to the apex host only.
+  if (isAppHost) {
+    if (isAuthenticated) {
+      return (
+        <DashboardLayout>
+          <DashboardContent />
+        </DashboardLayout>
+      )
+    }
+    return (
+      <DashboardLayout>
+        <DashboardSkeleton />
+      </DashboardLayout>
+    )
+  }
 
   // If we have a token but auth hasn't resolved yet, hold the dashboard-shaped
   // shell instead of nothing — collapsing to zero height is what flashed the

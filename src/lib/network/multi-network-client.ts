@@ -5,7 +5,7 @@ import {
 } from "./config";
 
 export interface NetworkAdapter {
-  getNetwork(): Promise<{ passphrase: string }>;
+  getNetwork(): Promise<{ chainId: number }>;
 }
 
 export interface MultiNetworkClientOptions {
@@ -51,9 +51,9 @@ export class MultiNetworkClient {
     const adapter = this.createAdapter(nextConfig);
     const networkInfo = await adapter.getNetwork();
 
-    if (networkInfo.passphrase !== nextConfig.networkPassphrase) {
+    if (networkInfo.chainId !== nextConfig.chainId) {
       throw new Error(
-        `RPC network mismatch for ${nextNetwork}: expected ${nextConfig.networkPassphrase}`,
+        `RPC network mismatch for ${nextNetwork}: expected chain ${nextConfig.chainId}`,
       );
     }
 

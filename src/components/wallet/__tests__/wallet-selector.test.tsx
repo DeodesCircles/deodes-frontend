@@ -5,7 +5,6 @@
  *  - inline and overlay variants
  *  - wallet list rendering
  *  - WalletConnect QR / deeplink panel display
- *  - Ledger hardware-wallet prompt trigger
  *  - Connected state rendering
  *  - Offline banner
  *  - Disconnect flow
@@ -21,8 +20,7 @@ import { WalletSelector } from "../wallet-selector"
 const mockMultiWalletStore: Record<string, unknown> = {
   detectedWallets: [
     { id: "walletconnect", name: "WalletConnect", status: "detected", category: "mobile" },
-    { id: "freighter", name: "Freighter", status: "detected", category: "extension" },
-    { id: "ledger", name: "Ledger", status: "detected", category: "hardware" },
+    { id: "arc-evm", name: "Browser Wallet", status: "detected", category: "extension" },
   ],
   isScanning: false,
   activeWalletId: null,
@@ -70,20 +68,6 @@ vi.mock("@/lib/formatters", () => ({
   formatAddress: (addr: string) => addr.slice(0, 6) + "…" + addr.slice(-4),
 }))
 
-// LedgerPrompt is a dynamic import — mock it out
-vi.mock("next/dynamic", () => ({
-  default: (_fn: unknown, _opts: unknown) =>
-    function MockDynamicComponent(props: { isOpen: boolean; onClose: () => void }) {
-      if (!props.isOpen) return null
-      return (
-        <div data-testid="ledger-prompt">
-          LedgerPrompt
-          <button onClick={props.onClose}>Close Ledger</button>
-        </div>
-      )
-    },
-}))
-
 // The shared wallet-selector-shared components use walletconnect-qr which uses canvas;
 // provide a minimal canvas mock
 beforeEach(() => {
@@ -119,8 +103,7 @@ function resetStores() {
   Object.assign(mockMultiWalletStore, {
     detectedWallets: [
       { id: "walletconnect", name: "WalletConnect", status: "detected", category: "mobile" },
-      { id: "freighter", name: "Freighter", status: "detected", category: "extension" },
-      { id: "ledger", name: "Ledger", status: "detected", category: "hardware" },
+      { id: "arc-evm", name: "Browser Wallet", status: "detected", category: "extension" },
     ],
     isScanning: false,
     activeWalletId: null,
@@ -156,7 +139,7 @@ describe("WalletSelector — inline variant (default)", () => {
     mockMultiWalletStore.isSelectorOpen = true
     render(<WalletSelector />)
     expect(screen.getByText("WalletConnect")).toBeDefined()
-    expect(screen.getByText("Freighter")).toBeDefined()
+    expect(screen.getByText("Browser Wallet")).toBeDefined()
   })
 
   it("renders Cancel button in open selector", () => {
@@ -228,9 +211,9 @@ describe("WalletSelector — overlay variant", () => {
     expect(screen.getByText("WalletConnect")).toBeDefined()
   })
 
-  it("renders Freighter in overlay list", () => {
+  it("renders Browser Wallet in overlay list", () => {
     render(<WalletSelector variant="overlay" />)
-    expect(screen.getByText("Freighter")).toBeDefined()
+    expect(screen.getByText("Browser Wallet")).toBeDefined()
   })
 })
 
@@ -270,40 +253,18 @@ describe("WalletSelector — WalletConnect pairing panel", () => {
   })
 })
 
-describe("WalletSelector — Ledger hardware wallet prompt", () => {
-  beforeEach(resetStores)
-
-  it("shows Ledger as hardware wallet in the list", () => {
-    mockMultiWalletStore.isSelectorOpen = true
-    render(<WalletSelector />)
-    expect(screen.getByText("Ledger")).toBeDefined()
-  })
-
-  it("opens LedgerPrompt when hardware wallet Connect is clicked", async () => {
-    mockMultiWalletStore.isSelectorOpen = true
-    render(<WalletSelector />)
-    // The hardware wallet item has a "Connect" link
-    const connectBtns = screen.getAllByText("Connect")
-    // Click the one associated with Ledger (hardware section)
-    fireEvent.click(connectBtns[connectBtns.length - 1])
-    await waitFor(() => {
-      expect(screen.queryByTestId("ledger-prompt")).toBeDefined()
-    })
-  })
-})
-
 describe("WalletSelector — connected state", () => {
   it("shows connected wallet card when connected", async () => {
     const { ConnectedWalletCard } = await import("../wallet-selector-shared")
     render(
       <ConnectedWalletCard
-        name="Freighter"
-        address="GAXI…UIYJ"
+        name="Browser Wallet"
+        address="0x51b4…694D"
         onDisconnect={vi.fn()}
       />
     )
-    // The card renders "Connected ✓ Freighter" but the check mark is unicode
-    expect(screen.getByText("Freighter")).toBeDefined()
+    // The card renders "Connected ✓ Browser Wallet" but the check mark is unicode
+    expect(screen.getByText("Browser Wallet")).toBeDefined()
     // Check that some connected indicator is present
     const connected = document.querySelector(".animate-ping") // the pulsing dot
     expect(connected).not.toBeNull()
@@ -314,8 +275,8 @@ describe("WalletSelector — connected state", () => {
     const onDisconnect = vi.fn()
     render(
       <ConnectedWalletCard
-        name="Freighter"
-        address="GAXI…UIYJ"
+        name="Browser Wallet"
+        address="0x51b4…694D"
         onDisconnect={onDisconnect}
       />
     )

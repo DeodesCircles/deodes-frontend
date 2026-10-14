@@ -34,6 +34,26 @@ function isSameOriginApiRequest(config: InternalAxiosRequestConfig): boolean {
   }
 }
 
+/**
+ * Whether the double-submit CSRF token may be attached. Same-origin API
+ * routes plus our own backend origin (the app host talks to the apex API
+ * cross-origin — without this, every mutation from app.deodes.com fails
+ * CSRF validation and auth users get logged out on arrival). Anything else
+ * never receives the token.
+ */
+function isTrustedApiRequest(config: InternalAxiosRequestConfig): boolean {
+  if (isSameOriginApiRequest(config)) return true;
+  if (typeof window === "undefined") return false;
+  try {
+    const apiOrigin = new URL(API_BASE_URL, window.location.origin).origin;
+    const base = new URL(config.baseURL || API_BASE_URL, window.location.origin);
+    const requestUrl = new URL(config.url || "", base);
+    return requestUrl.origin === apiOrigin;
+  } catch {
+    return false;
+  }
+}
+
 let refreshInFlight: Promise<string> | null = null
 
 /**
@@ -110,7 +130,7 @@ apiClient.interceptors.request.use(
     if (
       method &&
       ["post", "put", "patch", "delete"].includes(method) &&
-      isSameOriginApiRequest(config)
+      isTrustedApiRequest(config)
     ) {
       const csrfToken = getCsrfToken()
       if (csrfToken) {
@@ -135,12 +155,26 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true
 
+      // No token was ever attached: this is a logged-out (or not-yet-logged-in)
+      // caller hitting a protected route, not a dead session. Refresh would
+      // fail and the nuclear path below would bounce the user to /login —
+      // including mid-OAuth-callback and wallet-connect races. Just reject
+      // and let the caller (checkAuth covers the boot path) handle it.
+      if (!originalRequest.headers.Authorization) {
+        return Promise.reject(error)
+      }
+
       try {
         const newToken = await refreshAccessToken()
         originalRequest.headers.Authorization = `Bearer ${newToken}`
         return apiClient(originalRequest)
       } catch (refreshError) {
-        if (typeof window !== "undefined" && !signOutInFlight) {
+        // Only destroy the session when the refresh endpoint says it is
+        // dead (401/403). A network blip or 5xx must not nuke valid
+        // HttpOnly cookies and bounce every tab to /login.
+        const refreshStatus = (refreshError as AxiosError)?.response?.status
+        const sessionDead = refreshStatus === 401 || refreshStatus === 403
+        if (typeof window !== "undefined" && !signOutInFlight && sessionDead) {
           signOutInFlight = true
           clearAccessToken()
           // The session cookies are HttpOnly, so only the server can drop

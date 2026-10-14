@@ -62,7 +62,7 @@ describe("LocaleProvider fetch failure handling", () => {
   })
 
   it("renders fetched translations and shows no banner on success", async () => {
-    localStorage.setItem("moistello_locale", "de")
+    localStorage.setItem("deodes_locale", "de")
     const mockFetch = vi.fn().mockResolvedValue(jsonResponse({ "common.loading": "Wird geladen..." }))
     vi.stubGlobal("fetch", mockFetch)
 
@@ -76,7 +76,7 @@ describe("LocaleProvider fetch failure handling", () => {
   })
 
   it("retries with backoff, then falls back to English with a visible notice", async () => {
-    localStorage.setItem("moistello_locale", "fr")
+    localStorage.setItem("deodes_locale", "fr")
     const mockFetch = vi.fn().mockRejectedValue(new TypeError("Failed to fetch"))
     vi.stubGlobal("fetch", mockFetch)
 
@@ -104,7 +104,7 @@ describe("LocaleProvider fetch failure handling", () => {
   })
 
   it("does not cache the failure: retrying from the banner recovers once the network does", async () => {
-    localStorage.setItem("moistello_locale", "es")
+    localStorage.setItem("deodes_locale", "es")
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("offline")))
     setup()
     await settle()
@@ -122,7 +122,7 @@ describe("LocaleProvider fetch failure handling", () => {
   })
 
   it("hides the notice when dismissed while still serving English", async () => {
-    localStorage.setItem("moistello_locale", "it")
+    localStorage.setItem("deodes_locale", "it")
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("offline")))
     setup()
     await settle()

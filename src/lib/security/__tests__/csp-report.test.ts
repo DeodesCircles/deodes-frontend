@@ -11,11 +11,11 @@ vi.mock("@/lib/logger", async () => {
 /** The legacy `report-uri` shape: the CSP body posted at the top level. */
 function legacyReport(overrides: Record<string, unknown> = {}) {
   return {
-    "document-uri": "https://moistello.com/wallet",
+    "document-uri": "https://deodes.com/wallet",
     "violated-directive": "script-src-elem",
     "effective-directive": "script-src-elem",
     "blocked-uri": "https://cdn.attacker.example/tracker.js",
-    "source-file": "https://moistello.com/_next/static/chunks/webpack.js",
+    "source-file": "https://deodes.com/_next/static/chunks/webpack.js",
     "status-code": 200,
     type: "csp-violation",
     ...overrides,
@@ -27,14 +27,14 @@ function reportingApiReport(overrides: Record<string, unknown> = {}) {
   return {
     age: 0,
     type: "csp-violation",
-    url: "https://moistello.com/",
+    url: "https://deodes.com/",
     body: {
-      documentURL: "https://moistello.com/circles",
+      documentURL: "https://deodes.com/circles",
       effectiveDirective: "script-src",
       violatedDirective: "script-src",
       blockedURL: "inline",
       disposition: "report",
-      sourceFile: "https://moistello.com/_next/static/chunks/main.js",
+      sourceFile: "https://deodes.com/_next/static/chunks/main.js",
       statusCode: 200,
       ...overrides,
     },
@@ -50,7 +50,7 @@ describe("parseCspReport", () => {
       type: "csp-violation",
       directive: "script-src-elem",
       blockedUri: "https://cdn.attacker.example/tracker.js",
-      documentUri: "https://moistello.com/wallet",
+      documentUri: "https://deodes.com/wallet",
       statusCode: 200,
     })
   })
@@ -62,7 +62,7 @@ describe("parseCspReport", () => {
     expect(reports[0]).toMatchObject({
       directive: "script-src",
       blockedUri: "inline",
-      documentUri: "https://moistello.com/circles",
+      documentUri: "https://deodes.com/circles",
       // The field that distinguishes an observed policy from an enforced one.
       disposition: "report",
     })

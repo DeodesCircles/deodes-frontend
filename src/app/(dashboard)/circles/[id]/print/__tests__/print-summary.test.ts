@@ -65,6 +65,7 @@ const circle: Circle = {
   lateFeePercent: 5,
   gracePeriodHours: 48,
   maxStrikes: 3,
+  autoDebit: false,
   status: "active",
   currentRound: 2,
   totalContributions: 900,

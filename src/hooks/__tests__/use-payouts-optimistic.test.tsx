@@ -173,7 +173,6 @@ describe("usePayoutPreview", () => {
       totalGrossAmount: 300,
       totalNetAmount: 298.5,
       protocolFee: 1.5,
-      stellarFeeEstimate: 0.00001,
       arcFeeEstimate: 0.001,
       recipients: [
         { recipientId: "user-2", grossAmount: 300, feeAmount: 1.5, netAmount: 298.5 },

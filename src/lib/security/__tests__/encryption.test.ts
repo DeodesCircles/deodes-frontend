@@ -51,7 +51,7 @@ describe("WebCrypto AES-GCM Storage Encryption (Issue #335)", () => {
   });
 
   it("encrypts to storage and decrypts from storage correctly", async () => {
-    const key = "moistello_test_user";
+    const key = "deodes_test_user";
     await encryptToStorage(key, testData, passphrase);
 
     expect(isEncrypted(key)).toBe(true);
@@ -61,7 +61,7 @@ describe("WebCrypto AES-GCM Storage Encryption (Issue #335)", () => {
   });
 
   it("clears storage and returns null when decryptFromStorage encounters tampered payload", async () => {
-    const key = "moistello_test_user";
+    const key = "deodes_test_user";
     await encryptToStorage(key, testData, passphrase);
 
     // Tamper the stored value

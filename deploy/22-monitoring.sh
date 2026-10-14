@@ -57,7 +57,7 @@ else
 fi
 
 # ── PostgreSQL ──────────────────────────────────────────────────
-pg_status=\$(docker exec moistello-postgres pg_isready -U moistello -t 10 2>&1 || echo "failed")
+pg_status=\$(docker exec deodes-postgres pg_isready -U deodes -t 10 2>&1 || echo "failed")
 if echo "\${pg_status}" | grep -q "accepting connections"; then
     log_msg "PostgreSQL: OK (accepting connections)"
 else
@@ -66,7 +66,7 @@ else
 fi
 
 # ── Redis ───────────────────────────────────────────────────────
-redis_status=\$(docker exec moistello-redis redis-cli -a "\${REDIS_PW:-}" --no-auth-warning PING 2>&1 || echo "failed")
+redis_status=\$(docker exec deodes-redis redis-cli -a "\${REDIS_PW:-}" --no-auth-warning PING 2>&1 || echo "failed")
 if echo "\${redis_status}" | grep -qi "PONG"; then
     log_msg "Redis: OK (PONG)"
 else
@@ -150,11 +150,11 @@ SECEOF
 
 ok "unattended-upgrades configured (security patches only)"
 
-# ── 4. Log rotation for /var/log/moistello/*.log ────────────────
+# ── 4. Log rotation for /var/log/deodes/*.log ────────────────
 info "Configuring log rotation for ${LOG_DIR}/*.log"
 
-cat > /etc/logrotate.d/moistello << 'LOGEOF'
-/var/log/moistello/*.log {
+cat > /etc/logrotate.d/deodes << 'LOGEOF'
+/var/log/deodes/*.log {
     daily
     missingok
     rotate 5
@@ -171,10 +171,10 @@ cat > /etc/logrotate.d/moistello << 'LOGEOF'
 LOGEOF
 
 # Test logrotate config
-if logrotate -d /etc/logrotate.d/moistello &>/dev/null; then
+if logrotate -d /etc/logrotate.d/deodes &>/dev/null; then
     ok "Log rotation configured (max 50MB, 5 copies)"
 else
-    warn "Log rotation config may be invalid — check /etc/logrotate.d/moistello"
+    warn "Log rotation config may be invalid — check /etc/logrotate.d/deodes"
 fi
 
 mark_done "22"

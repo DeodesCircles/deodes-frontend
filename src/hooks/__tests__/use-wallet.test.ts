@@ -23,11 +23,11 @@ describe("useWallet", () => {
 
   it("reflects connected wallet state", () => {
     useMultiWalletStore.setState({
-      activeWalletId: "freighter",
+      activeWalletId: "arc-evm",
       wallets: {
-        freighter: {
+        "arc-evm": {
           adapter: {} as never,
-          publicKey: "GABC123",
+          publicKey: "0x51b45Ba8570551e0D1fe818227d8bAa8b556694D",
           network: "testnet",
           balance: { xlm: "100.5", usdc: "25.0" },
           lastConnected: Date.now(),
@@ -40,7 +40,7 @@ describe("useWallet", () => {
     const { result } = renderHook(() => useWallet());
 
     expect(result.current.isConnected).toBe(true);
-    expect(result.current.address).toBe("GABC123");
+    expect(result.current.address).toBe("0x51b45Ba8570551e0D1fe818227d8bAa8b556694D");
     expect(result.current.balance).toEqual({ xlm: "100.5", usdc: "25.0" });
   });
 
@@ -54,9 +54,9 @@ describe("useWallet", () => {
 
   it("reflects connecting state", () => {
     useMultiWalletStore.setState({
-      activeWalletId: "freighter",
+      activeWalletId: "arc-evm",
       wallets: {
-        freighter: {
+        "arc-evm": {
           adapter: {} as never,
           publicKey: "",
           network: "testnet",
@@ -76,15 +76,15 @@ describe("useWallet", () => {
 
   it("reflects error state", () => {
     useMultiWalletStore.setState({
-      activeWalletId: "freighter",
+      activeWalletId: "arc-evm",
       wallets: {
-        freighter: {
+        "arc-evm": {
           adapter: {} as never,
           publicKey: "",
           network: "testnet",
           balance: null,
           lastConnected: Date.now(),
-          error: { adapter: "freighter", code: "timeout", message: "Connection timed out" },
+          error: { adapter: "arc-evm", code: "timeout", message: "Connection timed out" },
           status: "error",
         },
       },
@@ -97,11 +97,11 @@ describe("useWallet", () => {
 
   it("returns null balance when active wallet has no balance", () => {
     useMultiWalletStore.setState({
-      activeWalletId: "freighter",
+      activeWalletId: "arc-evm",
       wallets: {
-        freighter: {
+        "arc-evm": {
           adapter: {} as never,
-          publicKey: "GABC123",
+          publicKey: "0x51b45Ba8570551e0D1fe818227d8bAa8b556694D",
           network: "testnet",
           balance: null,
           lastConnected: Date.now(),

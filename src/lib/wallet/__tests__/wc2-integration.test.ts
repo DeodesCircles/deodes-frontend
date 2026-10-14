@@ -145,32 +145,32 @@ describe("WC2 — Adapter Lifecycle", () => {
   })
 })
 
-describe("WC2 — Stellar Account Parsing", () => {
+describe("WC2 — EVM Account Parsing", () => {
   it("parses testnet account correctly", () => {
-    const account = "stellar:testnet:GAX23V3WWDPPR5WRER3KTEUTDLSCGZYMSJY5FDRRKKCIQ4JADF5T27RC"
+    const account = "eip155:5042002:0x51b45Ba8570551e0D1fe818227d8bAa8b556694D"
     const parts = account.split(":")
-    expect(parts[0]).toBe("stellar")
-    expect(parts[1]).toBe("testnet")
-    expect(parts[2]).toHaveLength(56)
+    expect(parts[0]).toBe("eip155")
+    expect(parts[1]).toBe("5042002")
+    expect(parts[2]).toMatch(/^0x[0-9a-fA-F]{40}$/)
   })
 
-  it("parses pubnet account correctly", () => {
-    const account = "stellar:pubnet:GAX23V3WWDPPR5WRER3KTEUTDLSCGZYMSJY5FDRRKKCIQ4JADF5T27RC"
+  it("parses mainnet account correctly", () => {
+    const account = "eip155:5042:0x51b45Ba8570551e0D1fe818227d8bAa8b556694D"
     const parts = account.split(":")
-    expect(parts[0]).toBe("stellar")
-    expect(parts[1]).toBe("pubnet")
-    expect(parts[2]).toHaveLength(56)
+    expect(parts[0]).toBe("eip155")
+    expect(parts[1]).toBe("5042")
+    expect(parts[2]).toMatch(/^0x[0-9a-fA-F]{40}$/)
   })
 
-  it("derives network type testnet from chain stellar:testnet", () => {
-    const chainId: string = "stellar:testnet"
-    const network = chainId === "stellar:pubnet" ? "mainnet" : "testnet"
+  it("derives network type testnet from chain eip155:5042002", () => {
+    const chainId: string = "eip155:5042002"
+    const network = chainId === "eip155:5042" ? "mainnet" : "testnet"
     expect(network).toBe("testnet")
   })
 
-  it("derives network type mainnet from chain stellar:pubnet", () => {
-    const chainId = "stellar:pubnet"
-    const network = chainId === "stellar:pubnet" ? "mainnet" : "testnet"
+  it("derives network type mainnet from chain eip155:5042", () => {
+    const chainId = "eip155:5042"
+    const network = chainId === "eip155:5042" ? "mainnet" : "testnet"
     expect(network).toBe("mainnet")
   })
 })

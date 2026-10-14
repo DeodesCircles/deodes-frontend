@@ -36,11 +36,11 @@ Object.defineProperty(global, "localStorage", { value: localStorageMock })
 
 import { createPasskeyAdapter } from "../passkey"
 import { startRegistration, startAuthentication } from "@simplewebauthn/browser"
-import { deriveStellarKeypair, secureZeroMemory } from "@/lib/crypto/key-derivation"
+import { deriveEd25519Keypair, secureZeroMemory } from "@/lib/crypto/key-derivation"
 
 const mockOptions = {
   challenge: "test-challenge-base64url",
-  rp: { name: "Moistello", id: "localhost" },
+  rp: { name: "Deodes", id: "localhost" },
   user: { id: "dXNlckB0ZXN0LmNvbQ", name: "user@test.com", displayName: "user@test.com" },
   pubKeyCredParams: [{ alg: -7, type: "public-key" }],
   authenticatorSelection: { authenticatorAttachment: "platform", userVerification: "required", residentKey: "required" },
@@ -142,7 +142,7 @@ describe("Passkey adapter", () => {
   describe("connect — authentication (returning user with conditional mediation)", () => {
     it("authenticates with stored credential via conditional mediation", async () => {
       localStorageMock.setItem(
-        "moistello_passkey_credential",
+        "deodes_passkey_credential",
         JSON.stringify({ credentialId: "test-credential-id-123", email: "user@test.com", publicKeyRaw: "test" })
       )
 
@@ -160,7 +160,7 @@ describe("Passkey adapter", () => {
 
     it("returns user_rejected on auth cancel", async () => {
       localStorageMock.setItem(
-        "moistello_passkey_credential",
+        "deodes_passkey_credential",
         JSON.stringify({ credentialId: "test-credential-id-123", email: "user@test.com", publicKeyRaw: "test" })
       )
 
@@ -198,7 +198,7 @@ describe("Passkey adapter", () => {
 
       adapter.reset?.()
       expect(await adapter.isConnected()).toBe(false)
-      expect(localStorageMock.removeItem).toHaveBeenCalledWith("moistello_passkey_credential")
+      expect(localStorageMock.removeItem).toHaveBeenCalledWith("deodes_passkey_credential")
     })
 
     it("getPublicKey throws when not connected", async () => {
@@ -225,24 +225,23 @@ describe("Passkey adapter", () => {
       expect(result.publicKey).toMatch(/^[a-f0-9]{64}$/)
     })
 
-    it("signTransaction returns signed XDR", async () => {
+    it("signTransaction throws not_supported (XDR flow removed)", async () => {
       vi.mocked(startRegistration).mockResolvedValueOnce(mockAttestation as never)
       const adapter = createPasskeyAdapter()
       await adapter.connect("user@test.com")
 
-      const result = await adapter.signTransaction(
-        "AAAAAgAAAAAZf2sj4WyFMsaryDj6zV6nib4MdrKSAzQDm/qLPTaNYQAAAGQAAAAAAAAAAQAAAAEAAAAAAAAAAAAAAABqF+POAAAAAAAAAAEAAAAAAAAAAQAAAABCzwVZeQ9sO2TeFRIN8Lslyqt9wttPtKGKNeiBvzI69wAAAAAAAAAAAJiWgAAAAAAAAAAA"
-      )
-      expect(result.signedXdr).toBeDefined()
-      expect(typeof result.signedXdr).toBe("string")
-      expect(result.signedXdr.length).toBeGreaterThan(0)
+      await expect(
+        adapter.signTransaction(
+          "AAAAAgAAAAAZf2sj4WyFMsaryDj6zV6nib4MdrKSAzQDm/qLPTaNYQAAAGQAAAAAAAAAAQAAAABCzwVZeQ9sO2TeFRIN8Lslyqt9wttPtKGKNeiBvzI69wAAAAAAAAAAAJiWgAAAAAAAAAAA"
+        )
+      ).rejects.toMatchObject({ adapter: "passkey", code: "not_supported" })
     })
   })
 
   describe("crypto key derivation & memory zeroing", () => {
     it("derives deterministic Ed25519 keypair for given credentialId and pepper", async () => {
-      const keypair1 = await deriveStellarKeypair("cred-123", "pepper-abc", "user@test.com")
-      const keypair2 = await deriveStellarKeypair("cred-123", "pepper-abc", "user@test.com")
+      const keypair1 = await deriveEd25519Keypair("cred-123", "pepper-abc", "user@test.com")
+      const keypair2 = await deriveEd25519Keypair("cred-123", "pepper-abc", "user@test.com")
 
       expect(keypair1.publicKey).toEqual(keypair2.publicKey)
       expect(keypair1.secretKey).toEqual(keypair2.secretKey)

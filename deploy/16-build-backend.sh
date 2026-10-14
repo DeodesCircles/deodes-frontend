@@ -18,32 +18,32 @@ mkdir -p "$APP_DIR/bin"
 CGO_ENABLED=0 run go build \
     -ldflags="-s -w -extldflags '-static'" \
     -trimpath \
-    -o "$APP_DIR/bin/moistello-api" \
+    -o "$APP_DIR/bin/deodes-api" \
     ./cmd/api-server
 
-if [ ! -f "$APP_DIR/bin/moistello-api" ]; then
-    fail "Binary not found at $APP_DIR/bin/moistello-api"
+if [ ! -f "$APP_DIR/bin/deodes-api" ]; then
+    fail "Binary not found at $APP_DIR/bin/deodes-api"
 fi
 
-if [ ! -x "$APP_DIR/bin/moistello-api" ]; then
+if [ ! -x "$APP_DIR/bin/deodes-api" ]; then
     fail "Binary is not executable"
 fi
 
-if [ ! -s "$APP_DIR/bin/moistello-api" ]; then
+if [ ! -s "$APP_DIR/bin/deodes-api" ]; then
     fail "Binary is zero-size"
 fi
-ok "Binary exists, executable, and non-zero ($(du -h "$APP_DIR/bin/moistello-api" | cut -f1))"
+ok "Binary exists, executable, and non-zero ($(du -h "$APP_DIR/bin/deodes-api" | cut -f1))"
 
 info "Smoke-testing binary..."
-SMOKE=$("$APP_DIR/bin/moistello-api" --help 2>&1 | head -1 || true)
+SMOKE=$("$APP_DIR/bin/deodes-api" --help 2>&1 | head -1 || true)
 if [ -n "$SMOKE" ]; then
     ok "Smoke-test: $SMOKE"
 else
     warn "Binary produced no --help output but is executable"
 fi
 
-chown deploy:deploy "$APP_DIR/bin/moistello-api" 2>/dev/null || true
-chmod 755 "$APP_DIR/bin/moistello-api"
+chown deploy:deploy "$APP_DIR/bin/deodes-api" 2>/dev/null || true
+chmod 755 "$APP_DIR/bin/deodes-api"
 
 mark_done "16"
 step_end

@@ -11,7 +11,7 @@ import { describe, it, expect } from "vitest"
 describe("WalletError union completeness", () => {
   it("includes not_installed for wallet-not-found scenarios", () => {
     const err: { adapter: string; code: "not_installed"; message: string } = {
-      adapter: "freighter",
+      adapter: "arc-evm",
       code: "not_installed",
       message: "Wallet not found",
     }
@@ -61,7 +61,7 @@ describe("WalletError union completeness", () => {
 
   it("includes network_offline for offline connect scenarios", () => {
     const err: { adapter: string; code: "network_offline"; message: string } = {
-      adapter: "freighter",
+      adapter: "arc-evm",
       code: "network_offline",
       message: "You appear to be offline. Please check your internet connection and try again.",
     }

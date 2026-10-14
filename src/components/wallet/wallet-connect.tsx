@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useMultiWalletStore } from "@/stores/multi-wallet-store";
 import { useMultiWalletConnection } from "@/hooks/use-multi-wallet";
 import { useOnlineStatus } from "@/hooks/use-online-status";
+import { useAuthStore } from "@/stores/auth-store";
 
 interface WalletConnectProps {
   className?: string;
@@ -22,6 +23,9 @@ export function WalletConnect({
 }: WalletConnectProps) {
   const isOnline = useOnlineStatus();
   const { isConnected, address, isConnecting, error } = useMultiWalletConnection();
+  // Honest badge: green only with a live session. A linked wallet without a
+  // session shows amber "Linked" — it is not a login.
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const connect = useMultiWalletStore((s) => s.connect);
   const [localError, setLocalError] = useState<string | null>(null);
 
@@ -36,12 +40,12 @@ export function WalletConnect({
     }
 
     try {
-      await connect("freighter");
+      await connect("arc-evm");
     } catch (err) {
       if (err instanceof Error) {
         if (err.message.includes("not installed")) {
           setLocalError(
-            "Freighter wallet is not installed. Please install the Freighter browser extension to continue.",
+            "No browser wallet is installed. Please install a compatible EVM wallet extension to continue.",
           );
         } else {
           setLocalError(err.message || "Failed to connect wallet.");
@@ -64,6 +68,20 @@ export function WalletConnect({
   const displayError = localError || error;
 
   if (isConnected && address) {
+    if (!isAuthenticated) {
+      return (
+        <div className={cn("flex items-center gap-2", className)}>
+          <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-1.5">
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400" />
+            <Wallet className="h-4 w-4 text-amber-400" />
+            <span className="text-sm font-mono text-gray-700 dark:text-gray-300">
+              {formatAddress(address)}
+            </span>
+            <span className="text-xs text-amber-400">Linked — sign in to continue</span>
+          </div>
+        </div>
+      );
+    }
     return (
       <div className={cn("flex items-center gap-2", className)}>
         <div className="flex items-center gap-2 rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-1.5">

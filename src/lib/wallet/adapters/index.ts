@@ -4,8 +4,6 @@ import { isPasskeyEnabled, isWalletConnectEnabled } from "../features"
 export { createWalletConnectAdapter } from "./walletconnect"
 export { createPasskeyAdapter } from "./passkey"
 export { createArcEvmAdapter } from "./arc-evm"
-// LEGACY Stellar adapters kept on disk but no longer registered (Arc-only).
-// import "./freighter" "./xbull" "./rabet" "./albedo" "./ledger" removed per product decision.
 
 let initialized = false
 
@@ -28,8 +26,6 @@ export async function initializeWalletAdapters(): Promise<void> {
     const { createPasskeyAdapter } = await import("./passkey")
     registry.register(createPasskeyAdapter())
   }
-
-  // Arc-only: Stellar extension + Ledger rails removed (freighter/xbull/rabet/albedo/ledger).
 
   initialized = true
 }

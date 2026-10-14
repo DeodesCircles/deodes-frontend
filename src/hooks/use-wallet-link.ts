@@ -7,9 +7,8 @@ import { useMultiWalletStore } from "@/stores/multi-wallet-store"
 import { useToast } from "@/hooks/use-toast"
 
 /**
- * Rejection copy mirrors `use-wallet-auth` (same hints, link-scoped wording)
- * without importing it, so this hook stays usable on authed pages that never
- * mount the login/register bridge.
+ * Rejection copy (same hints as the retired login bridge had, link-scoped
+ * wording) without importing it, so this hook stays usable on authed pages.
  */
 const REJECTION_HINTS = [
   "user rejected",
@@ -115,13 +114,11 @@ export interface UseWalletLinkResult {
 /**
  * Link prompt for signed-in (Google/email) users.
  *
- * `useWalletAuth` only runs on the login/register bridge, so an already
- * authenticated user who connects a wallet gets nothing server-side. This
- * hook fills that gap: when the active wallet is a connected non-hosted 0x
- * address that GET /wallets doesn't already record (hosted or linked), it
- * exposes `needsLink` and a `link()` that proves ownership
- * (POST /auth/nonce -> adapter.signMessage -> POST /wallets/link, i.e. the
- * backend's POST /v1/wallets/link contract) and toasts on success.
+ * When the active wallet is a connected non-hosted 0x address that
+ * GET /wallets doesn't already record (hosted or linked), this hook exposes
+ * `needsLink` and a `link()` that proves ownership (POST /auth/nonce ->
+ * adapter.signMessage -> POST /wallets/link) and toasts on success. Linking
+ * is funding only: it never creates a session or enrolls auto-pay.
  */
 export function useWalletLink(): UseWalletLinkResult {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)

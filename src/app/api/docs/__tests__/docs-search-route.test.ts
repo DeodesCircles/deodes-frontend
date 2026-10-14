@@ -42,14 +42,14 @@ import { GET } from "@/app/api/docs/search/route"
 const GETTING_STARTED_MD = `---
 title: Getting Started
 ---
-Learn how to create a savings circle and join the Moistello platform.
-Connect your Stellar wallet and get started with USDC contributions.
+Learn how to create a savings circle and join the Deodes platform.
+Connect your Arc wallet and get started with USDC contributions.
 `
 
 const WALLET_SETUP_MD = `---
 title: Wallet Setup
 ---
-How to set up your Stellar wallet for Moistello USDC payments.
+How to set up your Arc wallet for Deodes USDC payments.
 `
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -132,7 +132,7 @@ describe("GET /api/docs/search", () => {
 
   describe("search results", () => {
     it("returns non-empty results for a relevant query", async () => {
-      const res = await GET(makeSearchRequest("savings circle wallet stellar"))
+      const res = await GET(makeSearchRequest("savings circle wallet arc"))
       const json = await res.json()
       expect(json.results.length).toBeGreaterThan(0)
     })
@@ -165,7 +165,7 @@ describe("GET /api/docs/search", () => {
     })
 
     it("results are ranked by score descending", async () => {
-      const res = await GET(makeSearchRequest("wallet stellar usdc"))
+      const res = await GET(makeSearchRequest("wallet arc usdc"))
       const json = await res.json()
       const scores = (json.results as SearchMatch[]).map((r) => r.score)
       for (let i = 1; i < scores.length; i++) {

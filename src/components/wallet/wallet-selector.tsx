@@ -1,14 +1,12 @@
 "use client"
 
 import { logger } from "@/lib/logger"
-import { useState } from "react"
 import { Wallet, X, LoaderCircle, QrCode } from "lucide-react"
 import { cn } from "@/lib/cn"
 import { useMultiWalletStore } from "@/stores/multi-wallet-store"
 import { useWalletConnectStore } from "@/stores/walletconnect-store"
 import { useMultiWalletConnection } from "@/hooks/use-multi-wallet"
 import { formatAddress } from "@/lib/formatters"
-import dynamic from "next/dynamic"
 import type { WalletId } from "@/lib/wallet/types"
 import { useOnlineStatus } from "@/hooks/use-online-status"
 import {
@@ -17,8 +15,6 @@ import {
   ConnectedWalletCard,
   type WalletDescriptor,
 } from "./wallet-selector-shared"
-
-const LedgerPrompt = dynamic(() => import("@/components/wallet/ledger-prompt").then((m) => m.LedgerPrompt), { ssr: false })
 
 interface WalletSelectorProps {
   className?: string
@@ -34,8 +30,6 @@ interface WalletSelectorState {
   activeAdapterName: string
   isSelectorOpen: boolean
   setSelectorOpen: (open: boolean) => void
-  showLedgerPrompt: boolean
-  setShowLedgerPrompt: (open: boolean) => void
   standardWallets: WalletDescriptor[]
   hardwareWallets: WalletDescriptor[]
   isScanning: boolean
@@ -106,7 +100,6 @@ function OverlayWalletSelector({ className, ...s }: WalletSelectorProps & Wallet
           />
         )}
       </div>
-      <LedgerPrompt isOpen={s.showLedgerPrompt} onClose={() => s.setShowLedgerPrompt(false)} />
     </>
   )
 }
@@ -183,7 +176,6 @@ function InlineWalletSelector({ className, ...s }: WalletSelectorProps & WalletS
             </button>
           )}
         </div>
-        <LedgerPrompt isOpen={s.showLedgerPrompt} onClose={() => s.setShowLedgerPrompt(false)} />
       </>
     )
   }
@@ -199,7 +191,6 @@ function InlineWalletSelector({ className, ...s }: WalletSelectorProps & WalletS
 
 export function WalletSelector({ className, variant = "inline" }: WalletSelectorProps) {
   const isOnline = useOnlineStatus()
-  const [showLedgerPrompt, setShowLedgerPrompt] = useState(false)
   const detectedWallets = useMultiWalletStore((s) => s.detectedWallets)
   const isScanning = useMultiWalletStore((s) => s.isScanning)
   const { isConnected, isConnecting, error, address, activeAdapter } = useMultiWalletConnection()
@@ -236,11 +227,6 @@ export function WalletSelector({ className, variant = "inline" }: WalletSelector
 
   const handleSelect = async (walletId: WalletId) => {
     if (!isOnline) return
-    const wallet = detectedWallets.find((w) => w.id === walletId)
-    if (wallet?.category === "hardware") {
-      setShowLedgerPrompt(true)
-      return
-    }
 
     if (walletId === "walletconnect") {
       const { setOnPairingUri } = await import("@/lib/wallet/adapters/walletconnect")
@@ -305,8 +291,6 @@ export function WalletSelector({ className, variant = "inline" }: WalletSelector
     activeAdapterName,
     isSelectorOpen,
     setSelectorOpen,
-    showLedgerPrompt,
-    setShowLedgerPrompt,
     standardWallets,
     hardwareWallets,
     isScanning,

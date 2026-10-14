@@ -14,8 +14,8 @@ test.describe("Auth System E2E - Email Verification Flow", () => {
     // Verify email input field or confirmation form presence
     const emailInput = page.locator("input[type='email'], input[name='email']").first()
     if (await emailInput.isVisible()) {
-      await emailInput.fill("testuser@moistello-test.com")
-      expect(await emailInput.inputValue()).toBe("testuser@moistello-test.com")
+      await emailInput.fill("testuser@deodes-test.com")
+      expect(await emailInput.inputValue()).toBe("testuser@deodes-test.com")
     }
   })
 

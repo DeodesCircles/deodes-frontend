@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import CircleDetailPage from "./page";
 
@@ -12,6 +12,11 @@ const mockUseJoinCircle = vi.fn();
 const mockUseStartCircle = vi.fn();
 const mockUseExitCircle = vi.fn();
 const mockAddToast = vi.fn();
+
+// Shared by the use-subscriptions mock below; assigned fresh in beforeEach.
+// Declared up here (not inside the factory) so hoisted mock evaluation never
+// hits the temporal dead zone — the factory only reads it when called.
+let subscribeMutate: ReturnType<typeof vi.fn>;
 
 vi.mock("next/navigation", () => ({
   useParams: () => ({ id: "circle-42" }),
@@ -41,11 +46,16 @@ vi.mock("@/hooks/use-multi-wallet", () => ({
 }));
 
 vi.mock("@/hooks/use-subscriptions", () => ({
-  useSubscribe: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useSubscribe: () => ({ mutateAsync: subscribeMutate, isPending: false }),
+  useMySubscriptions: () => ({ data: undefined, isLoading: false }),
 }));
 
 vi.mock("./components/auto-debit-card", () => ({
   AutoDebitCard: () => null,
+}));
+
+vi.mock("./components/auto-pay-prompt", () => ({
+  AutoPayPrompt: () => null,
 }));
 
 vi.mock("@/stores/ui-store", () => ({
@@ -103,6 +113,7 @@ describe("CircleDetailPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     joinMutate = vi.fn().mockResolvedValue(undefined);
+    subscribeMutate = vi.fn().mockResolvedValue(undefined);
     mockUseAuth.mockReturnValue({ user: { id: "user-3" } });
     mockUseCircleMembers.mockReturnValue({ data: [{ userId: "user-1" }, { userId: "user-2" }] });
     mockUseCirclePayouts.mockReturnValue({ data: { payouts: [] }, isLoading: false, isError: false });
@@ -140,7 +151,7 @@ describe("CircleDetailPage", () => {
     });
   });
 
-  it("requires explicit auto-debit consent on Auto circles", async () => {
+  it("joins Auto circles manual by default without subscribing", async () => {
     mockUseCircle.mockReturnValue({
       data: {
         id: "circle-42",
@@ -160,12 +171,46 @@ describe("CircleDetailPage", () => {
 
     render(<CircleDetailPage />);
 
-    expect(screen.getByText(/auto circle:/i)).toBeInTheDocument();
+    expect(screen.getByText(/auto-pay from my deodes balance/i)).toBeInTheDocument();
 
-    // No consent ticked: join is refused before any network call.
+    // Unticked: join succeeds, no subscription enrolled.
     fireEvent.click(screen.getByRole("button", { name: /join circle/i }));
-    expect(joinMutate).not.toHaveBeenCalled();
-    expect(await screen.findByText(/tick the auto-debit consent box/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(joinMutate).toHaveBeenCalledWith({ circleId: "circle-42" });
+    });
+    expect(subscribeMutate).not.toHaveBeenCalled();
+  });
+
+  it("enrolls auto-pay when the consent box is ticked at join", async () => {
+    mockUseCircle.mockReturnValue({
+      data: {
+        id: "circle-42",
+        name: "Auto Savers",
+        organizerId: "user-1",
+        contributionAmount: 25,
+        currency: "USDC",
+        circleType: "public",
+        status: "active",
+        autoDebit: true,
+        frequency: "weekly",
+        maxMembers: 10,
+      },
+      isLoading: false,
+      isError: false,
+    });
+
+    render(<CircleDetailPage />);
+
+    fireEvent.click(screen.getByRole("checkbox"));
+    fireEvent.click(screen.getByRole("button", { name: /join circle/i }));
+    await waitFor(() => {
+      expect(joinMutate).toHaveBeenCalledWith({ circleId: "circle-42" });
+    });
+    expect(subscribeMutate).toHaveBeenCalledWith({
+      circleId: "circle-42",
+      amount: 25,
+      capTotal: 250,
+    });
   });
 
   it("shows a not found state when the circle fails to load", () => {

@@ -1,7 +1,7 @@
 "use client"
 
 /**
- * Feature flag utility for the Moistello frontend.
+ * Feature flag utility for the Deodes frontend.
  * All flags default to "true" if not explicitly set to "false" or "0".
  */
 

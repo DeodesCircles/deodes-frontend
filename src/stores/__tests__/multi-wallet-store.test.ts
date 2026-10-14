@@ -50,8 +50,8 @@ function createAdapter(
 ): WalletAdapter {
   return {
     meta: {
-      id: "freighter",
-      name: "Freighter",
+      id: "arc-evm",
+      name: "Browser Wallet",
       category: "extension",
       icon: "",
       installUrl: "",
@@ -89,28 +89,28 @@ describe("multi-wallet-store connect concurrency", () => {
     );
     getAdapter.mockReturnValue(adapter);
 
-    const first = useMultiWalletStore.getState().connect("freighter");
-    const second = useMultiWalletStore.getState().connect("freighter");
+    const first = useMultiWalletStore.getState().connect("arc-evm");
+    const second = useMultiWalletStore.getState().connect("arc-evm");
 
     expect(adapter.connect).toHaveBeenCalledTimes(1);
     await expect(second).resolves.toBeUndefined();
 
-    pendingConnection.resolve({ publicKey: "GDOUBLECLICK" });
+    pendingConnection.resolve({ publicKey: "0x51b45Ba8570551e0D1fe818227d8bAa8b556694D" });
     await first;
   });
 
   it("still connects a wallet with a single call", async () => {
     const adapter = createAdapter(
-      vi.fn().mockResolvedValue({ publicKey: "GSINGLECONNECT" })
+      vi.fn().mockResolvedValue({ publicKey: "0x70A7CCB7b5fe856384Aab3aAF553E09A10AF14A4" })
     );
     getAdapter.mockReturnValue(adapter);
 
-    await useMultiWalletStore.getState().connect("freighter");
+    await useMultiWalletStore.getState().connect("arc-evm");
 
     expect(adapter.connect).toHaveBeenCalledTimes(1);
-    expect(sessionConnect).toHaveBeenCalledWith(adapter, "GSINGLECONNECT");
-    expect(useMultiWalletStore.getState().wallets.freighter).toMatchObject({
-      publicKey: "GSINGLECONNECT",
+    expect(sessionConnect).toHaveBeenCalledWith(adapter, "0x70A7CCB7b5fe856384Aab3aAF553E09A10AF14A4");
+    expect(useMultiWalletStore.getState().wallets["arc-evm"]).toMatchObject({
+      publicKey: "0x70A7CCB7b5fe856384Aab3aAF553E09A10AF14A4",
       network: "testnet",
       status: "connected",
       error: null,
@@ -125,27 +125,27 @@ describe("multi-wallet-store connect concurrency", () => {
     getAdapter.mockReturnValue(adapter);
 
     const attempts = [
-      useMultiWalletStore.getState().connect("freighter"),
-      useMultiWalletStore.getState().connect("freighter"),
-      useMultiWalletStore.getState().connect("freighter"),
+      useMultiWalletStore.getState().connect("arc-evm"),
+      useMultiWalletStore.getState().connect("arc-evm"),
+      useMultiWalletStore.getState().connect("arc-evm"),
     ];
 
     expect(useMultiWalletStore.getState()).toMatchObject({
-      activeWalletId: "freighter",
-      connectingWalletId: "freighter",
+      activeWalletId: "arc-evm",
+      connectingWalletId: "arc-evm",
     });
 
-    pendingConnection.resolve({ publicKey: "GRAPIDCLICKS" });
+    pendingConnection.resolve({ publicKey: "0x0000000000000000000000000000000000000001" });
     await Promise.all(attempts);
 
     expect(adapter.connect).toHaveBeenCalledTimes(1);
     expect(sessionConnect).toHaveBeenCalledTimes(1);
     expect(useMultiWalletStore.getState()).toMatchObject({
-      activeWalletId: "freighter",
+      activeWalletId: "arc-evm",
       connectingWalletId: null,
     });
     expect(Object.keys(useMultiWalletStore.getState().wallets)).toEqual([
-      "freighter",
+      "arc-evm",
     ]);
   });
 
@@ -157,26 +157,26 @@ describe("multi-wallet-store connect concurrency", () => {
     slowAdapter.isConnected = vi.fn().mockReturnValue(slowProbe.promise);
     getAll.mockReturnValue([
       {
-        walletId: "freighter",
-        publicKey: "GFAST",
+        walletId: "arc-evm",
+        publicKey: "0x51b45Ba8570551e0D1fe818227d8bAa8b556694D",
         network: "testnet",
         lastConnected: 2,
       },
       {
-        walletId: "xbull",
-        publicKey: "GSLOW",
+        walletId: "walletconnect",
+        publicKey: "0x70A7CCB7b5fe856384Aab3aAF553E09A10AF14A4",
         network: "testnet",
         lastConnected: 1,
       },
     ]);
     getActive.mockReturnValue({
-      walletId: "freighter",
-      publicKey: "GFAST",
+      walletId: "arc-evm",
+      publicKey: "0x51b45Ba8570551e0D1fe818227d8bAa8b556694D",
       network: "testnet",
       lastConnected: 2,
     });
     getAdapter.mockImplementation((walletId: string) =>
-      walletId === "freighter" ? fastAdapter : slowAdapter
+      walletId === "arc-evm" ? fastAdapter : slowAdapter
     );
 
     const initPromise = useMultiWalletStore.getState().init();
@@ -188,10 +188,10 @@ describe("multi-wallet-store connect concurrency", () => {
     slowProbe.resolve(false);
     await initPromise;
 
-    expect(useMultiWalletStore.getState().wallets.freighter.status).toBe("connected");
-    expect(useMultiWalletStore.getState().wallets.xbull.status).toBe("disconnected");
+    expect(useMultiWalletStore.getState().wallets["arc-evm"].status).toBe("connected");
+    expect(useMultiWalletStore.getState().wallets["walletconnect"].status).toBe("disconnected");
     expect(useMultiWalletStore.getState()).toMatchObject({
-      activeWalletId: "freighter",
+      activeWalletId: "arc-evm",
     });
   });
 
@@ -199,11 +199,11 @@ describe("multi-wallet-store connect concurrency", () => {
     const adapter = createAdapter(vi.fn());
     fetchBalanceWithBackoff.mockResolvedValue({ xlm: "42", usdc: "7" });
     useMultiWalletStore.setState({
-      activeWalletId: "freighter",
+      activeWalletId: "arc-evm",
       wallets: {
-        freighter: {
+        "arc-evm": {
           adapter,
-          publicKey: "GBALANCE",
+          publicKey: "0x51b45Ba8570551e0D1fe818227d8bAa8b556694D",
           network: "testnet",
           balance: null,
           lastConnected: Date.now(),
@@ -213,12 +213,12 @@ describe("multi-wallet-store connect concurrency", () => {
       },
     });
 
-    await useMultiWalletStore.getState().refreshBalance("freighter");
+    await useMultiWalletStore.getState().refreshBalance("arc-evm");
 
-    expect(fetchBalanceWithBackoff).toHaveBeenCalledWith("GBALANCE", {
+    expect(fetchBalanceWithBackoff).toHaveBeenCalledWith("0x51b45Ba8570551e0D1fe818227d8bAa8b556694D", {
       forceRefresh: false,
     });
-    expect(useMultiWalletStore.getState().wallets.freighter.balance).toEqual({
+    expect(useMultiWalletStore.getState().wallets["arc-evm"].balance).toEqual({
       xlm: "42",
       usdc: "7",
     });
@@ -255,45 +255,45 @@ describe("multi-wallet-store deterministic disconnect", () => {
 
   it("selects the most recently connected remaining wallet after disconnecting the active one", () => {
     useMultiWalletStore.setState({
-      activeWalletId: "freighter",
+      activeWalletId: "arc-evm",
       wallets: {
-        freighter: walletEntry({ lastConnected: 3 }),
-        xbull: walletEntry({ lastConnected: 1 }),
-        rabet: walletEntry({ lastConnected: 2 }),
+        "arc-evm": walletEntry({ lastConnected: 3 }),
+        walletconnect: walletEntry({ lastConnected: 1 }),
+        passkey: walletEntry({ lastConnected: 2 }),
       },
     });
 
-    useMultiWalletStore.getState().disconnect("freighter");
+    useMultiWalletStore.getState().disconnect("arc-evm");
 
-    expect(useMultiWalletStore.getState().wallets.freighter).toBeUndefined();
-    expect(useMultiWalletStore.getState().activeWalletId).toBe("rabet");
+    expect(useMultiWalletStore.getState().wallets["arc-evm"]).toBeUndefined();
+    expect(useMultiWalletStore.getState().activeWalletId).toBe("passkey");
   });
 
   it("breaks lastConnected ties deterministically by wallet id", () => {
     useMultiWalletStore.setState({
-      activeWalletId: "freighter",
+      activeWalletId: "arc-evm",
       wallets: {
-        freighter: walletEntry({ lastConnected: 3 }),
-        xbull: walletEntry({ lastConnected: 3 }),
-        rabet: walletEntry({ lastConnected: 3 }),
+        "arc-evm": walletEntry({ lastConnected: 3 }),
+        walletconnect: walletEntry({ lastConnected: 3 }),
+        passkey: walletEntry({ lastConnected: 3 }),
       },
     });
 
-    useMultiWalletStore.getState().disconnect("freighter");
+    useMultiWalletStore.getState().disconnect("arc-evm");
 
     // All remaining wallets tie; lexicographically smallest id wins.
-    expect(useMultiWalletStore.getState().activeWalletId).toBe("rabet");
+    expect(useMultiWalletStore.getState().activeWalletId).toBe("passkey");
   });
 
   it("sets activeWalletId to null when the last wallet is disconnected", () => {
     useMultiWalletStore.setState({
-      activeWalletId: "freighter",
+      activeWalletId: "arc-evm",
       wallets: {
-        freighter: walletEntry({ lastConnected: 3 }),
+        "arc-evm": walletEntry({ lastConnected: 3 }),
       },
     });
 
-    useMultiWalletStore.getState().disconnect("freighter");
+    useMultiWalletStore.getState().disconnect("arc-evm");
 
     expect(useMultiWalletStore.getState().wallets).toEqual({});
     expect(useMultiWalletStore.getState().activeWalletId).toBeNull();
@@ -301,16 +301,16 @@ describe("multi-wallet-store deterministic disconnect", () => {
 
   it("keeps the current active wallet when a non-active wallet is disconnected", () => {
     useMultiWalletStore.setState({
-      activeWalletId: "freighter",
+      activeWalletId: "arc-evm",
       wallets: {
-        freighter: walletEntry({ lastConnected: 3 }),
-        xbull: walletEntry({ lastConnected: 5 }),
+        "arc-evm": walletEntry({ lastConnected: 3 }),
+        walletconnect: walletEntry({ lastConnected: 5 }),
       },
     });
 
-    useMultiWalletStore.getState().disconnect("xbull");
+    useMultiWalletStore.getState().disconnect("walletconnect");
 
-    expect(useMultiWalletStore.getState().wallets.xbull).toBeUndefined();
-    expect(useMultiWalletStore.getState().activeWalletId).toBe("freighter");
+    expect(useMultiWalletStore.getState().wallets["walletconnect"]).toBeUndefined();
+    expect(useMultiWalletStore.getState().activeWalletId).toBe("arc-evm");
   });
 });

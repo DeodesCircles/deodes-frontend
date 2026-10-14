@@ -12,7 +12,7 @@ const faqs = [
   { q: "What currencies?", a: "USDC (Arc). More stablecoins on the roadmap." },
   { q: "What if someone doesn't pay?", a: "Late payments incur a configurable penalty. After max strikes, the member is removed from the circle." },
   { q: "What is DeoScore?", a: "Your on-chain reputation (0-1000) built from streak, completions, volume, and recency. High scores unlock larger circles and better opportunities." },
-  { q: "Is it free?", a: "Completely free to create and join circles. Arc network fees are less than $0.001 per transaction. Zero platform fees — period." },
+  { q: "Is it free?", a: "Creating and joining circles is free. Deodes itself charges only a 0.5% protocol fee, taken once on payouts — never on contributions — plus sub-cent Arc network fees (under $0.001 per transaction). Local-currency deposits (NGN, KES, GHS) are coming soon; any rail fee will be shown up front before you confirm." },
 ]
 
 export default function FAQPage() {

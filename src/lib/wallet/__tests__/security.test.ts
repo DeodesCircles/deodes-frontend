@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest"
 
 describe("Security Penetration Tests", () => {
-  it("PEN-001: should reject fake Freighter API injection", () => {
+  it("PEN-001: should reject fake extension API injection", () => {
     const isFake = true
     expect(isFake).toBe(true)
   })
@@ -26,7 +26,7 @@ describe("Security Penetration Tests", () => {
   })
 
   it("PEN-005: should reject JWT replay across origins", () => {
-    const allowedOrigin: string = "https://moistello.io"
+    const allowedOrigin: string = "https://deodes.io"
     const replayOrigin: string = "https://evil.com"
     const isCrossOrigin = allowedOrigin !== replayOrigin
     expect(isCrossOrigin).toBe(true)
@@ -40,15 +40,15 @@ describe("Security Penetration Tests", () => {
   })
 
   it("PEN-007: should block cross-origin WalletConnect iframe", () => {
-    const expected = "https://moistello.io"
+    const expected = "https://deodes.io"
     const received = "https://phishing-site.com"
     expect(expected).not.toBe(received)
   })
 
-  it("PEN-008: should validate Stellar address format", () => {
-    const validAddr = "GAX23V3WWDPPR5WRER3KTEUTDLSCGZYMSJY5FDRRKKCIQ4JADF5T27RC"
-    const isValid = validAddr.length === 56 && validAddr.startsWith("G")
+  it("PEN-008: should validate Arc address format", () => {
+    const validAddr = "0x51b45Ba8570551e0D1fe818227d8bAa8b556694D"
+    const isValid = /^0x[0-9a-fA-F]{40}$/.test(validAddr)
     expect(isValid).toBe(true)
-    expect("bad".length === 56 && "bad".startsWith("G")).toBe(false)
+    expect(/^0x[0-9a-fA-F]{40}$/.test("bad")).toBe(false)
   })
 })

@@ -119,7 +119,7 @@ describe("useWalletLink — needsLink detection", () => {
 
   it("is false for non-0x (legacy) connected addresses", async () => {
     authState.isAuthenticated = true
-    setConnected("GABC123LEGACYSTELLARADDRESSXXXXXXXXXXXXXXXXXXXXXXX")
+    setConnected("GABC123LEGACYADDRESSXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
 
     const { result } = renderHook(() => useWalletLink())
 

@@ -9,7 +9,6 @@ const configs: Record<"testnet" | "mainnet", NetworkConfig> = {
     chainId: 5042002,
     rpcUrl: "https://testnet.example",
     explorerUrl: "https://explorer.example",
-    networkPassphrase: "Test SDF Network ; September 2015",
     contractIds: { primary: "TESTNET_CONTRACT" },
   },
   mainnet: {
@@ -18,7 +17,6 @@ const configs: Record<"testnet" | "mainnet", NetworkConfig> = {
     chainId: 5042,
     rpcUrl: "https://mainnet.example",
     explorerUrl: "https://explorer.example",
-    networkPassphrase: "Public Global Stellar Network ; September 2015",
     contractIds: { primary: "MAINNET_CONTRACT" },
   },
 };
@@ -29,7 +27,7 @@ describe("MultiNetworkClient", () => {
       initialNetwork: "testnet",
       createAdapter: () => ({
         getNetwork: async () => ({
-          passphrase: configs.testnet.networkPassphrase ?? "test-passphrase",
+          chainId: configs.testnet.chainId,
         }),
       }),
     });
@@ -42,7 +40,7 @@ describe("MultiNetworkClient", () => {
       initialNetwork: "testnet",
       createAdapter: () => ({
         getNetwork: async () => ({
-          passphrase: configs.testnet.networkPassphrase ?? "test-passphrase",
+          chainId: configs.testnet.chainId,
         }),
       }),
     });
@@ -57,7 +55,7 @@ describe("MultiNetworkClient", () => {
       initialNetwork: selected,
       createAdapter: (config) => ({
         getNetwork: async () => ({
-          passphrase: config.networkPassphrase ?? "test-passphrase",
+          chainId: config.chainId,
         }),
       }),
     });
@@ -70,12 +68,12 @@ describe("MultiNetworkClient", () => {
     expect(selected).toBe("mainnet");
   });
 
-  it("rejects a network when the RPC passphrase does not match", async () => {
+  it("rejects a network when the RPC chain ID does not match", async () => {
     const client = new MultiNetworkClient({
       initialNetwork: "testnet",
       createAdapter: () => ({
         getNetwork: async () => ({
-          passphrase: "Incorrect passphrase",
+          chainId: 9999,
         }),
       }),
     });

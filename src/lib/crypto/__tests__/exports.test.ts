@@ -1,16 +1,16 @@
 import { describe, it, expect } from "vitest"
 
 describe("crypto/index.ts re-exports", () => {
-  it("re-exports deriveStellarKeypair", async () => {
+  it("re-exports deriveEd25519Keypair", async () => {
     const mod = await import("@/lib/crypto/index")
-    expect(mod.deriveStellarKeypair).toBeDefined()
-    expect(typeof mod.deriveStellarKeypair).toBe("function")
+    expect(mod.deriveEd25519Keypair).toBeDefined()
+    expect(typeof mod.deriveEd25519Keypair).toBe("function")
   })
 
-  it("re-exports publicKeyToStellarAddress", async () => {
+  it("re-exports publicKeyToLegacyAddress", async () => {
     const mod = await import("@/lib/crypto/index")
-    expect(mod.publicKeyToStellarAddress).toBeDefined()
-    expect(typeof mod.publicKeyToStellarAddress).toBe("function")
+    expect(mod.publicKeyToLegacyAddress).toBeDefined()
+    expect(typeof mod.publicKeyToLegacyAddress).toBe("function")
   })
 
   it("re-exports secureZeroMemory", async () => {

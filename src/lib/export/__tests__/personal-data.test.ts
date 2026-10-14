@@ -139,7 +139,7 @@ describe("buildPersonalDataArchive", () => {
 describe("toArchiveFilename", () => {
   it("includes the user id and date", () => {
     expect(toArchiveFilename("user-alice", GENERATED_AT)).toBe(
-      "moistello-data-user-alice-2026-06-17.json",
+      "deodes-data-user-alice-2026-06-17.json",
     )
   })
 
@@ -148,20 +148,20 @@ describe("toArchiveFilename", () => {
     const name = toArchiveFilename("evil\r\nX-Injected: 1", GENERATED_AT)
     expect(name).not.toContain("\r")
     expect(name).not.toContain("\n")
-    expect(name).toBe("moistello-data-evilX-Injected1-2026-06-17.json")
+    expect(name).toBe("deodes-data-evilX-Injected1-2026-06-17.json")
   })
 
   it("falls back to a placeholder when nothing usable remains", () => {
-    expect(toArchiveFilename("///", GENERATED_AT)).toBe("moistello-data-user-2026-06-17.json")
+    expect(toArchiveFilename("///", GENERATED_AT)).toBe("deodes-data-user-2026-06-17.json")
   })
 
   it("caps an overlong id", () => {
     // The invariant is on the id segment, not the whole filename.
     const name = toArchiveFilename("x".repeat(200), GENERATED_AT)
-    const idSegment = name.replace("moistello-data-", "").replace("-2026-06-17.json", "")
+    const idSegment = name.replace("deodes-data-", "").replace("-2026-06-17.json", "")
 
     expect(idSegment).toHaveLength(40)
-    expect(name).toBe(`moistello-data-${"x".repeat(40)}-2026-06-17.json`)
+    expect(name).toBe(`deodes-data-${"x".repeat(40)}-2026-06-17.json`)
   })
 })
 

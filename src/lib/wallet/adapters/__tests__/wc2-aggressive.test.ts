@@ -3,10 +3,10 @@ import { describe, it, expect } from "vitest"
 const PROJECT_ID = "4c7ff3236b05083969db46fc19af9b46"
 const RELAY_URL = "wss://relay.walletconnect.com"
 const METADATA = {
-  name: "Moistello",
-  description: "Decentralized savings circles on Stellar",
-  url: "https://moistello.com",
-  icons: ["https://moistello.com/logo.jpg"],
+  name: "Deodes",
+  description: "Decentralized savings circles (ROSCA) on Arc",
+  url: "https://deodes.com",
+  icons: ["https://deodes.com/logo.jpg"],
 }
 
 describe("WalletConnect Aggressive Tests", () => {
@@ -63,13 +63,13 @@ describe("WalletConnect Aggressive Tests", () => {
 
   describe("Metadata validation", () => {
     it("metadata has valid name", () => {
-      expect(METADATA.name).toBe("Moistello")
+      expect(METADATA.name).toBe("Deodes")
       expect(METADATA.name.length).toBeGreaterThan(0)
     })
 
     it("metadata has valid icon URL", () => {
       expect(METADATA.icons[0]).toMatch(/^https:\/\//)
-      expect(METADATA.icons[0]).toContain("moistello.com")
+      expect(METADATA.icons[0]).toContain("deodes.com")
     })
 
     it("icons array is defined and non-empty", () => {
@@ -79,16 +79,16 @@ describe("WalletConnect Aggressive Tests", () => {
   })
 
   describe("Required namespaces", () => {
-    it("has correct Stellar methods", () => {
-      const requiredMethods = ["stellar_signAndSubmitXDR", "stellar_signXDR"]
-      expect(requiredMethods.includes("stellar_signAndSubmitXDR")).toBe(true)
-      expect(requiredMethods.includes("stellar_signXDR")).toBe(true)
+    it("has correct EVM methods", () => {
+      const requiredMethods = ["eth_sendTransaction", "personal_sign"]
+      expect(requiredMethods.includes("eth_sendTransaction")).toBe(true)
+      expect(requiredMethods.includes("personal_sign")).toBe(true)
     })
 
-    it("has both testnet and pubnet chains", () => {
-      const chains = ["stellar:testnet", "stellar:pubnet"]
-      expect(chains.includes("stellar:testnet")).toBe(true)
-      expect(chains.includes("stellar:pubnet")).toBe(true)
+    it("has both Arc chains", () => {
+      const chains = ["eip155:5042002", "eip155:5042"]
+      expect(chains.includes("eip155:5042002")).toBe(true)
+      expect(chains.includes("eip155:5042")).toBe(true)
     })
   })
 

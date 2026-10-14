@@ -2,8 +2,8 @@ import { beforeEach, afterEach, describe, expect, it, vi } from "vitest"
 import { migrateOldWalletSession } from "@/stores/migration-bridge"
 import { clearHmacKeyCache, _setHmacKeyForTest } from "@/lib/wallet/hmac"
 
-const OLD_KEY = "moistello_wallet_address"
-const NEW_KEY = "moistello_wallet_sessions"
+const OLD_KEY = "deodes_wallet_address"
+const NEW_KEY = "deodes_wallet_sessions"
 const LEGACY_ADDRESS = "GBD7M3GZ6Z6Z6Z6Z6Z6Z6Z6Z6Z6Z6Z6Z6Z6Z6Z6Z6Z6Z6Z6Z6Z6Z6Z"
 const TEST_KEY = "6f7d8e9aabbccddeeff00112233445566778899aabbccddeeff001122334455"
 
@@ -29,11 +29,11 @@ describe("migrateOldWalletSession", () => {
     const store = JSON.parse(localStorage.getItem(NEW_KEY) ?? "null")
     expect(store.sessions).toHaveLength(1)
     expect(store.sessions[0]).toMatchObject({
-      walletId: "freighter",
+      walletId: "arc-evm",
       publicKey: LEGACY_ADDRESS,
       network: "testnet",
     })
-    expect(store.activeWalletId).toBe("freighter")
+    expect(store.activeWalletId).toBe("arc-evm")
     expect(store.hmac).toBeTruthy()
   })
 

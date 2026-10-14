@@ -55,7 +55,7 @@ function checkPagePolicy(policy, label) {
   const scriptSrc = extractDirective(policy, "script-src");
   check(scriptSrc.includes("'nonce-"), `production page script-src lacks a nonce (${label})`);
   check(scriptSrc.includes("'strict-dynamic'"), `production page script-src lacks 'strict-dynamic' (${label})`);
-  check(scriptSrc.includes("'wasm-unsafe-eval'"), `production page script-src lacks 'wasm-unsafe-eval' (Stellar WASM) (${label})`);
+  check(scriptSrc.includes("'wasm-unsafe-eval'"), `production page script-src lacks 'wasm-unsafe-eval' (wallet WASM) (${label})`);
   check(!scriptSrc.includes("'unsafe-eval'"), `production page script-src must not contain 'unsafe-eval' (${label})`);
   check(!scriptSrc.includes("'unsafe-inline'"), `production page script-src must not contain 'unsafe-inline' (${label})`);
   check(extractDirective(policy, "object-src") === "'none'", `page object-src must be 'none' (${label})`);

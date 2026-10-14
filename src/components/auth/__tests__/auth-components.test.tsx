@@ -3,9 +3,6 @@ import { describe, it, expect, vi } from "vitest"
 import React from "react"
 import { AuthLayout } from "../auth-layout"
 import { AuthStepIndicator } from "../auth-step-indicator"
-import { AuthWalletCard } from "../auth-wallet-card"
-import { WalletGrid } from "../wallet-grid"
-import { ConnectedBadge } from "../connected-badge"
 import { ErrorDisplay } from "../error-display"
 
 describe("AuthLayout", () => {
@@ -27,7 +24,7 @@ describe("AuthLayout", () => {
       </AuthLayout>
     )
 
-    expect(screen.getByText("Moistello")).toBeInTheDocument()
+    expect(screen.getByText("Deodes")).toBeInTheDocument()
   })
 
   it("renders footer links when provided", () => {
@@ -71,113 +68,6 @@ describe("AuthStepIndicator", () => {
     expect(screen.queryByText("1")).toBeNull()
     expect(screen.queryByText("2")).toBeNull()
     expect(screen.getByText("3")).toBeInTheDocument()
-  })
-})
-
-describe("AuthWalletCard", () => {
-  const sampleWallet = {
-    id: "freighter",
-    name: "Freighter",
-    category: "extension",
-    icon: <span data-testid="freighter-icon">F</span>,
-    description: "Browser extension wallet",
-    status: "detected" as const,
-    isRecommended: true,
-  }
-
-  it("renders wallet name, description, and recommended badge", () => {
-    render(<AuthWalletCard wallet={sampleWallet} />)
-
-    expect(screen.getByText("Freighter")).toBeInTheDocument()
-    expect(screen.getByText("Browser extension wallet")).toBeInTheDocument()
-    expect(screen.getByText("Recommended")).toBeInTheDocument()
-    expect(screen.getByTestId("freighter-icon")).toBeInTheDocument()
-  })
-
-  it("triggers onSelect callback when clicked", () => {
-    const handleSelect = vi.fn()
-    render(<AuthWalletCard wallet={sampleWallet} onSelect={handleSelect} />)
-
-    fireEvent.click(screen.getByRole("button"))
-    expect(handleSelect).toHaveBeenCalledTimes(1)
-  })
-
-  it("is disabled when wallet status is not_detected", () => {
-    const notDetectedWallet = {
-      ...sampleWallet,
-      status: "not_detected" as const,
-      isRecommended: false,
-    }
-    render(<AuthWalletCard wallet={notDetectedWallet} />)
-
-    const button = screen.getByRole("button")
-    expect(button).toBeDisabled()
-    expect(screen.getByText("Not installed")).toBeInTheDocument()
-  })
-})
-
-describe("WalletGrid", () => {
-  const wallets = [
-    {
-      id: "freighter",
-      name: "Freighter",
-      category: "extension",
-      icon: <span>F</span>,
-      description: "Freighter extension",
-      status: "detected" as const,
-    },
-    {
-      id: "rabet",
-      name: "Rabet",
-      category: "extension",
-      icon: <span>R</span>,
-      description: "Rabet extension",
-      status: "detected" as const,
-    },
-  ]
-
-  it("renders a grid of wallet cards", () => {
-    render(<WalletGrid wallets={wallets} connectingWalletId={null} onSelect={vi.fn()} />)
-
-    expect(screen.getByText("Freighter")).toBeInTheDocument()
-    expect(screen.getByText("Rabet")).toBeInTheDocument()
-  })
-
-  it("calls onSelect with selected wallet id", () => {
-    const handleSelect = vi.fn()
-    render(<WalletGrid wallets={wallets} connectingWalletId={null} onSelect={handleSelect} />)
-
-    fireEvent.click(screen.getByText("Freighter"))
-    expect(handleSelect).toHaveBeenCalledWith("freighter")
-  })
-})
-
-describe("ConnectedBadge", () => {
-  it("renders wallet name and truncated address", () => {
-    render(
-      <ConnectedBadge
-        walletName="Freighter Wallet"
-        address="GAAXEXAMPLEKEY1234567890TESTNETADDRESS"
-      />
-    )
-
-    expect(screen.getByText("Freighter Wallet")).toBeInTheDocument()
-    expect(screen.getByText("GAAXEX...RESS")).toBeInTheDocument()
-  })
-
-  it("calls onDisconnect when disconnect button clicked", () => {
-    const handleDisconnect = vi.fn()
-    render(
-      <ConnectedBadge
-        walletName="Freighter Wallet"
-        address="GAAXEXAMPLEKEY1234567890TESTNETADDRESS"
-        onDisconnect={handleDisconnect}
-      />
-    )
-
-    const disconnectBtn = screen.getByRole("button", { name: /disconnect wallet/i })
-    fireEvent.click(disconnectBtn)
-    expect(handleDisconnect).toHaveBeenCalledTimes(1)
   })
 })
 

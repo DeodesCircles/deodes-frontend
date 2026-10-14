@@ -1,8 +1,6 @@
 import { logger } from "@/lib/logger"
 import type { WalletAdapter, WalletMeta } from "./types"
-import { isPasskeyEnabled, isHardwareWalletEnabled, isWalletConnectEnabled, isExtensionWalletsEnabled } from "./features"
-
-const FLAGGED_EXTENSION_WALLETS = new Set(["xbull", "rabet", "albedo"])
+import { isPasskeyEnabled, isWalletConnectEnabled } from "./features"
 
 export type DetectionResult = WalletMeta & { status: "detected" | "not_detected" }
 
@@ -68,9 +66,7 @@ export class WalletRegistry {
 
   private isAdapterEnabled(id: string): boolean {
     if (id === "passkey" && !isPasskeyEnabled()) return false
-    if (id === "ledger" && !isHardwareWalletEnabled()) return false
     if (id === "walletconnect" && !isWalletConnectEnabled()) return false
-    if (FLAGGED_EXTENSION_WALLETS.has(id) && !isExtensionWalletsEnabled()) return false
     return true
   }
 }

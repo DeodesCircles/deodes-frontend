@@ -13,7 +13,7 @@ Deodes is a decentralized rotating savings and credit association (ROSCA) platfo
 
 ## Key Features
 
-- **Passkey-only auth** — Sign in with Face ID, fingerprint, or platform biometrics. No passwords, no Freighter, no email.
+- **Passkey-only auth** — Sign in with Face ID, fingerprint, or platform biometrics. No passwords, no extensions, no email.
 - **Auto-created wallets** — Every member gets a Arc wallet funded with 2 USDC from the master pool. No manual wallet setup needed.
 - **Zero platform fees** — The smart contract applies `apply_fee(pool, 0)`. Everything you contribute goes to members.
 - **USDC only** — All contributions and payouts in USDC. Yellow Card provides NGN↔USDC on/off ramp.

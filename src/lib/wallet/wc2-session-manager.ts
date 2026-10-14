@@ -3,17 +3,16 @@ import type { NetworkType } from "./types"
 import { getRelayMonitor } from "./wc2-relay"
 import { getWC2SessionStore } from "./wc2-session-store"
 import { getSignClientClass } from "./wc2-sign-client"
-import { WC2_QR_EXPIRATION_MS } from "@/lib/constants"
+import { WC2_QR_EXPIRATION_MS, ARC_CHAIN_ID } from "@/lib/constants"
 import { computeSessionExpiry } from "./session-lifecycle"
-import { validateStellarAddress } from "@/lib/stellar/validate-address"
 
 const PROJECT_ID = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || ""
 const RELAY_URL = "wss://relay.walletconnect.com"
 const METADATA = {
-  name: "Moistello",
-  description: "Decentralized savings circles on Stellar",
-  url: "https://moistello.com",
-  icons: ["https://moistello.com/logo.jpg"],
+  name: "Deodes",
+  description: "Decentralized savings circles (ROSCA) on Arc",
+  url: "https://deodes.com",
+  icons: ["https://deodes.com/logo.jpg"],
 }
 
 const CONNECT_TIMEOUT = WC2_QR_EXPIRATION_MS
@@ -64,16 +63,16 @@ class WCSessionOrchestrator {
     return typeof window !== "undefined"
   }
 
-  private isValidStellarPublicKey(key: string): boolean {
-    return validateStellarAddress(key)
+  private isValidEvmAddress(key: string): boolean {
+    return /^0x[0-9a-fA-F]{40}$/.test(key)
   }
 
   private chainIdForNetwork(network: NetworkType): string {
-    return network === "mainnet" ? "stellar:pubnet" : "stellar:testnet"
+    return network === "mainnet" ? "eip155:5042" : "eip155:5042002"
   }
 
   private networkFromChainId(chainId: string): NetworkType {
-    return chainId === "stellar:pubnet" ? "mainnet" : "testnet"
+    return chainId === "eip155:5042" ? "mainnet" : "testnet"
   }
 
   private async recoverSession(): Promise<boolean> {
@@ -179,10 +178,10 @@ const prop = proposal as {
              }
            }
 
-           const { requiredNamespaces } = prop.params
-          if (!requiredNamespaces?.stellar?.chains?.some((c: string) => c.includes("stellar:"))) {
+            const { requiredNamespaces } = prop.params
+          if (!requiredNamespaces?.eip155?.chains?.some((c: string) => c.startsWith("eip155:"))) {
             markSettled()
-            reject(new Error("Wallet does not support Stellar"))
+            reject(new Error("Wallet does not support Arc (EVM)"))
             return
           }
 
@@ -202,13 +201,13 @@ const prop = proposal as {
 
           this.connectionState.sessionTopic = session.topic
 
-          const ns = (session.namespaces as Record<string, { accounts: string[] }>)?.stellar
+          const ns = (session.namespaces as Record<string, { accounts: string[] }>)?.eip155
           if (ns?.accounts?.length > 0) {
             const account = ns.accounts[0]
             const parts = account.split(":")
             const pubKey = parts[2]
 
-            if (pubKey && this.isValidStellarPublicKey(pubKey)) {
+            if (pubKey && this.isValidEvmAddress(pubKey)) {
               this.connectionState.address = pubKey
               markSettled()
               getWC2SessionStore().saveSession({
@@ -245,10 +244,10 @@ const prop = proposal as {
 
       const connectPromise = (signClient as { connect: (opts: { requiredNamespaces: Record<string, { methods: string[]; chains: string[]; events: string[] }>; }) => Promise<{ uri?: string }> }).connect({
         requiredNamespaces: {
-          stellar: {
-            methods: ["stellar_signAndSubmitXDR", "stellar_signXDR"],
-            chains: ["stellar:testnet", "stellar:pubnet"],
-            events: [],
+          eip155: {
+            methods: ["eth_sendTransaction", "personal_sign"],
+            chains: [`eip155:${ARC_CHAIN_ID}`],
+            events: ["chainChanged", "accountsChanged"],
           },
         },
       })
