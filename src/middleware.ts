@@ -138,8 +138,14 @@ export function middleware(request: NextRequest) {
     }
   }
 
+  // Circle onramp webhooks are server-to-server: Circle cannot send an
+  // Origin allowlist entry or our double-submit token. The route verifies
+  // the HMAC signature itself (401 on bad signature, 503 without secret),
+  // so it bypasses both checks exactly like the telemetry routes above.
+  const isWebhookRoute = pathname === "/api/onramp/webhook"
+
   // #207: CSRF protection for mutating API routes
-  if (isApiRoute && !isTelemetryRoute && ["POST", "PUT", "DELETE", "PATCH"].includes(request.method)) {
+  if (isApiRoute && !isTelemetryRoute && !isWebhookRoute && ["POST", "PUT", "DELETE", "PATCH"].includes(request.method)) {
     const origin = request.headers.get("origin")
     if (!origin || !getAllowedOrigins(request).has(origin)) {
       return NextResponse.json({ error: "Invalid origin" }, { status: 403 })
