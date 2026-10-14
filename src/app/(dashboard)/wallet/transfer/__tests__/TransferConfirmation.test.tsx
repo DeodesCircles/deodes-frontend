@@ -7,8 +7,6 @@ import { TransferConfirmation } from "../components/TransferConfirmation"
 vi.mock("@/lib/constants", () => ({
   ARC_NETWORK: "testnet",
   ARC_RPC_URL: "https://rpc.testnet.arc.io",
-  // Legacy Stellar RPC still imported by useTransferPoll (mocked client ignores it)
-  STELLAR_RPC_URL: "https://soroban-testnet.stellar.org",
 }))
 
 vi.mock("@/lib/explorer", () => ({
@@ -24,21 +22,22 @@ vi.mock("@/lib/formatters", () => ({
   formatAddress: (addr: string) => `${addr.slice(0, 6)}…${addr.slice(-4)}`,
 }))
 
-// Mock the Soroban RPC so we control when getTransaction resolves
-const mockGetTransaction = vi.fn()
-vi.mock("@/lib/soroban/rpc-client", () => ({
-  SorobanRpcClient: vi.fn().mockImplementation(function () {
-    return { getTransaction: mockGetTransaction }
-  }),
-}))
+// Mock fetch for the Arc eth_getTransactionReceipt polling in useTransferPoll
+const mockFetch = vi.fn()
+function pendingReceipt() {
+  return {
+    ok: true,
+    json: async () => ({ jsonrpc: "2.0", id: 1, result: null }),
+  }
+}
 
-// ── Test helpers ────────────────────────────────────────────────────────────
+// ── Test helpers ─────────────────────────────────────────────────────────────
 
 const DEFAULT_PROPS = {
-  txnHash: "TXABC1234567890DEF",
+  txnHash: "0xabc1234567890def1234567890abcdef12345678",
   amount: "50",
   currency: "USDC" as const,
-  recipient: "GCXYZ1234567890ABCDEFGHIJK",
+  recipient: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
   networkFee: 0.01,
 }
 
@@ -47,14 +46,17 @@ const DEFAULT_PROPS = {
 describe("TransferConfirmation", () => {
   beforeEach(() => {
     vi.useFakeTimers()
-    // Default: transaction not yet found (pending)
-    mockGetTransaction.mockRejectedValue(new Error("NOT_FOUND"))
+    mockFetch.mockReset()
+    // Default: transaction not yet mined (pending)
+    mockFetch.mockResolvedValue(pendingReceipt())
+    vi.stubGlobal("fetch", mockFetch)
   })
 
   afterEach(() => {
     vi.runOnlyPendingTimers()
     vi.useRealTimers()
     vi.clearAllMocks()
+    vi.unstubAllGlobals()
   })
 
   it("renders in pending state initially", async () => {
@@ -75,7 +77,7 @@ describe("TransferConfirmation", () => {
     render(<TransferConfirmation {...DEFAULT_PROPS} />)
     expect(screen.getByText("Destination")).toBeDefined()
     // formatAddress mock returns first6…last4
-    expect(screen.getByText(/GCXYZ1/)).toBeDefined()
+    expect(screen.getByText(/0x742d/)).toBeDefined()
   })
 
   it("shows network fee", () => {
@@ -104,8 +106,11 @@ describe("TransferConfirmation", () => {
     expect(screen.getByText("Arc Testnet")).toBeDefined()
   })
 
-  it("transitions to finalized state when RPC returns SUCCESS", async () => {
-    mockGetTransaction.mockResolvedValue({ status: "SUCCESS" })
+  it("transitions to finalized state when receipt status is 0x1", async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ jsonrpc: "2.0", id: 1, result: { status: "0x1" } }),
+    })
 
     render(<TransferConfirmation {...DEFAULT_PROPS} />)
 
@@ -122,8 +127,11 @@ describe("TransferConfirmation", () => {
     ).toBeDefined()
   })
 
-  it("transitions to failed state when RPC returns FAILED", async () => {
-    mockGetTransaction.mockResolvedValue({ status: "FAILED" })
+  it("transitions to failed state when receipt status is 0x0", async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ jsonrpc: "2.0", id: 1, result: { status: "0x0" } }),
+    })
 
     render(<TransferConfirmation {...DEFAULT_PROPS} />)
 
