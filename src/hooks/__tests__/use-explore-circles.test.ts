@@ -31,6 +31,12 @@ describe("resolveExploreSource", () => {
     expect(resolveExploreSource(9, "mock")).toBe("mock")
     expect(resolveExploreSource(0, "live")).toBe("live")
   })
+
+  it("forces live on mainnet even when mock is requested or empty", () => {
+    expect(resolveExploreSource(0, "auto", "mainnet")).toBe("live")
+    expect(resolveExploreSource(0, "mock", "mainnet")).toBe("live")
+    expect(resolveExploreSource(9, "mock", "mainnet")).toBe("live")
+  })
 })
 
 describe("MOCK_CIRCLES", () => {

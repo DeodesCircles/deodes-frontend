@@ -1,8 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef, useCallback } from "react"
-import { STELLAR_RPC_URL } from "@/lib/constants"
-import { SorobanRpcClient } from "@/lib/soroban/rpc-client"
+import { ARC_RPC_URL } from "@/lib/constants"
 
 export type TxStatus = "pending" | "finalized" | "failed" | "timeout"
 
@@ -12,15 +11,26 @@ export interface TransferPollResult {
   attempts: number
 }
 
-const POLL_INTERVAL_MS = 3_000
-const MAX_ATTEMPTS = 20 // 60 s before timeout
+export const POLL_INTERVAL_MS = 3_000
+export const MAX_ATTEMPTS = 20 // 60 s before timeout
+
+interface JsonRpcReceiptResponse {
+  result?: { status?: string | number } | null
+  error?: { code?: number; message?: string }
+}
 
 /**
- * Polls the Soroban RPC until the given txnHash reaches a terminal status.
- * Returns "pending" until the transaction is confirmed or a terminal condition
- * is reached.
+ * Polls the Arc JSON-RPC endpoint until the given EVM txnHash reaches a
+ * terminal status.
  *
- * @param txnHash - The Stellar transaction hash to watch. Pass null to skip.
+ * Uses `eth_getTransactionReceipt` (plain fetch POST, no extra deps):
+ * - receipt === null → not mined yet → keep polling (like NOT_FOUND before)
+ * - receipt.status 0x1 → finalized
+ * - receipt.status 0x0 → failed
+ * - any RPC / network error → poll-continue
+ * - MAX_ATTEMPTS exhausted → timeout
+ *
+ * @param txnHash - The Arc (0x…) transaction hash to watch. Pass null to skip.
  */
 export function useTransferPoll(txnHash: string | null): TransferPollResult {
   const [status, setStatus] = useState<TxStatus>("pending")
@@ -32,24 +42,36 @@ export function useTransferPoll(txnHash: string | null): TransferPollResult {
   const poll = useCallback(async () => {
     if (!txnHash || !activeRef.current) return
 
-    const client = new SorobanRpcClient({ rpcUrl: STELLAR_RPC_URL, maxRetries: 1 })
-
     try {
-      const result = await client.getTransaction(txnHash)
-      // SorobanRpcClient.getTransaction returns { status: "SUCCESS" | "FAILED" | "NOT_FOUND" | ... }
-      const raw = result as Record<string, unknown>
-      const txStatus = String(raw?.status ?? "").toUpperCase()
-
-      if (txStatus === "SUCCESS") {
-        setStatus("finalized")
-        return
+      const res = await fetch(ARC_RPC_URL, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: 1,
+          method: "eth_getTransactionReceipt",
+          params: [txnHash],
+        }),
+      })
+      if (!res.ok) throw new Error(`RPC HTTP ${res.status}`)
+      const json = (await res.json()) as JsonRpcReceiptResponse
+      if (json?.error) throw new Error(json.error.message ?? "RPC error")
+      const receipt = json?.result ?? null
+      if (receipt) {
+        const raw = String(receipt.status ?? "").toLowerCase()
+        if (raw === "0x1" || raw === "0x01" || raw === "1") {
+          setStatus("finalized")
+          return
+        }
+        if (raw === "0x0" || raw === "0x00" || raw === "0") {
+          setStatus("failed")
+          return
+        }
+        // Receipt present but status missing/unrecognized — keep polling.
       }
-      if (txStatus === "FAILED") {
-        setStatus("failed")
-        return
-      }
+      // result === null → pending, fall through to schedule next attempt.
     } catch {
-      // NOT_FOUND or network hiccup — keep polling
+      // Null receipt, RPC error, or network hiccup — keep polling
     }
 
     attemptsRef.current += 1

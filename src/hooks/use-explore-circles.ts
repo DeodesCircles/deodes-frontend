@@ -6,6 +6,7 @@ import { queryKeys } from "@/lib/query-keys";
 import type { Circle } from "@/types";
 import { getDynamicMockCircles } from "@/lib/circles/mock-circles";
 import { getJoinBlockReason } from "@/lib/circles/joinability";
+import { ARC_NETWORK } from "@/lib/constants";
 
 export type ExploreSource = "live" | "mock";
 
@@ -23,15 +24,21 @@ interface CirclesListEnvelope {
  *   labeled mock showcase. Real circles automatically take over the moment
  *   the first one is created.
  * - live: API only (empty state when none exist).
- * - mock: showcase pinned (useful for demos/screenshots).
+ * - mock: showcase pinned (useful for demos/screenshots; ignored on mainnet).
+ *
+ * Mainnet correctness: when ARC_NETWORK === "mainnet" the mock showcase is
+ * always off — source is forced to "live" so no sample data is ever presented
+ * as real on production.
  */
 export function useExploreCircles(search = "", type = "all") {
   const forced = (process.env.NEXT_PUBLIC_EXPLORE_SOURCE ?? "auto").toLowerCase();
+  // Testnet-only showcase: never show mock circles on Arc mainnet.
+  const isMainnet = ARC_NETWORK === "mainnet";
 
   const query = useQuery({
     queryKey: [...queryKeys.circles.all, "explore"],
     queryFn: async (): Promise<Circle[]> => {
-      if (forced === "mock") return [];
+      if (forced === "mock" && !isMainnet) return [];
       const res = await get<CirclesListEnvelope>("/circles", {
         params: { limit: 50 },
       });
@@ -45,7 +52,8 @@ export function useExploreCircles(search = "", type = "all") {
   });
 
   const live = query.data ?? [];
-  const useMock = forced === "mock" || (forced !== "live" && live.length === 0);
+  const useMock =
+    !isMainnet && (forced === "mock" || (forced !== "live" && live.length === 0));
   const source: ExploreSource = useMock ? "mock" : "live";
   // Mock showcase stays dynamic (rounds advance, order rotates) so the page
   // never looks frozen while no real circles exist yet.
@@ -78,7 +86,10 @@ export function useExploreCircles(search = "", type = "all") {
 export function resolveExploreSource(
   liveCount: number,
   forced: string,
+  network: "testnet" | "mainnet" = ARC_NETWORK,
 ): ExploreSource {
+  // Mainnet never shows the mock showcase, regardless of the forced flag.
+  if (network === "mainnet") return "live";
   if (forced === "mock") return "mock";
   if (forced === "live") return "live";
   return liveCount > 0 ? "live" : "mock";
