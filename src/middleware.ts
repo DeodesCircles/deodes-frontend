@@ -216,7 +216,7 @@ export const config = {
   // The dev-only API paths are listed explicitly so the middleware can block
   // them in production before any route handler executes.
   matcher: [
-    "/((?!_next|favicon|static|locale|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|txt|xml|woff|woff2)$).*)",
+    "/((?!_next|favicon|static|locale|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|txt|xml|woff|woff2|json)$).*)",
     "/api/auth/login",
     "/api/auth/setup",
     "/api/upload",
