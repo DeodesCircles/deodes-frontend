@@ -34,6 +34,26 @@ CONTRACT_CIRCLE_HASH="${CONTRACT_CIRCLE_HASH:-}"
 CONTRACT_REP_REGISTRY="${CONTRACT_REP_REGISTRY:-}"
 CONTRACT_GOV_TOKEN="${CONTRACT_GOV_TOKEN:-}"
 CONTRACT_TREASURY="${CONTRACT_TREASURY:-}"
+# Deployed circle instance ID (NOT the WASM hash above). Binds to backend
+# contracts.circle; empty until the operator records a mainnet instance.
+CONTRACT_CIRCLE="${CONTRACT_CIRCLE:-}"
+
+# ── Arc (EVM, primary chain) + Keeper ──────────────────────────
+# Secrets pass through when set; RPC/chain ID fall back to NETWORK defaults.
+# Empty USDC/escrow is legal on testnet but rejected by the backend mainnet
+# guard (see the mainnet check below).
+ARC_RPC_URL="${ARC_RPC_URL:-}"
+ARC_CHAIN_ID="${ARC_CHAIN_ID:-}"
+ARC_USDC_CONTRACT="${ARC_USDC_CONTRACT:-}"
+KEEPER_ESCROW_ADDRESS="${KEEPER_ESCROW_ADDRESS:-}"
+KEEPER_INTERVAL_MINUTES="${KEEPER_INTERVAL_MINUTES:-15}"
+if [ "$NETWORK" = "mainnet" ]; then
+    ARC_RPC_URL="${ARC_RPC_URL:-https://rpc.mainnet.arc.io}"
+    ARC_CHAIN_ID="${ARC_CHAIN_ID:-5042}"
+else
+    ARC_RPC_URL="${ARC_RPC_URL:-https://rpc.testnet.arc.io}"
+    ARC_CHAIN_ID="${ARC_CHAIN_ID:-5042002}"
+fi
 
 # ── CORS origins ───────────────────────────────────────────────
 CORS_ORIGINS="https://${DOMAIN},https://www.${DOMAIN}"
@@ -63,9 +83,15 @@ MOISTELLO_STELLAR_MASTER_PUBLIC_KEY=${STELLAR_PUBLIC_KEY}
 MOISTELLO_STELLAR_MASTER_SECRET_KEY=${STELLAR_SECRET_KEY}
 MOISTELLO_CONTRACT_FACTORY=${CONTRACT_FACTORY}
 MOISTELLO_CONTRACT_CIRCLE_HASH=${CONTRACT_CIRCLE_HASH}
+MOISTELLO_CONTRACT_CIRCLE=${CONTRACT_CIRCLE}
 MOISTELLO_CONTRACT_REP_REGISTRY=${CONTRACT_REP_REGISTRY}
 MOISTELLO_CONTRACT_GOV_TOKEN=${CONTRACT_GOV_TOKEN}
 MOISTELLO_CONTRACT_TREASURY=${CONTRACT_TREASURY}
+DEODES_ARC_RPC_URL=${ARC_RPC_URL}
+DEODES_ARC_CHAIN_ID=${ARC_CHAIN_ID}
+DEODES_ARC_USDC_CONTRACT=${ARC_USDC_CONTRACT}
+DEODES_KEEPER_ESCROW_ADDRESS=${KEEPER_ESCROW_ADDRESS}
+DEODES_KEEPER_INTERVAL_MINUTES=${KEEPER_INTERVAL_MINUTES}
 ENVEOF
 
 chmod 600 "$BACKEND_ENV"
@@ -127,6 +153,36 @@ fi
 # Ensure CORS includes both domain variants
 if ! grep 'MOISTELLO_CORS_ALLOWED_ORIGINS' "$BACKEND_ENV" | grep -q "www.${DOMAIN}"; then
     fail "CORS origins missing www.${DOMAIN}"
+fi
+
+# ── Mainnet guard: mirror the backend cutover guard in the pipeline ──
+# MOISTELLO_ENVIRONMENT is always production here, so a mainnet NETWORK with
+# testnet-shaped Arc/Keeper values must fail now — not at backend boot.
+if [ "$NETWORK" = "mainnet" ]; then
+    info "Validating mainnet Arc/Keeper configuration..."
+    ARC_CHAIN_WRITTEN=$(grep '^DEODES_ARC_CHAIN_ID=' "$BACKEND_ENV" | cut -d= -f2-)
+    if [ "$ARC_CHAIN_WRITTEN" != "5042" ]; then
+        fail "DEODES_ARC_CHAIN_ID must be 5042 on mainnet (got '${ARC_CHAIN_WRITTEN:-empty}')"
+    fi
+    ARC_RPC_WRITTEN=$(grep '^DEODES_ARC_RPC_URL=' "$BACKEND_ENV" | cut -d= -f2-)
+    if [ -z "$ARC_RPC_WRITTEN" ]; then
+        fail "DEODES_ARC_RPC_URL must be set on mainnet"
+    fi
+    case "$ARC_RPC_WRITTEN" in
+        *[Tt][Ee][Ss][Tt][Nn][Ee][Tt]*)
+            fail "DEODES_ARC_RPC_URL still points to testnet on mainnet: $ARC_RPC_WRITTEN"
+            ;;
+    esac
+    ARC_USDC_WRITTEN=$(grep '^DEODES_ARC_USDC_CONTRACT=' "$BACKEND_ENV" | cut -d= -f2-)
+    if [ -z "$ARC_USDC_WRITTEN" ]; then
+        fail "DEODES_ARC_USDC_CONTRACT must be set on mainnet (see docs.arc.io/arc/references/contract-addresses.md)"
+    fi
+    KEEPER_INTERVAL_WRITTEN=$(grep '^DEODES_KEEPER_INTERVAL_MINUTES=' "$BACKEND_ENV" | cut -d= -f2-)
+    KEEPER_ESCROW_WRITTEN=$(grep '^DEODES_KEEPER_ESCROW_ADDRESS=' "$BACKEND_ENV" | cut -d= -f2-)
+    if [ -z "$KEEPER_ESCROW_WRITTEN" ] && [ "${KEEPER_INTERVAL_WRITTEN:-15}" != "0" ]; then
+        fail "DEODES_KEEPER_ESCROW_ADDRESS must be set on mainnet while the keeper is enabled (or set DEODES_KEEPER_INTERVAL_MINUTES=0 to disable it)"
+    fi
+    ok "Mainnet Arc/Keeper configuration validated"
 fi
 
 # Validate values are systemd-safe (no unescaped backticks or newlines)

@@ -26,6 +26,7 @@ PG_PW=$(run openssl rand -base64 32 | tr -d '+/=')
 RD_PW=$(run openssl rand -base64 32 | tr -d '+/=')
 MQ_PW=$(run openssl rand -base64 32 | tr -d '+/=')
 JWT_PASSPHRASE=$(run openssl rand -base64 32 | tr -d '+/=')
+HMAC_KEY=$(run openssl rand -hex 32 | tr -d '\n')
 ok "Passwords generated (base64, URL-safe)"
 
 # ── Stellar keypair ────────────────────────────────────────────
@@ -74,6 +75,34 @@ RABBITMQ_PW=${MQ_PW}
 # ── Stellar ─────────────────────────────────────────────────
 STELLAR_PUBLIC_KEY=${STELLAR_PUBLIC}
 STELLAR_SECRET_KEY=${STELLAR_SECRET}
+
+# ── Arc (EVM, primary chain) + Keeper ─────────────────────────
+# 12-backend-env.sh applies NETWORK-based defaults for RPC/chain ID; the
+# backend mainnet guard rejects empty USDC/escrow in mainnet mode, so
+# mainnet deploys MUST fill those before step 12.
+ARC_RPC_URL=${ARC_RPC_URL:-}
+ARC_CHAIN_ID=${ARC_CHAIN_ID:-}
+ARC_USDC_CONTRACT=${ARC_USDC_CONTRACT:-}
+DEODES_CONTRACT_ID=${DEODES_CONTRACT_ID:-}
+KEEPER_ESCROW_ADDRESS=${KEEPER_ESCROW_ADDRESS:-}
+KEEPER_INTERVAL_MINUTES=${KEEPER_INTERVAL_MINUTES:-15}
+
+# ── Frontend (Arc UI + Onramp) ────────────────────────────────
+# Server-only secrets consumed at runtime via frontend/.env.server (written
+# by 17-build-frontend.sh, loaded by 18-systemd.sh EnvironmentFile).
+# Empty Circle keys = onramp 503s (fail-closed). Empty WALLETCONNECT_PROJECT_ID
+# = WalletConnect adapter refuses to init (fail-closed).
+WALLET_HMAC_KEY=${WALLET_HMAC_KEY:-${HMAC_KEY}}
+WALLETCONNECT_PROJECT_ID=${WALLETCONNECT_PROJECT_ID:-}
+CIRCLE_ENV=${CIRCLE_ENV:-sandbox}
+CIRCLE_API_KEY=${CIRCLE_API_KEY:-}
+CIRCLE_TEST_API_KEY=${CIRCLE_TEST_API_KEY:-}
+ONRAMP_REFERRER_DOMAIN=${ONRAMP_REFERRER_DOMAIN:-}
+ONRAMP_ENABLED=${ONRAMP_ENABLED:-true}
+EXPLORE_SOURCE=${EXPLORE_SOURCE:-auto}
+GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+PASSKEY_SERVER_PEPPER=${PASSKEY_SERVER_PEPPER:-}
 
 # ── JWT ─────────────────────────────────────────────────────
 JWT_PRIVATE=${JWT_PRIVATE}

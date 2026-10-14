@@ -46,6 +46,10 @@ User=deploy
 WorkingDirectory=/opt/moistello/frontend
 Environment=NODE_ENV=production
 Environment=PORT=1110
+# Server-only vars (CIRCLE_*, WALLET_HMAC_KEY, GOOGLE_*, PASSKEY_*, REDIS_*)
+# written by 17-build-frontend.sh as frontend/.env.server. NEXT_PUBLIC_* are
+# inlined at build time and do not need runtime injection.
+EnvironmentFile=/opt/moistello/frontend/.env.server
 ExecStart=/usr/bin/node /opt/moistello/frontend/node_modules/.bin/next start
 Restart=always
 RestartSec=5
