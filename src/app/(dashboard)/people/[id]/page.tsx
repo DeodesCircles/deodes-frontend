@@ -17,6 +17,7 @@ import {
 import { ButtonLink } from "@/components/ui/button"
 import { Avatar } from "@/components/ui/avatar"
 import { CopyButton } from "@/components/shared/copy-button"
+import { getArcExplorerAddressUrl } from "@/lib/explorer"
 import { MOCK_PEOPLE } from "../page"
 
 export default function PersonProfilePage() {
@@ -26,7 +27,7 @@ export default function PersonProfilePage() {
     id: id || "usr_1",
     displayName: "Community Member",
     username: `@user_${id?.slice(0, 6)}`,
-    walletAddress: "GCX4B3YJ2W...7H9K",
+    walletAddress: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
     moiScore: 780,
     tier: "Builder" as const,
     activeCircles: 3,
@@ -62,12 +63,12 @@ export default function PersonProfilePage() {
               <div className="flex items-center gap-2 mt-2">
                 <CopyButton text={person.walletAddress} label={person.walletAddress} />
                 <a
-                  href={`https://explorer.arc.network/account/${person.walletAddress}`}
+                  href={getArcExplorerAddressUrl(person.walletAddress)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-muted-foreground hover:text-aurora-cyan transition-colors"
-                  title="View on Arc.Expert"
-                  aria-label="Open wallet address in Arc.Expert"
+                  title="View on Arc Explorer"
+                  aria-label="Open wallet address in Arc Explorer"
                 >
                   <ExternalLink className="h-3.5 w-3.5" />
                 </a>

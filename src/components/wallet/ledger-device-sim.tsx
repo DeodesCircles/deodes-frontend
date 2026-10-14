@@ -65,7 +65,7 @@ function ScreenContent({ screen, address, amount, asset, destination, operationT
         <div className="text-center">
           <div className="text-[8px] text-gray-400">Dashboard</div>
           <div className="text-[6px] text-gray-500 mt-1">
-            Stellar
+            Arc
             <br />
             Bitcoin
             <br />
@@ -97,7 +97,7 @@ function ScreenContent({ screen, address, amount, asset, destination, operationT
           <div className="text-[5px] text-white break-all font-mono leading-tight">
             {address
               ? `${address.slice(0, 14)}...${address.slice(-6)}`
-              : "GABC...XYZ"}
+              : "0x1234...5678"}
           </div>
         </div>
       )
@@ -109,7 +109,7 @@ function ScreenContent({ screen, address, amount, asset, destination, operationT
           <div className="text-[5px] text-white break-all font-mono leading-tight">
             {address
               ? `${address.slice(0, 14)}...${address.slice(-6)}`
-              : "GABC...XYZ"}
+              : "0x1234...5678"}
           </div>
           <div className="flex justify-center gap-2 mt-1">
             <span className="text-[5px] text-green-400">✓ Approve</span>
@@ -137,7 +137,7 @@ function ScreenContent({ screen, address, amount, asset, destination, operationT
         <div className="text-center w-full">
           <div className="text-[6px] text-yellow-400 mb-1">Details</div>
           <div className="text-[4px] text-gray-300 text-left leading-tight">
-            Dest: {destination ? `${destination.slice(0, 8)}...` : "GABC..."}
+            Dest: {destination ? `${destination.slice(0, 8)}...` : "0x1234..."}
             <br />
             Amt: {amount || "100"} {asset || "USDC"}
             <br />

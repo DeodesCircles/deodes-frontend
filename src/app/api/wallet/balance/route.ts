@@ -81,10 +81,10 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // Validate Stellar public key format using the canonical validator
+  // Validate Arc 0x address format using the canonical validator
   if (!validateStellarAddress(address)) {
     return NextResponse.json(
-      { error: "Invalid wallet address: must be Arc 0x or Stellar G..." },
+      { error: "Invalid wallet address: must be an Arc 0x address." },
       { status: 400 }
     );
   }
@@ -119,7 +119,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json(emptyBalance, { status: 200 });
       }
       return NextResponse.json(
-        { error: `Horizon returned status ${response.status}` },
+        { error: `Balance service returned status ${response.status}` },
         { status: response.status }
       );
     }

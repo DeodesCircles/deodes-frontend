@@ -13,8 +13,7 @@ import { useUIStore } from "@/stores/ui-store"
 import { formatAddress } from "@/lib/formatters"
 import { cn } from "@/lib/cn"
 import { copyToClipboard } from "@/lib/clipboard"
-import { getExplorerTxUrl } from "@/lib/explorer"
-import { STELLAR_NETWORK } from "@/lib/constants"
+import { getArcExplorerTxUrl } from "@/lib/explorer"
 
 interface TxDetail {
   id: string
@@ -27,7 +26,6 @@ interface TxDetail {
 }
 
 export default function TransactionDetailPage() {
-  const network = STELLAR_NETWORK
   const params = useParams()
   const txId = params.id as string
   const addToast = useUIStore((s) => s.addToast)
@@ -175,7 +173,7 @@ export default function TransactionDetailPage() {
               <button type="button" onClick={copyHash} className="text-muted-foreground hover:text-foreground transition-colors" aria-label={copied ? "Transaction hash copied" : "Copy transaction hash"}>
                 {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
               </button>
-              <a href={getExplorerTxUrl(tx.txnHash, network)} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-aurora-cyan transition-colors" aria-label="Open transaction in Arc Explorer">
+              <a href={getArcExplorerTxUrl(tx.txnHash)} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-aurora-cyan transition-colors" aria-label="Open transaction in Arc Explorer">
                 <ExternalLink className="h-3.5 w-3.5" />
               </a>
             </div>

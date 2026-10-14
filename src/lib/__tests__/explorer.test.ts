@@ -1,50 +1,69 @@
 import { describe, it, expect } from "vitest"
 import { getExplorerTxUrl, getExplorerAddressUrl } from "../explorer"
+import { ARC_EXPLORER_URL } from "../constants"
 
 describe("explorer utils", () => {
   describe("getExplorerTxUrl", () => {
-    it("returns correct URL for testnet by default", () => {
+    it("returns Arc explorer URL for testnet by default", () => {
       const hash = "1234567890abcdef"
       expect(getExplorerTxUrl(hash)).toBe(
-        "https://stellar.expert/explorer/testnet/tx/1234567890abcdef"
+        `${ARC_EXPLORER_URL}/tx/1234567890abcdef`
       )
     })
 
-    it("returns correct URL for testnet when explicitly specified", () => {
+    it("returns Arc explorer URL for testnet when explicitly specified", () => {
       const hash = "1234567890abcdef"
       expect(getExplorerTxUrl(hash, "testnet")).toBe(
-        "https://stellar.expert/explorer/testnet/tx/1234567890abcdef"
+        `${ARC_EXPLORER_URL}/tx/1234567890abcdef`
       )
     })
 
-    it("returns correct URL for mainnet", () => {
+    it("returns Arc explorer URL for mainnet", () => {
       const hash = "1234567890abcdef"
       expect(getExplorerTxUrl(hash, "mainnet")).toBe(
-        "https://stellar.expert/explorer/public/tx/1234567890abcdef"
+        `${ARC_EXPLORER_URL}/tx/1234567890abcdef`
       )
     })
   })
 
   describe("getExplorerAddressUrl", () => {
-    it("returns correct URL for testnet by default", () => {
-      const address = "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5"
+    it("returns Arc explorer URL for testnet by default", () => {
+      const address = "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
       expect(getExplorerAddressUrl(address)).toBe(
-        "https://stellar.expert/explorer/testnet/account/GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5"
+        `${ARC_EXPLORER_URL}/address/0x742d35Cc6634C0532925a3b844Bc454e4438f44e`
       )
     })
 
-    it("returns correct URL for testnet when explicitly specified", () => {
-      const address = "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5"
+    it("returns Arc explorer URL for testnet when explicitly specified", () => {
+      const address = "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
       expect(getExplorerAddressUrl(address, "testnet")).toBe(
-        "https://stellar.expert/explorer/testnet/account/GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5"
+        `${ARC_EXPLORER_URL}/address/0x742d35Cc6634C0532925a3b844Bc454e4438f44e`
       )
     })
 
-    it("returns correct URL for mainnet", () => {
-      const address = "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5"
+    it("returns Arc explorer URL for mainnet", () => {
+      const address = "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
       expect(getExplorerAddressUrl(address, "mainnet")).toBe(
-        "https://stellar.expert/explorer/public/account/GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5"
+        `${ARC_EXPLORER_URL}/address/0x742d35Cc6634C0532925a3b844Bc454e4438f44e`
       )
     })
+  })
+})
+
+describe("arc explorer utils", () => {
+  it("builds Arc address and tx URLs from configured explorer", async () => {
+    const { getArcExplorerAddressUrl, getArcExplorerTxUrl } = await import("../explorer")
+    expect(getArcExplorerAddressUrl("0xabc")).toContain("/address/0xabc")
+    expect(getArcExplorerTxUrl("0x123")).toContain("/tx/0x123")
+  })
+
+  it("routes 0x addresses to Arc explorer (Arc-only)", async () => {
+    const { getSmartExplorerAddressUrl } = await import("../explorer")
+    expect(
+      getSmartExplorerAddressUrl("0x742d35Cc6634C0532925a3b844Bc454e4438f44e"),
+    ).toContain("0x742d35Cc6634C0532925a3b844Bc454e4438f44e")
+    expect(
+      getSmartExplorerAddressUrl("0x742d35Cc6634C0532925a3b844Bc454e4438f44e"),
+    ).not.toContain("stellar.expert")
   })
 })

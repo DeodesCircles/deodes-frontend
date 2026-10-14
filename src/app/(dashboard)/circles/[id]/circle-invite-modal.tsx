@@ -18,7 +18,7 @@ export interface MemberEntryValidation {
   raw: string
   clean: string
   isValid: boolean
-  type?: "email" | "stellar"
+  type?: "email" | "stellar" | "evm"
 }
 
 export function validateMemberEntry(raw: string): MemberEntryValidation {
@@ -31,6 +31,9 @@ export function validateMemberEntry(raw: string): MemberEntryValidation {
   }
   if (/^G[A-Z2-7]{55}$/.test(clean)) {
     return { raw, clean, isValid: true, type: "stellar" }
+  }
+  if (/^0x[0-9a-fA-F]{40}$/.test(clean)) {
+    return { raw, clean, isValid: true, type: "evm" }
   }
   return { raw, clean, isValid: false }
 }
@@ -238,7 +241,7 @@ export function CircleInviteModal({
             <textarea
               value={csvText}
               onChange={(e) => setCsvText(e.target.value)}
-              placeholder="Enter member emails or Stellar addresses (G...), comma or newline separated..."
+              placeholder="Enter member emails or Arc addresses (0x...), comma or newline separated..."
               rows={4}
               className="w-full p-3 text-xs font-mono rounded-xl bg-slate-950/60 border border-white/10 text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-emerald-500/50"
             />

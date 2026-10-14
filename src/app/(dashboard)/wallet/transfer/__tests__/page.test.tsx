@@ -7,7 +7,7 @@ vi.mock("next/navigation", () => ({
     push: vi.fn(),
   }),
   useSearchParams: () => ({
-    get: (key: string) => (key === "recipient" ? "GCX4B3YJ2W3456789012345678907H9K" : null),
+    get: (key: string) => (key === "recipient" ? "0x742d35Cc6634C0532925a3b844Bc454e4438f44e" : null),
   }),
 }))
 
@@ -21,7 +21,7 @@ describe("WalletTransferPage", () => {
     render(<WalletTransferPage />)
     expect(screen.getByTestId("wallet-transfer-page")).toBeDefined()
     const recipientInput = screen.getByTestId("recipient-input") as HTMLInputElement
-    expect(recipientInput.value).toBe("GCX4B3YJ2W3456789012345678907H9K")
+    expect(recipientInput.value).toBe("0x742d35Cc6634C0532925a3b844Bc454e4438f44e")
   })
 
   it("validates empty amount and displays alert", () => {

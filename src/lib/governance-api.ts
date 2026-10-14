@@ -37,12 +37,12 @@ export const MOCK_GOVERNANCE_PROPOSALS: GovernanceProposal[] = [
     votesAbstain: 45,
     timelockEndsAt: new Date(Date.now() + 86400000 * 3).toISOString(),
     createdAt: "2024-05-10",
-    proposer: "GCX4B3YJ2W...7H9K",
+    proposer: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
     executionPayload: JSON.stringify({ target: "CircleFactory", action: "updateMinCollateralBps", value: 500 }, null, 2),
   },
   {
     id: "prop_102",
-    title: "MIP-15: Allocate 50,000 XLM from Community Treasury for Developer Grants",
+    title: "MIP-15: Allocate 50,000 USDC from Community Treasury for Developer Grants",
     description: "Direct community treasury funds towards building automated Arc dispute resolution bots and notifications.",
     status: "active",
     category: "Treasury Release",
@@ -51,8 +51,8 @@ export const MOCK_GOVERNANCE_PROPOSALS: GovernanceProposal[] = [
     votesAbstain: 110,
     timelockEndsAt: new Date(Date.now() + 86400000 * 5).toISOString(),
     createdAt: "2024-05-12",
-    proposer: "GBV7N2M4P1...3X8L",
-    executionPayload: JSON.stringify({ target: "Treasury", action: "disburseGrant", amount: 50000, recipient: "GDK9...9M4K" }, null, 2),
+    proposer: "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+    executionPayload: JSON.stringify({ target: "Treasury", action: "disburseGrant", amount: 50000, recipient: "0x1111111111111111111111111111111111111111" }, null, 2),
   },
   {
     id: "prop_103",
@@ -65,7 +65,7 @@ export const MOCK_GOVERNANCE_PROPOSALS: GovernanceProposal[] = [
     votesAbstain: 90,
     timelockEndsAt: new Date(Date.now() - 86400000 * 2).toISOString(),
     createdAt: "2024-04-20",
-    proposer: "GAP3T1L6M9...2K5N",
+    proposer: "0x2222222222222222222222222222222222222222",
     executionPayload: JSON.stringify({ target: "Staking", action: "enableYieldRouting", enabled: true }, null, 2),
   },
   {
@@ -79,7 +79,7 @@ export const MOCK_GOVERNANCE_PROPOSALS: GovernanceProposal[] = [
     votesAbstain: 210,
     timelockEndsAt: null,
     createdAt: "2024-04-01",
-    proposer: "GBS8K4P2L7...6W1J",
+    proposer: "0x3333333333333333333333333333333333333333",
   },
 ]
 

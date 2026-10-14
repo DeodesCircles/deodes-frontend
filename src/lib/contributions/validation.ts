@@ -5,7 +5,7 @@
  * by the contribute form, the circle detail modal, and the contributions page.
  * The backend contract is POST /v1/circles/:id/contribute with
  * `{ amount, txnHash, roundNumber }` where txnHash is an Arc EVM hash
- * (0x + 64 hex). Stellar G... addresses and XDR signatures are rejected here
+ * (0x + 64 hex). Non-Arc addresses and invalid signatures are rejected here
  * so a wrong-rail submission fails fast in the UI instead of as a 422.
  */
 
@@ -32,7 +32,7 @@ export function validateArcAddress(address: unknown): string | null {
   }
   const trimmed = address.trim();
   if (trimmed.startsWith("G") || trimmed.length === 56) {
-    return "Stellar addresses are not supported for contributions. Connect an Arc (0x) wallet.";
+    return "Only Arc (0x) addresses are supported for contributions. Connect an Arc wallet.";
   }
   if (!ARC_ADDRESS_REGEX.test(trimmed)) {
     return "Invalid Arc address. Expected a 0x address with 40 hex characters.";
