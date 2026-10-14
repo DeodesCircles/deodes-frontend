@@ -18,10 +18,12 @@ import {
   LifeBuoy,
   Vote,
   Gift,
+  ShieldCheck,
   Search,
   ArrowUpRight,
 } from "lucide-react";
 import { useAppHost } from "@/hooks/use-app-host";
+import { isAdminRole } from "@/hooks/use-admin";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { cn } from "@/lib/cn";
 import { Routes } from "@/lib/constants";
@@ -56,7 +58,8 @@ function SidebarComponent() {
 
   const isActive = (href: string) => isRouteActive(pathname, href);
 
-  const navGroups: NavGroup[] = useMemo(() => [
+  const navGroups: NavGroup[] = useMemo(() => {
+    const groups: NavGroup[] = [
     {
       title: t("nav.platform"),
       items: [
@@ -91,7 +94,20 @@ function SidebarComponent() {
         { label: t("nav.support"), href: Routes.SUPPORT, icon: <LifeBuoy className="h-[18px] w-[18px]" /> },
       ],
     },
-  ], [t, unreadCount]);
+    ];
+    // The Admin entry is role-gated twice: hidden here for non-admins, and
+    // the /admin page itself renders access-denied for any non-admin role, so
+    // a stale or tampered sidebar can never open the section.
+    if (isAdminRole(user?.role)) {
+      groups.push({
+        title: "Admin",
+        items: [
+          { label: "Admin", href: Routes.ADMIN, icon: <ShieldCheck className="h-[18px] w-[18px]" /> },
+        ],
+      });
+    }
+    return groups;
+  }, [t, unreadCount, user?.role]);
 
   const userFallback = user?.displayName
     ? user.displayName.charAt(0).toUpperCase()

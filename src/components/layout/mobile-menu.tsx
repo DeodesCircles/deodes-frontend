@@ -14,7 +14,9 @@ import {
   BookOpen,
   CircleQuestionMark,
   LifeBuoy,
+  ShieldCheck,
 } from "lucide-react";
+import { isAdminRole } from "@/hooks/use-admin";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { cn } from "@/lib/cn";
 import { Routes } from "@/lib/constants";
@@ -33,6 +35,7 @@ function MobileMenuComponent({ isOpen, onClose }: MobileMenuProps) {
   const pathname = usePathname();
   const router = useRouter();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
   const unreadCount = useUnreadCount();
   const { t } = useTranslate();
@@ -47,7 +50,11 @@ function MobileMenuComponent({ isOpen, onClose }: MobileMenuProps) {
     { label: t("nav.notifications"), href: Routes.NOTIFICATIONS, icon: <Bell className="h-4 w-4" /> },
     { label: t("nav.settings"), href: Routes.PROFILE_SETTINGS, icon: <Settings className="h-4 w-4" /> },
     { label: t("nav.profile"), href: Routes.PROFILE, icon: <User className="h-4 w-4" /> },
-  ], [t]);
+    // Same role gate as the desktop sidebar: admins get the section link here too.
+    ...(isAdminRole(user?.role)
+      ? [{ label: "Admin", href: Routes.ADMIN, icon: <ShieldCheck className="h-4 w-4" /> }]
+      : []),
+  ], [t, user?.role]);
 
   const docsLinks = useMemo(() => [
     { label: t("nav.documentation"), href: Routes.DOCS, icon: <BookOpen className="h-4 w-4" /> },

@@ -192,6 +192,7 @@ export const Routes = {
   SUPPORT: "/support",
   BECOME_CONTRIBUTOR: "/become-a-contributor",
   STATUS: "/status",
+  ADMIN: "/admin",
   ACCESS_DENIED: "/access-denied",
   AUTH_REQUIRED: "/auth-required",
   BAD_REQUEST: "/bad-request",
