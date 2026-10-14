@@ -77,10 +77,10 @@ export const PUBLIC_ROUTES: readonly RouteSeo[] = [
     path: "/",
     title: "Deodes — Arc Savings Circles",
     description:
-      "Decentralized savings circles on Arc. Sign in with a passkey (Face ID or fingerprint) and your Arc wallet is created automatically. Zero platform fees, no KYC, no email.",
+      "Decentralized savings circles on Arc. Sign in with Google, email, or passkey and your Arc wallet is created automatically. Sub-cent fees, no KYC.",
     ogTitle: "Deodes — decentralized savings circles on Arc",
     ogDescription:
-      "Join trustless passkey savings circles with zero intermediaries. Auto-created wallet, zero fees, no KYC — built on Arc for real financial sovereignty.",
+      "Join trustless savings circles with zero intermediaries. Auto-created wallet, 0.5% protocol fee, no KYC — built on Arc for real financial sovereignty.",
     keywords: [
       "deodes",
       "arc",
