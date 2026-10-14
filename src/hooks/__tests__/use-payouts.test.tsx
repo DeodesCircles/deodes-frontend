@@ -17,6 +17,7 @@ describe("usePayouts", () => {
       recipientId: "user-1",
       roundNumber: 1,
       amount: 100,
+      txnHash: null,
       payoutType: "fixed" as const,
       createdAt: "2026-07-25T00:00:00Z",
     }
@@ -99,6 +100,7 @@ describe("usePayouts", () => {
       recipientId: "user-2",
       roundNumber: 3,
       amount: 250,
+      txnHash: null,
       payoutType: "fixed" as const,
       executedAt: "2026-07-25T00:00:00Z",
     }

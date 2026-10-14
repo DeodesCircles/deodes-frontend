@@ -275,3 +275,20 @@ export function formatDuration(minutes: number): string {
 }
 
 export const STELLAR_ADDRESS_REGEX = /^G[A-Z2-7]{55}$/;
+
+/**
+ * Arc network identifiers. Deodes wallets and settlement are Arc-only:
+ * user addresses are 0x EVM-style, and every payout receipt is an Arc
+ * transaction hash. Stellar `G...` addresses are legacy and must never be
+ * accepted in payout flows.
+ */
+export const ARC_ADDRESS_REGEX = /^0x[0-9a-fA-F]{40}$/;
+export const ARC_TXN_HASH_REGEX = /^0x[0-9a-fA-F]{64}$/;
+
+export function isArcAddress(value: string): boolean {
+  return ARC_ADDRESS_REGEX.test(value.trim());
+}
+
+export function isArcTxnHash(value: string): boolean {
+  return ARC_TXN_HASH_REGEX.test(value.trim());
+}

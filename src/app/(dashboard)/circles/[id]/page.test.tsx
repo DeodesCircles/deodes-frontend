@@ -30,6 +30,20 @@ vi.mock("@/hooks/use-circles", () => ({
 
 vi.mock("@/hooks/use-payouts", () => ({
   useCirclePayouts: () => mockUseCirclePayouts(),
+  usePayoutPreview: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useTriggerPayout: () => ({ mutateAsync: vi.fn(), isPending: false }),
+}));
+
+vi.mock("@/hooks/use-multi-wallet", () => ({
+  useMultiWallet: () => ({ address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", signMessage: vi.fn() }),
+}));
+
+vi.mock("@/hooks/use-subscriptions", () => ({
+  useSubscribe: () => ({ mutateAsync: vi.fn(), isPending: false }),
+}));
+
+vi.mock("./components/auto-debit-card", () => ({
+  AutoDebitCard: () => null,
 }));
 
 vi.mock("@/stores/ui-store", () => ({
@@ -121,6 +135,34 @@ describe("CircleDetailPage", () => {
     expect(joinMutate).toHaveBeenCalledWith({
       circleId: "circle-42",
     });
+  });
+
+  it("requires explicit auto-debit consent on Auto circles", async () => {
+    mockUseCircle.mockReturnValue({
+      data: {
+        id: "circle-42",
+        name: "Auto Savers",
+        organizerId: "user-1",
+        contributionAmount: 25,
+        currency: "USDC",
+        circleType: "public",
+        status: "active",
+        autoDebit: true,
+        frequency: "weekly",
+        maxMembers: 10,
+      },
+      isLoading: false,
+      isError: false,
+    });
+
+    render(<CircleDetailPage />);
+
+    expect(screen.getByText(/auto circle:/i)).toBeInTheDocument();
+
+    // No consent ticked: join is refused before any network call.
+    fireEvent.click(screen.getByRole("button", { name: /join circle/i }));
+    expect(joinMutate).not.toHaveBeenCalled();
+    expect(await screen.findByText(/tick the auto-debit consent box/i)).toBeInTheDocument();
   });
 
   it("shows a not found state when the circle fails to load", () => {

@@ -41,6 +41,9 @@ export interface User {
   countryCode?: string | null
   preferredLanguage: string
   moiScore: number
+  /** Backend role claim ("user" | "admin"). Absent on cached profiles that
+      predate the admin section; treat missing as non-admin. */
+  role?: string
   sessionTtlMinutes?: number
   createdAt: string
 }
@@ -61,6 +64,7 @@ export interface Circle {
   lateFeePercent: number
   gracePeriodHours: number
   maxStrikes: number
+  autoDebit: boolean
   startDate?: string | null
   endDate?: string | null
   status: CircleStatus
@@ -81,6 +85,22 @@ export interface CircleMember {
   userName?: string | null
   userAddress?: string | null
   joinedAt: string
+}
+
+export interface Subscription {
+  id: string
+  userId: string
+  circleId: string
+  amount: string
+  capTotal: string
+  collectedTotal: string
+  status: "active" | "paused" | "cancelled" | "completed"
+  nextDebitAt: string
+  lastDebitAt?: string | null
+  lastRemindedAt?: string | null
+  lastRound: number
+  createdAt: string
+  updatedAt: string
 }
 
 export interface Contribution {
@@ -105,6 +125,45 @@ export interface Payout {
   txnHash?: string | null
   payoutType: PayoutType
   createdAt: string
+}
+
+/** One recipient leg of a payout preview distribution. */
+export interface PayoutRecipientDistribution {
+  recipientId: string
+  grossAmount: number
+  feeAmount: number
+  netAmount: number
+}
+
+/**
+ * Dry-run breakdown returned by POST /circles/:id/payout/preview.
+ * Display-only: previews never record a payout.
+ */
+export interface PayoutPreview {
+  circleId: string
+  roundNumber: number
+  currency: string
+  totalGrossAmount: number
+  totalNetAmount: number
+  protocolFee: number
+  stellarFeeEstimate: number
+  /** Estimated Arc network fee in USDC (USDC is gas on Arc). */
+  arcFeeEstimate: number
+  recipients: PayoutRecipientDistribution[]
+  dryRun: boolean
+  /** True when the round has started and has no recorded payout yet. */
+  isDue: boolean
+}
+
+/** Body for POST /circles/:id/payout (distribution trigger). */
+export interface TriggerPayoutPayload {
+  recipientId: string
+  roundNumber: number
+  amount: number
+  feeAmount: number
+  /** Arc distribution transaction hash (0x...). Required: the on-chain receipt. */
+  txnHash: string
+  payoutType: PayoutType
 }
 
 export interface CircleRound {
@@ -206,6 +265,7 @@ export interface CircleFormData {
   maxStrikes: number
   startDate: string
   requiresInvite?: boolean
+  autoDebit: boolean
 }
 
 /* ───── State ───── */

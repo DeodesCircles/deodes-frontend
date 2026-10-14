@@ -19,9 +19,16 @@ import {
   useJoinCircle,
   useStartCircle,
 } from "@/hooks/use-circles";
+import { useSubscribe } from "@/hooks/use-subscriptions";
 import { useCirclePayouts } from "@/hooks/use-payouts";
 import { useAuth } from "@/hooks/use-auth";
+import { useMultiWallet } from "@/hooks/use-multi-wallet";
 import { useUIStore } from "@/stores/ui-store";
+import {
+  buildContributionIntentMessage,
+  validateArcTxHash,
+  validateContributeInput,
+} from "@/lib/contributions/validation";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button, ButtonLink } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton";
@@ -29,10 +36,12 @@ import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/formatters";
 import dynamic from "next/dynamic";
 import { CircleMembersPreview } from "./circle-members-preview";
+import { AutoDebitCard } from "./components/auto-debit-card";
 import { PrintSummaryButton } from "./print/print-summary-button";
 import { CircleStatCards } from "./circle-stat-cards";
 import { CircleRoundTimeline } from "./circle-round-timeline";
 import { CirclePayoutsList } from "./circle-payouts-list";
+import { CirclePayoutTrigger } from "./circle-payout-trigger";
 import { useInviteGeneration } from "./use-invite-generation";
 
 const CircleContributeModal = dynamic(
@@ -81,8 +90,14 @@ export default function CircleDetailPage() {
   const addToast = useUIStore((s) => s.addToast);
 
   const [showContributeModal, setShowContributeModal] = useState(false);
+  const [contributeTxnHash, setContributeTxnHash] = useState("");
+  const [contributeError, setContributeError] = useState<string | null>(null);
+  const { address: walletAddress, signMessage } = useMultiWallet();
   const [joinLoading, setJoinLoading] = useState(false);
   const [joinError, setJoinError] = useState<string | null>(null);
+  // Auto-circle consent: explicit opt-in checkbox, unchecked by default.
+  const [autoDebitConsent, setAutoDebitConsent] = useState(false);
+  const subscribe = useSubscribe();
 
   const [showJoinCodeModal, setShowJoinCodeModal] = useState(false);
   const [joinCodeValue, setJoinCodeValue] = useState("");
@@ -101,10 +116,18 @@ export default function CircleDetailPage() {
   const canContribute = isMember && circle?.status === "active";
 
   const handleJoin = async () => {
+    // Auto circles require explicit consent BEFORE joining: no silent enrollment.
+    if (circle?.autoDebit && !autoDebitConsent) {
+      setJoinError(
+        "This is an Auto circle: tick the auto-debit consent box to join, or pick a Flexible circle for manual payments.",
+      );
+      return;
+    }
     setJoinLoading(true);
     setJoinError(null);
     try {
       await joinCircle.mutateAsync({ circleId });
+      await subscribeAfterJoin();
       setJoinLoading(false);
     } catch (err: unknown) {
       const msg =
@@ -116,8 +139,33 @@ export default function CircleDetailPage() {
     }
   };
 
+  // Auto circles pull contributions via keeper subscription. The cap defaults
+  // to a full circle so one authorization covers every round. Join stands even
+  // if subscribing fails (member falls back to manual until they subscribe).
+  const subscribeAfterJoin = async () => {
+    if (!circle?.autoDebit) return;
+    try {
+      await subscribe.mutateAsync({
+        circleId,
+        amount: circle.contributionAmount,
+        capTotal: circle.contributionAmount * circle.maxMembers,
+      });
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { error?: string } } })?.response?.data
+          ?.error ?? "Auto-debit could not be enabled — you joined, but future rounds stay manual until you subscribe.";
+      setJoinError(msg);
+    }
+  };
+
   const handleJoinWithCode = async () => {
     if (!joinCodeValue.trim()) return;
+    if (circle?.autoDebit && !autoDebitConsent) {
+      setJoinCodeError(
+        "This is an Auto circle: tick the auto-debit consent box to join.",
+      );
+      return;
+    }
     setJoinCodeLoading(true);
     setJoinCodeError(null);
     try {
@@ -127,6 +175,7 @@ export default function CircleDetailPage() {
       });
       setShowJoinCodeModal(false);
       setJoinCodeValue("");
+      await subscribeAfterJoin();
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { error?: string } } })?.response?.data
@@ -138,11 +187,53 @@ export default function CircleDetailPage() {
     }
   };
 
-  const handleContribute = () => {
+  const handleContribute = async () => {
     if (!circle) return;
+    setContributeError(null);
+    const preflight = validateContributeInput({
+      amount: circle.contributionAmount,
+      currency: circle.currency,
+      walletAddress: walletAddress ?? "",
+      roundNumber: circle.currentRound || 1,
+      expectedAmount: circle.contributionAmount,
+      isPremium: circle.circleType === "premium",
+    });
+    if (preflight) {
+      setContributeError(preflight);
+      return;
+    }
+    const hashError = validateArcTxHash(contributeTxnHash.trim());
+    if (hashError) {
+      setContributeError(`${hashError} Pay USDC on Arc first, then paste the transaction hash.`);
+      return;
+    }
+    try {
+      await signMessage(
+        buildContributionIntentMessage({
+          amount: circle.contributionAmount,
+          circleName: circle.name,
+          circleId,
+          roundNumber: circle.currentRound || 1,
+          walletAddress: walletAddress as string,
+        }),
+      );
+    } catch (err: unknown) {
+      setContributeError(err instanceof Error ? err.message : "Signature rejected.");
+      return;
+    }
     contribute.mutate(
-      { amount: circle.contributionAmount },
-      { onSuccess: () => setShowContributeModal(false) },
+      {
+        amount: circle.contributionAmount,
+        roundNumber: circle.currentRound || 1,
+        txnHash: contributeTxnHash.trim(),
+      },
+      {
+        onSuccess: () => {
+          setShowContributeModal(false);
+          setContributeTxnHash("");
+          setContributeError(null);
+        },
+      },
     );
   };
 
@@ -267,6 +358,29 @@ export default function CircleDetailPage() {
             </Button>
           </motion.div>
         )}
+        {canJoin && circle?.autoDebit && (
+          <div className="rounded-xl border border-aurora-violet/30 bg-aurora-violet/[0.06] px-5 py-4">
+            <label className="flex cursor-pointer items-start gap-3">
+              <input
+                type="checkbox"
+                checked={autoDebitConsent}
+                onChange={(e) => setAutoDebitConsent(e.target.checked)}
+                className="mt-1 h-4 w-4 shrink-0 accent-aurora-violet"
+              />
+              <span className="text-sm leading-relaxed text-foreground">
+                <strong className="font-heading">Auto circle:</strong> I authorize
+                automatic debits of{" "}
+                <strong>
+                  {formatCurrency(circle.contributionAmount, circle.currency)}
+                </strong>{" "}
+                every {circle.frequency} round (up to{" "}
+                {formatCurrency(circle.contributionAmount * circle.maxMembers, circle.currency)}{" "}
+                total). Skipped — never overdrafted — when my balance is short.
+                I can pause or cancel anytime.
+              </span>
+            </label>
+          </div>
+        )}
         {canJoin && circle?.circleType === "private" && (
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <Button
@@ -340,6 +454,14 @@ export default function CircleDetailPage() {
             {joinError}
           </div>
         )}
+        {isMember && circle?.autoDebit && (
+          <AutoDebitCard
+            circleId={circleId}
+            contributionAmount={circle.contributionAmount}
+            currency={circle.currency}
+            frequency={circle.frequency}
+          />
+        )}
       </div>
 
       <div>
@@ -357,6 +479,8 @@ export default function CircleDetailPage() {
         <CircleMembersPreview members={members} />
       </div>
 
+      <CirclePayoutTrigger circle={circle} members={members} isOrganizer={isOrganizer} />
+
       <CirclePayoutsList
         circle={circle}
         circleId={circleId}
@@ -368,9 +492,18 @@ export default function CircleDetailPage() {
       <CircleContributeModal
         circle={circle}
         isOpen={showContributeModal}
-        onClose={() => setShowContributeModal(false)}
+        onClose={() => {
+          setShowContributeModal(false);
+          setContributeError(null);
+        }}
         onConfirm={handleContribute}
         isSubmitting={contribute.isPending}
+        txnHash={contributeTxnHash}
+        onTxnHashChange={(v) => {
+          setContributeTxnHash(v);
+          setContributeError(null);
+        }}
+        txnHashError={contributeError}
       />
 
       <CircleInviteModal

@@ -2,10 +2,11 @@
 
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { ChevronRight, CircleCheck, CircleAlert } from "lucide-react"
+import { ChevronRight, CircleCheck, CircleAlert, ExternalLink } from "lucide-react"
 import { EmptyState } from "@/components/shared/empty-state"
 import { Skeleton } from "@/components/ui/skeleton"
-import { formatCurrency, formatDate } from "@/lib/formatters"
+import { formatAddress, formatCurrency, formatDate, isArcTxnHash } from "@/lib/formatters"
+import { getArcExplorerTxUrl } from "@/lib/explorer"
 import type { Circle, Payout } from "@/types"
 
 interface CirclePayoutsListProps {
@@ -81,6 +82,20 @@ export function CirclePayoutsList({
                     </p>
                     <p className="text-2xs text-muted-foreground">
                       {formatDate(payout.createdAt)}
+                      {payout.txnHash && isArcTxnHash(payout.txnHash) && (
+                        <>
+                          {" · "}
+                          <a
+                            href={getArcExplorerTxUrl(payout.txnHash)}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-0.5 font-mono underline underline-offset-2 hover:text-foreground"
+                          >
+                            {formatAddress(payout.txnHash)}
+                            <ExternalLink className="h-3 w-3" />
+                          </a>
+                        </>
+                      )}
                     </p>
                   </div>
                 </div>
