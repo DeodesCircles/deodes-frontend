@@ -25,7 +25,7 @@ const PAYOUT_TYPES: {
   { value: "vote", label: "Vote", description: "Members vote on recipient", icon: <Vote className="h-5 w-5" /> },
 ]
 
-export function CreateStepPayout({ formData, setFormData }: CreateStepPayoutProps) {
+export function CreateStepPayout({ formData, setFormData, errors }: CreateStepPayoutProps) {
   return (
     <div className="space-y-6">
       <h3 className="font-heading text-lg font-semibold text-foreground dark:text-white">
@@ -88,6 +88,7 @@ export function CreateStepPayout({ formData, setFormData }: CreateStepPayoutProp
           }
           leftIcon={<Shield className="h-4 w-4" />}
           hint="Percentage of contribution required as collateral"
+          error={errors.collateralPercent}
         />
         <Input
           label="Min DeoScore (optional)"
@@ -103,6 +104,7 @@ export function CreateStepPayout({ formData, setFormData }: CreateStepPayoutProp
           }
           leftIcon={<Target className="h-4 w-4" />}
           hint="Minimum trust score to join"
+          error={errors.minMoiScore}
         />
       </div>
     </div>

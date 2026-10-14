@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useCreateCircle } from "@/hooks/use-circles"
 import { useAuth } from "@/hooks/use-auth"
-import { type CreateCircleInput } from "@/lib/validators"
+import { parseApiErrorMessage, parseApiFieldErrors, type CreateCircleInput } from "@/lib/validators"
 import { Button } from "@/components/ui/button"
 import { CreateStepIndicator } from "@/components/circles/create-step-indicator"
 import { CreateStepDetails } from "@/components/circles/create-step-details"
@@ -18,6 +18,7 @@ import type { CircleFormData } from "@/types"
 import {
   initialCircleForm,
   buildCircleFormData,
+  formatSubmitErrors,
   validateCircleStep,
 } from "@/lib/circles/circle-creation"
 
@@ -33,6 +34,14 @@ interface CreateCircleWizardProps {
   communityId?: string
   onSubmit?: (data: CreateCircleInput) => void
   isPending?: boolean
+}
+
+/** Server 400 field names (camelCase API) already match wizard error keys. */
+function toSubmitErrors(fieldErrors: Record<string, string>, fallback: string): Record<string, string> {
+  if (Object.keys(fieldErrors).length === 0) {
+    return { submit: fallback }
+  }
+  return { ...fieldErrors, submit: formatSubmitErrors(fieldErrors) }
 }
 
 export default function CreateCircleWizard({
@@ -66,7 +75,13 @@ export default function CreateCircleWizard({
   const handleSubmit = () => {
     const { success, errors: stepErrors } = validateCircleStep(4, formData, user?.moiScore ?? 0, communityId)
     if (!success) {
+      // Surface every failure on the Review step — never a silent dead-click.
       setErrors(stepErrors)
+      addToast({
+        type: "error",
+        title: "Check your circle details",
+        description: stepErrors.submit ?? "Please fix the highlighted fields and try again.",
+      })
       return
     }
     const payload = buildCircleFormData(formData, communityId)
@@ -85,9 +100,9 @@ export default function CreateCircleWizard({
         setTimeout(() => router.push(circleId ? `/circles/${circleId}` : onSuccessPath), 500)
       },
       onError: (err: unknown) => {
-        const axiosErr = err as { response?: { data?: Record<string, unknown> }; message?: string }
-        const resp = axiosErr?.response?.data
-        setErrors({ submit: JSON.stringify(resp ?? axiosErr?.message ?? err) })
+        const fieldErrors = parseApiFieldErrors(err)
+        const message = parseApiErrorMessage(err, "Could not create circle. Please try again.")
+        setErrors(toSubmitErrors(fieldErrors, message))
       },
     })
   }
@@ -96,6 +111,8 @@ export default function CreateCircleWizard({
   const stepProps = currentStep === 4
     ? { formData, isPending: isPending ?? createCircle.isPending, errors }
     : { formData, setFormData, errors }
+
+  const pending = isPending ?? createCircle.isPending
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -108,7 +125,11 @@ export default function CreateCircleWizard({
         </div>
       </div>
       {errors.submit && (
-        <div className="rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-400">
+        <div
+          role="alert"
+          data-testid="circle-submit-error"
+          className="mt-4 rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-400"
+        >
           {errors.submit}
         </div>
       )}
@@ -121,8 +142,16 @@ export default function CreateCircleWizard({
           <Button variant="primary" size="md" onClick={handleNext}
             rightIcon={<ChevronRight className="h-4 w-4" />}>Next</Button>
         ) : (
-          <Button variant="premium" size="lg" onClick={handleSubmit}
-            isLoading={createCircle.isPending}>Create Circle</Button>
+          <Button
+            variant="premium"
+            size="lg"
+            onClick={handleSubmit}
+            isLoading={pending}
+            disabled={pending}
+            aria-disabled={pending || undefined}
+          >
+            Create Circle
+          </Button>
         )}
       </div>
     </div>

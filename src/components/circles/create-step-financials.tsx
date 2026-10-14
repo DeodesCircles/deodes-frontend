@@ -47,10 +47,12 @@ export function CreateStepFinancials({ formData, setFormData, errors }: CreateSt
           label="Contribution Amount"
           type="number"
           min={minContribution}
+          max={1000000}
           value={String(formData.contributionAmount)}
           onChange={(e) => setFormData((prev) => ({ ...prev, contributionAmount: Number(e.target.value) }))}
           leftIcon={<DollarSign className="h-4 w-4" />}
           error={errors.contributionAmount}
+          hint="USDC on Arc · up to 1,000,000."
         />
         <div>
           <p id="currency-label" className="mb-2 block font-heading text-xs tracking-wider uppercase text-muted-foreground">
@@ -74,6 +76,11 @@ export function CreateStepFinancials({ formData, setFormData, errors }: CreateSt
               </button>
             ))}
           </div>
+          {errors.currency && (
+            <p role="alert" className="mt-1.5 min-h-5 text-xs leading-5 text-red-400">
+              {errors.currency}
+            </p>
+          )}
         </div>
       </div>
 
@@ -166,6 +173,11 @@ export function CreateStepFinancials({ formData, setFormData, errors }: CreateSt
         <h4 className="font-heading font-medium text-foreground dark:text-white">
           Penalty Settings
         </h4>
+        {errors.lateFeePercent && (
+          <p role="alert" className="text-xs leading-5 text-red-400">
+            {errors.lateFeePercent}
+          </p>
+        )}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div>
             <label htmlFor="late-fee-percent" className="mb-2 block font-heading text-xs tracking-wider uppercase text-muted-foreground">
@@ -190,6 +202,7 @@ export function CreateStepFinancials({ formData, setFormData, errors }: CreateSt
             max={168}
             value={String(formData.gracePeriodHours)}
             onChange={(e) => setFormData((prev) => ({ ...prev, gracePeriodHours: Number(e.target.value) }))}
+            error={errors.gracePeriodHours}
           />
           <Input
             label="Max Strikes"
@@ -199,6 +212,7 @@ export function CreateStepFinancials({ formData, setFormData, errors }: CreateSt
             value={String(formData.maxStrikes)}
             onChange={(e) => setFormData((prev) => ({ ...prev, maxStrikes: Number(e.target.value) }))}
             hint="Strikes before removal"
+            error={errors.maxStrikes}
           />
         </div>
       </div>

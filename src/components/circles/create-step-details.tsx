@@ -32,6 +32,7 @@ export function CreateStepDetails({ formData, setFormData, errors }: CreateStepD
           placeholder="Briefly describe the purpose of this circle"
           value={formData.description ?? ""}
           onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+          error={errors.description}
         />
       </div>
 
@@ -53,6 +54,8 @@ export function CreateStepDetails({ formData, setFormData, errors }: CreateStepD
           value={formData.startDate}
           onChange={(e) => setFormData((prev) => ({ ...prev, startDate: e.target.value }))}
           leftIcon={<Calendar className="h-4 w-4" />}
+          error={errors.startDate}
+          hint="Must be a future date."
         />
       </div>
     </div>

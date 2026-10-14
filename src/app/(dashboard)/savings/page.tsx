@@ -7,6 +7,8 @@ import { EmptyState } from "@/components/shared/empty-state"
 import { Button } from "@/components/ui/button"
 import { Modal } from "@/components/ui/modal"
 import { Skeleton } from "@/components/ui/skeleton"
+import { getErrorMessage } from "@/lib/api-client"
+import { parseApiFieldErrors } from "@/lib/validators"
 import { useSavingsMutations, type SavingsGoal } from "@/hooks/use-savings"
 import { useSavingsPage, type SavingsFilter } from "./hooks/useSavingsPage"
 import { SavingsSummaryStrip } from "./components/SavingsSummaryStrip"
@@ -139,22 +141,33 @@ export default function SavingsPage() {
 
       <Modal
         isOpen={page.showCreate}
-        onClose={() => page.setShowCreate(false)}
+        onClose={() => {
+          page.setShowCreate(false)
+          createGoal.reset()
+        }}
         title="Create savings vault"
         description="Lock USDC on Arc towards a personal milestone."
       >
         <GoalForm
           pending={createGoal.isPending}
+          serverFieldErrors={parseApiFieldErrors(createGoal.error)}
+          serverError={createGoal.error ? getErrorMessage(createGoal.error) : null}
           onCreate={(input) =>
             createGoal.mutate(input, { onSuccess: () => page.setShowCreate(false) })
           }
-          onCancel={() => page.setShowCreate(false)}
+          onCancel={() => {
+            page.setShowCreate(false)
+            createGoal.reset()
+          }}
         />
       </Modal>
 
       <Modal
         isOpen={!!page.editing}
-        onClose={() => page.setEditing(null)}
+        onClose={() => {
+          page.setEditing(null)
+          updateGoal.reset()
+        }}
         title="Edit vault"
         description={page.editing ? `Editing “${page.editing.name}”.` : undefined}
       >
@@ -162,10 +175,15 @@ export default function SavingsPage() {
           <GoalForm
             initial={page.editing}
             pending={updateGoal.isPending}
+            serverFieldErrors={parseApiFieldErrors(updateGoal.error)}
+            serverError={updateGoal.error ? getErrorMessage(updateGoal.error) : null}
             onUpdate={(id, patch) =>
               updateGoal.mutate({ id, patch }, { onSuccess: () => page.setEditing(null) })
             }
-            onCancel={() => page.setEditing(null)}
+            onCancel={() => {
+              page.setEditing(null)
+              updateGoal.reset()
+            }}
           />
         )}
       </Modal>
