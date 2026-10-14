@@ -10,22 +10,22 @@ const mockedGet = vi.mocked(get)
 
 describe("useContributions", () => {
 
-  it("loads contributions with the existing filters and pagination", async () => {
+  it("loads contributions with the supported filters and pagination", async () => {
     const contribution = {
       id: "contribution-1",
       circleId: "circle-1",
       userId: "user-1",
       roundNumber: 2,
       amount: 25,
-      status: "completed" as const,
+      status: "confirmed" as const,
       onTime: true,
-      submittedAt: "2026-07-25T00:00:00Z",
+      createdAt: "2026-07-25T00:00:00Z",
     }
     mockedGet.mockResolvedValue({
       success: true,
       data: {
         contributions: [contribution],
-        summary: { totalContributed: 25, average: 25, count: 1 },
+        summary: null,
       },
       meta: { page: 2, limit: 20, total: 1, totalPages: 1 },
     })
@@ -34,11 +34,7 @@ describe("useContributions", () => {
     const { result } = renderHook(
       () =>
         useContributions({
-          search: "weekly",
           circleId: "circle-1",
-          amount: "100-500",
-          date: "30d",
-          sort: "date-desc",
           page: 2,
           limit: 20,
         }),
@@ -47,10 +43,41 @@ describe("useContributions", () => {
 
     expect(result.current.isLoading).toBe(true)
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    // Only backend-supported params are sent (search/amount/date/sort are
+    // client-side and intentionally omitted).
     expect(mockedGet).toHaveBeenCalledWith(
-      "/contributions?search=weekly&circleId=circle-1&amount=100-500&date=30d&sort=date-desc&page=2&limit=20",
+      "/contributions?circleId=circle-1&page=2&limit=20",
     )
     expect(result.current.data?.contributions).toEqual([contribution])
+  })
+
+  it("normalizes legacy sql.NullString txnHash objects to strings", async () => {
+    mockedGet.mockResolvedValue({
+      success: true,
+      data: {
+        contributions: [
+          {
+            id: "c-1",
+            circleId: "circle-1",
+            userId: "user-1",
+            roundNumber: 1,
+            amount: 100,
+            txnHash: { String: "0xabc", Valid: true },
+            status: "confirmed",
+            onTime: true,
+            createdAt: "2026-07-25T00:00:00Z",
+          },
+        ],
+      },
+      meta: { page: 1, limit: 20, total: 1, totalPages: 1 },
+    })
+    const { QueryWrapper } = createQueryWrapper()
+    const { result } = renderHook(() => useContributions(), {
+      wrapper: QueryWrapper,
+    })
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(result.current.data?.contributions[0].txnHash).toBe("0xabc")
   })
 
   it("normalizes an empty response", async () => {
@@ -64,7 +91,7 @@ describe("useContributions", () => {
     expect(result.current.data).toEqual({
       contributions: [],
       summary: null,
-      meta: { page: 1, limit: 20, total: 0, totalPages: 0 },
+      meta: { page: 1, limit: 20, total: 0, totalPages: 1 },
     })
   })
 

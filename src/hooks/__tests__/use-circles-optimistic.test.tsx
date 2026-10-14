@@ -85,9 +85,10 @@ describe("useCircles & useContribute hooks", () => {
         wrapper: QueryWrapper,
       })
 
+      const txnHash = "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
       // Trigger mutation and wait for onMutate microtasks to complete
       await act(async () => {
-        result.current.mutate({ amount: 100, roundNumber: 2 })
+        result.current.mutate({ amount: 100, roundNumber: 2, txnHash })
       })
 
       // Verify optimistic update took effect instantly
@@ -99,10 +100,16 @@ describe("useCircles & useContribute hooks", () => {
       expect(updatedRounds?.[1].amount).toBe(100)
       expect(updatedRounds?.[1].roundNumber).toBe(2)
 
-      // Complete server promise
+      // Complete server promise (backend nests contribution under data.contribution)
       await act(async () => {
-        resolvePost!({ data: { id: "round-2", amount: 100 } })
+        resolvePost!({ data: { contribution: { id: "round-2", amount: 100 } } })
       })
+
+      expect(vi.mocked(post)).toHaveBeenCalledWith(
+        `/circles/${circleId}/contribute`,
+        { amount: 100, roundNumber: 2, txnHash },
+        expect.objectContaining({ headers: expect.objectContaining({ "Idempotency-Key": expect.any(String) }) }),
+      )
     })
 
     it("rolls back optimistic update on API error", async () => {
@@ -138,7 +145,11 @@ describe("useCircles & useContribute hooks", () => {
 
       await act(async () => {
         try {
-          await result.current.mutateAsync({ amount: 100 })
+          await result.current.mutateAsync({
+            amount: 100,
+            roundNumber: 1,
+            txnHash: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          })
         } catch {
           // Expected error
         }

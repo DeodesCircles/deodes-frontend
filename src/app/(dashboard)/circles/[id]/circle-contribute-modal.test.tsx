@@ -13,31 +13,29 @@ const circle = {
   currentRound: 2,
 } as unknown as Circle
 
+function modalProps(overrides: Partial<React.ComponentProps<typeof CircleContributeModal>> = {}) {
+  return {
+    circle,
+    isOpen: true,
+    onClose: vi.fn(),
+    onConfirm: vi.fn(),
+    isSubmitting: false,
+    txnHash: "",
+    onTxnHashChange: vi.fn(),
+    txnHashError: null,
+    ...overrides,
+  } as React.ComponentProps<typeof CircleContributeModal>
+}
+
 describe("CircleContributeModal", () => {
   it("renders nothing when closed", () => {
-    render(
-      <CircleContributeModal
-        circle={circle}
-        isOpen={false}
-        onClose={vi.fn()}
-        onConfirm={vi.fn()}
-        isSubmitting={false}
-      />,
-    )
+    render(<CircleContributeModal {...modalProps({ isOpen: false })} />)
 
     expect(screen.queryByText("Confirm Contribution")).toBeNull()
   })
 
   it("shows the contribution details when open", () => {
-    render(
-      <CircleContributeModal
-        circle={circle}
-        isOpen
-        onClose={vi.fn()}
-        onConfirm={vi.fn()}
-        isSubmitting={false}
-      />,
-    )
+    render(<CircleContributeModal {...modalProps()} />)
 
     expect(screen.getByText("Confirm Contribution")).toBeDefined()
     expect(screen.getByText("Test Circle")).toBeDefined()
@@ -46,17 +44,24 @@ describe("CircleContributeModal", () => {
   it("calls onConfirm when the confirm button is clicked", async () => {
     const user = userEvent.setup()
     const onConfirm = vi.fn()
-    render(
-      <CircleContributeModal
-        circle={circle}
-        isOpen
-        onClose={vi.fn()}
-        onConfirm={onConfirm}
-        isSubmitting={false}
-      />,
-    )
+    render(<CircleContributeModal {...modalProps({ onConfirm })} />)
 
     await user.click(screen.getByRole("button", { name: /Confirm & Sign/ }))
     expect(onConfirm).toHaveBeenCalledTimes(1)
+  })
+
+  it("renders the Arc txn hash input and surfaces validation errors", async () => {
+    const user = userEvent.setup()
+    const onTxnHashChange = vi.fn()
+    render(
+      <CircleContributeModal
+        {...modalProps({ onTxnHashChange, txnHashError: "Invalid transaction hash." })}
+      />,
+    )
+
+    expect(screen.getByLabelText(/Arc transaction hash/i)).toBeDefined()
+    expect(screen.getByText("Invalid transaction hash.")).toBeDefined()
+    await user.type(screen.getByLabelText(/Arc transaction hash/i), "0xabc")
+    expect(onTxnHashChange).toHaveBeenCalled()
   })
 })

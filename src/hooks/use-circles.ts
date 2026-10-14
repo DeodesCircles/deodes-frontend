@@ -51,6 +51,7 @@ interface CreateCirclePayload {
   maxStrikes: number;
   startDate: string;
   requiresInvite?: boolean;
+  autoDebit?: boolean;
 }
 
 interface JoinCirclePayload {
@@ -64,9 +65,19 @@ interface JoinCirclePayload {
   inviteCode?: string;
 }
 
-interface ContributePayload {
+export interface ContributePayload {
   amount: number;
-  roundNumber?: number;
+  roundNumber: number;
+  txnHash: string;
+  /** Optional client idempotency key; generated per call when omitted. */
+  idempotencyKey?: string;
+}
+
+function newIdempotencyKey(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
 /**
@@ -241,18 +252,34 @@ export function useContribute(circleId: string) {
 
   return useOptimisticMutation<ContributePayload, Contribution>({
     mutationFn: async (payload) => {
-      const response = await post<ApiResponse<Contribution>>(
+      const key = payload.idempotencyKey ?? newIdempotencyKey();
+      const response = await post<
+        ApiResponse<{ contribution?: Contribution } & Partial<Contribution>>
+      >(
         `/circles/${circleId}/contribute`,
-        payload,
+        {
+          amount: payload.amount,
+          roundNumber: payload.roundNumber,
+          txnHash: payload.txnHash,
+        },
+        { headers: { "Idempotency-Key": key } },
       );
-      return response.data as Contribution;
+      const data = response.data as
+        | ({ contribution?: Contribution } & Partial<Contribution>)
+        | undefined;
+      // Backend returns { success, contribution } inside data; accept a bare
+      // contribution too so mocks and future shapes keep working.
+      if (data && typeof data === "object" && "contribution" in data && data.contribution) {
+        return data.contribution as Contribution;
+      }
+      return data as unknown as Contribution;
     },
     queryKeys: [
       queryKeys.circles.detail(circleId),
       queryKeys.circles.rounds(circleId),
       ["contributions", circleId],
     ],
-    dedupeKey: (vars) => `contribute-${circleId}-${vars.roundNumber ?? "current"}-${vars.amount}`,
+    dedupeKey: (vars) => `contribute-${circleId}-${vars.roundNumber}-${vars.amount}-${vars.txnHash}`,
     applyOptimistic: (variables, tempId, qc) => {
       const circleKey = queryKeys.circles.detail(circleId);
       const roundsKey = queryKeys.circles.rounds(circleId);
@@ -271,7 +298,7 @@ export function useContribute(circleId: string) {
         id: tempId,
         circleId,
         userId: OPTIMISTIC_PENDING_USER_ID,
-        roundNumber: variables.roundNumber ?? currentCircle?.currentRound ?? 1,
+        roundNumber: variables.roundNumber,
         amount: variables.amount,
         status: "pending",
         onTime: true,

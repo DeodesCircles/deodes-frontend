@@ -9,6 +9,8 @@ vi.mock("@/lib/api-client", () => ({
   post: vi.fn(),
 }))
 
+const TXN = "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+
 describe("useCreateContribution optimistic updates", () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -47,7 +49,7 @@ describe("useCreateContribution optimistic updates", () => {
     })
 
     await act(async () => {
-      result.current.mutate({ circleId: "circle-1", amount: 100, roundNumber: 2 })
+      result.current.mutate({ circleId: "circle-1", amount: 100, roundNumber: 2, txnHash: TXN })
     })
 
     const updated = queryClient.getQueryData<typeof initialData>(["contributions"])
@@ -58,6 +60,12 @@ describe("useCreateContribution optimistic updates", () => {
     await act(async () => {
       resolvePost!({ data: { id: "contrib-2", amount: 100 } })
     })
+
+    expect(vi.mocked(post)).toHaveBeenCalledWith(
+      "/circles/circle-1/contribute",
+      { amount: 100, roundNumber: 2, txnHash: TXN },
+      expect.objectContaining({ headers: expect.objectContaining({ "Idempotency-Key": expect.any(String) }) }),
+    )
   })
 
   it("rolls back optimistic update on API error", async () => {
@@ -87,7 +95,7 @@ describe("useCreateContribution optimistic updates", () => {
 
     await act(async () => {
       try {
-        await result.current.mutateAsync({ circleId: "circle-1", amount: 100 })
+        await result.current.mutateAsync({ circleId: "circle-1", amount: 100, roundNumber: 1, txnHash: TXN })
       } catch {
         // Expected error
       }

@@ -7,12 +7,9 @@ import { get, post } from "@/lib/api-client";
 import { useUIStore } from "@/stores/ui-store";
 import type { ApiResponse, Contribution } from "@/types";
 
-interface ContributionFilters {
-  search?: string;
+export interface ContributionFilters {
   circleId?: string;
-  amount?: string;
-  date?: string;
-  sort?: string;
+  userId?: string;
   page?: number;
   limit?: number;
 }
@@ -20,19 +17,39 @@ interface ContributionFilters {
 interface CreateContributionPayload {
   circleId: string;
   amount: number;
-  roundNumber?: number;
+  roundNumber: number;
+  txnHash: string;
+  idempotencyKey?: string;
+}
+
+function newIdempotencyKey(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+function normalizeContribution(c: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = { ...c };
+  const txn = out.txnHash as unknown;
+  if (txn && typeof txn === "object" && "String" in (txn as Record<string, unknown>)) {
+    const s = (txn as { String?: unknown }).String;
+    out.txnHash = typeof s === "string" && s ? s : null;
+  }
+  return out;
 }
 
 export function useContributions(filters?: ContributionFilters) {
   return useQuery({
     queryKey: ["contributions", filters ?? {}],
     queryFn: async () => {
+      // Backend GET /contributions supports only circleId, userId, page,
+      // limit. Search/amount/date/sort are client-side concerns (see the
+      // contributions page) — they are intentionally NOT sent so a stale
+      // query string cannot be mistaken for server filtering.
       const params = new URLSearchParams();
-      if (filters?.search) params.set("search", filters.search);
       if (filters?.circleId) params.set("circleId", filters.circleId);
-      if (filters?.amount) params.set("amount", filters.amount);
-      if (filters?.date) params.set("date", filters.date);
-      if (filters?.sort) params.set("sort", filters.sort);
+      if (filters?.userId) params.set("userId", filters.userId);
       if (filters?.page) params.set("page", String(filters.page));
       if (filters?.limit) params.set("limit", String(filters.limit));
 
@@ -40,9 +57,13 @@ export function useContributions(filters?: ContributionFilters) {
       const url = `/contributions${query ? `?${query}` : ""}`;
       const response = await get<ApiResponse<{ contributions?: Contribution[]; summary?: any }>>(url);
 
-      const contributions = response.data?.contributions ?? (
+      const raw = response.data?.contributions ?? (
         Array.isArray(response.data) ? response.data : []
       );
+      // Normalize legacy sql.NullString txnHash ({String,Valid}) to string.
+      const contributions = (raw as unknown[]).map((c) =>
+        normalizeContribution(c as Record<string, unknown>),
+      ) as unknown as Contribution[];
 
       return {
         contributions,
@@ -62,12 +83,32 @@ export function useCreateContribution() {
   const addToast = useUIStore((s) => s.addToast);
 
   return useOptimisticMutation<CreateContributionPayload, Contribution>({
+    // There is no POST /contributions on the backend. Contributions are
+    // recorded via POST /circles/:id/contribute with
+    // { amount, roundNumber, txnHash } + Idempotency-Key (CSRF via api-client).
     mutationFn: async (payload) => {
-      const response = await post<ApiResponse<Contribution>>("/contributions", payload);
-      return response.data as Contribution;
+      const key = payload.idempotencyKey ?? newIdempotencyKey();
+      const response = await post<
+        ApiResponse<{ contribution?: Contribution } & Partial<Contribution>>
+      >(
+        `/circles/${payload.circleId}/contribute`,
+        {
+          amount: payload.amount,
+          roundNumber: payload.roundNumber,
+          txnHash: payload.txnHash,
+        },
+        { headers: { "Idempotency-Key": key } },
+      );
+      const data = response.data as
+        | ({ contribution?: Contribution } & Partial<Contribution>)
+        | undefined;
+      if (data && typeof data === "object" && "contribution" in data && data.contribution) {
+        return data.contribution as Contribution;
+      }
+      return data as unknown as Contribution;
     },
     queryKeys: [["contributions"]],
-    dedupeKey: (vars) => `create-contribution-${vars.circleId}-${vars.amount}`,
+    dedupeKey: (vars) => `create-contribution-${vars.circleId}-${vars.roundNumber}-${vars.amount}-${vars.txnHash}`,
     applyOptimistic: (variables, tempId, qc) => {
       qc.setQueriesData({ queryKey: ["contributions"] }, (old: any) => {
         if (!old) return old;
@@ -75,7 +116,7 @@ export function useCreateContribution() {
           id: tempId,
           circleId: variables.circleId,
           userId: OPTIMISTIC_PENDING_USER_ID,
-          roundNumber: variables.roundNumber ?? 1,
+          roundNumber: variables.roundNumber,
           amount: variables.amount,
           status: "pending",
           onTime: true,
